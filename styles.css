@@ -47,12 +47,12 @@ h1 { font-size: 17px; font-weight: 700; margin: 0; white-space: nowrap; letter-s
 #temperature500-legend i::after { content: ""; position: absolute; inset: -0.5px 0; background: var(--temperature-color); opacity: var(--temperature-opacity); }
 h2 { margin: 0 0 9px; font-size: 12px; color: #164b68; }
 .analysis-buttons { flex-wrap: wrap; }
-#analyze { width: 100%; margin-bottom: 2px; }
+#analyze { width: 100%; margin: 0 0 10px; }
 .analysis-note { display: flex; flex-direction: column; gap: 6px; font-size: 11px; margin-top: 10px; color: #58677a; }
 .analysis-note p { margin: 2px 0 0; line-height: 1.6; }
 .legend { display: inline-flex; align-items: center; gap: 6px; }
 .legend::before { content: ''; width: 22px; height: 0; border-top: 3px solid #f02020; }
-.trough-key::before { border-top: 5px double #9a4b16; }
+.trough-key::before { border-top: 5px double #f02020; }
 .wind-button { width: 100%; color: #17683e; border-color: #50a97b; font-weight: 600; }
 .wind-button[aria-pressed='true'] { color: #fff; background: #17683e; border-color: #17683e; box-shadow: none; }
 .wind-button[aria-pressed='true']:hover { background: #125431; }
@@ -151,7 +151,7 @@ dialog::backdrop { background: #23334b55; } dialog p { margin: 0 0 14px; } dialo
 .layer-details .temperature-legend, .layer-details .wind-legend, .layer-details .symbol-legend { margin-top: 0; }
 .selected-style { margin: 0 0 8px; font-size: 11px; color: #164b68; font-weight: 600; }
 .geography-settings { justify-content: flex-end; }
-.analysis-preset { width: 100%; margin-top: 10px; font-size: 11px; color: #164b68; border-style: dashed; }
+.analysis-preset { width: 100%; font-size: 12px; font-weight: 600; color: #164b68; background: #edf5fa; border-color: #aac5d4; }
 .panel-actions { padding: 8px 12px; flex-shrink: 0; border-top: 1px solid #cbd5df; background: #f5f8fb; }
 .panel-actions .export-section { margin-top: 6px; }
 .panel-actions .gesture-note { margin-top: 5px; font-size: 10px; }

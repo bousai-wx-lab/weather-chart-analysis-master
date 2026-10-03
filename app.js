@@ -66,13 +66,13 @@ let loadController = null;
 const drawingStates = new Map();
 const zoomSteps = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 const analysisTools = [
-  { id: "temperature", button: "temperature", label: "気温線", plane: "300hPa" },
-  { id: "wind", button: "wind", label: "風速の色塗り", plane: "300hPa" },
-  { id: "jet", button: "jet", label: "強風軸候補", plane: "300hPa" },
-  { id: "temperature500", button: "temperature500", label: "気温線", plane: "500hPa" },
-  { id: "trough", button: "trough", label: "トラフ候補", plane: "500hPa" },
-  { id: "symbols", button: "symbol-color", label: "L・H・C・Wの文字", plane: "300/500hPa" },
-  { id: "geography", button: "geography-toggle", label: "陸海・地形", plane: "300/500hPa" }
+  { id: "temperature", button: "temperature", label: "気温線", plane: "300hPa", setEnabled: on => { showTemperature = on; } },
+  { id: "wind", button: "wind", label: "風速の色塗り", plane: "300hPa", setEnabled: on => { showWind = on; } },
+  { id: "jet", button: "jet", label: "強風軸", plane: "300hPa", setEnabled: on => { showJet = on; } },
+  { id: "temperature500", button: "temperature500", label: "気温線", plane: "500hPa", setEnabled: on => { showTemperature500 = on; } },
+  { id: "trough", button: "trough", label: "トラフ", plane: "500hPa", setEnabled: on => { showTrough = on; } },
+  { id: "symbols", button: "symbol-color", label: "L・H・C・Wの文字", plane: "300/500hPa", setEnabled: on => { showSymbols = on; } },
+  { id: "geography", button: "geography-toggle", label: "陸海・地形", plane: "300/500hPa", setEnabled: on => { showGeography = on; } }
 ];
 let activeOnly = false;
 let selectedDetail = null;
@@ -95,6 +95,11 @@ function updateAnalysisPanel() {
   byId("layer-count").textContent = String(count);
   byId("active-only").setAttribute("aria-pressed", String(activeOnly));
   byId("no-active-layers").hidden = !activeOnly || count > 0;
+  const available = analysisTools.filter(tool => !byId(tool.button).disabled);
+  const allOn = !featuresLoading && available.length > 0 && available.every(tool => byId(tool.button).getAttribute("aria-pressed") === "true");
+  byId("analyze").disabled = !ready || featuresLoading || !available.length;
+  byId("analyze").setAttribute("aria-pressed", String(allOn));
+  byId("analyze").textContent = `すべての解析を${allOn ? "OFF" : "ON"}`;
   for (const group of document.querySelectorAll("[data-layer-group]")) {
     group.hidden = !Array.from(group.querySelectorAll("[data-layer]")).some(row => !row.hidden);
   }
@@ -127,7 +132,7 @@ function controls() {
   byId("redo").disabled = !future.length;
   byId("clear").disabled = !paintCount;
   byId("save").disabled = !ready || featuresLoading;
-  for (const id of ["analyze", "trough", "jet"]) byId(id).disabled = !ready || !candidates;
+  for (const id of ["trough", "jet"]) byId(id).disabled = !ready || !candidates;
   byId("wind").disabled = !ready || !windBands;
   byId("wind").setAttribute("aria-pressed", String(Boolean(showWind && windBands)));
   byId("wind").textContent = "風速の色塗り";
@@ -209,7 +214,7 @@ function drawAnalysis() {
       const left = points[Math.max(0, i - 1)], right = points[Math.min(points.length - 1, i + 1)];
       const dx = right[0] - left[0], dy = right[1] - left[1], length = Math.hypot(dx, dy) || 1;
       return [p[0] - sign * dy * 5 / length, p[1] + sign * dx * 5 / length];
-    }), 4, "#9a4b16");
+    }), 4, "#f02020");
   }
   analysisContext.globalAlpha = 1;
 }
@@ -275,11 +280,14 @@ byId("temperature500").addEventListener("click", () => {
   showTemperature500 = !showTemperature500; drawTemperature(); controls();
 });
 for (const id of ["analyze", "trough", "jet", "original"]) byId(id).addEventListener("click", () => {
-  if (!ready || (id !== "original" && !candidates)) return;
-  if (id === "analyze") showTrough = showJet = true;
+  if (!ready || byId(id).disabled) return;
+  if (id === "analyze") {
+    const on = byId(id).getAttribute("aria-pressed") !== "true";
+    for (const tool of analysisTools) if (!byId(tool.button).disabled) tool.setEnabled(on);
+  }
   if (id === "trough") showTrough = !showTrough;
   if (id === "jet") showJet = !showJet;
-  if (id === "original") showWind = showTrough = showJet = showSymbols = showGeography = showTemperature = showTemperature500 = false;
+  if (id === "original") for (const tool of analysisTools) tool.setEnabled(false);
   drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); controls();
 });
 
@@ -475,7 +483,7 @@ byId("save").addEventListener("click", () => {
   ctx.globalCompositeOperation = "multiply"; ctx.drawImage(ink, 0, 0); ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = "#243247"; ctx.font = "24px sans-serif";
   ctx.fillText(`出典：気象庁 ${selected.product.code}（画像化） / ${chartLabel}`, 26, ink.height + 38, output.width - 52);
-  ctx.fillText(`解析案：${showTrough ? "500hPaトラフ候補 " : ""}${showJet ? "300hPa強風軸候補" : ""}${!showTrough && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
+  ctx.fillText(`解析案：${showTrough ? "500hPaトラフ " : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
   if (showSymbols && symbols) for (const [index, letter] of ["L", "H", "C", "W"].entries()) {
     ctx.fillStyle = ChartAnalysis.symbolPalette[letter]; ctx.fillText(letter, 1610 + index * 90, ink.height + 76);
   }
@@ -637,7 +645,7 @@ async function loadSelection(retry = false) {
   chartLabel = selected.variant.observation_label || `${selected.variant.label} · ${retrieved} JST取得`;
   byId("chart-name").textContent = `${selected.product.name}${selected.product.period ? " · " + selected.product.period : ""}`;
   byId("chart-info").textContent = chartLabel;
-  byId("chart-note").textContent = reviewed ? "自動更新なし。上段300hPa・下段500hPa。自動の着色・解析候補も使えます。" : "自動更新なし。この図の自動着色・解析は未対応です。手描きで色を塗れます。解析・予想の日時は原図内を確認してください。";
+  byId("chart-note").textContent = reviewed ? "自動更新なし。上段300hPa・下段500hPa。自動の着色・解析も使えます。" : "自動更新なし。この図の自動着色・解析は未対応です。手描きで色を塗れます。解析・予想の日時は原図内を確認してください。";
   byId("source-link").href = selected.variant.source_url;
   byId("source-link").textContent = `気象庁 ${selected.product.code} 原図${selected.variant.source_url.endsWith(".pdf") ? "PDF" : "PNG"}`;
   controls();

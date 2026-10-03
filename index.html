@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸の候補を重ねる解析補助ツール。">
+  <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=e1f19e908577c8dc">
+  <link rel="stylesheet" href="styles.css?v=1c855a3deab1af20">
   <script src="analysis.js?v=ddea2f07fb300167" defer></script>
   <script src="geography.js?v=acb1baa814de2081" defer></script>
   <script src="catalog.js?v=9d1519ba693ab9cf" defer></script>
-  <script src="app.js?v=351a4e553c911c12" defer></script>
+  <script src="app.js?v=d635015f4ddf9253" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -44,6 +44,7 @@
     <div class="panel-content">
     <section id="analysis-panel" aria-label="この図の解析">
       <div data-requires="reviewed-aupq35" id="automatic-tools">
+      <button type="button" id="analyze" class="analysis-preset" aria-pressed="false" disabled>すべての解析をON</button>
       <div class="analysis-list-heading"><h2>この図の解析</h2><button type="button" id="active-only" aria-pressed="false">表示中 <span id="layer-count">0</span></button></div>
       <p class="list-help">項目で表示切替 · 詳細で凡例・設定</p>
       <div class="layer-group" data-layer-group><h3>300 hPa <span>上段</span></h3>
@@ -56,7 +57,7 @@
         <div id="detail-wind" class="layer-details" hidden><div id="wind-legend" class="wind-legend" aria-label="風速の色分け、単位はノット"></div><p class="gesture-note">等風速線に沿って20kt刻みで色分け。40kt未満は着色しません。</p></div>
       </article>
       <article class="layer-tool" data-layer="jet">
-        <div class="layer-row"><button type="button" id="jet" class="layer-toggle" aria-pressed="false" disabled>強風軸候補</button><button type="button" class="layer-detail-button" data-layer-detail="jet" aria-label="強風軸候補の詳細" aria-expanded="false" aria-controls="detail-jet">詳細 <span aria-hidden="true">⌄</span></button></div>
+        <div class="layer-row"><button type="button" id="jet" class="layer-toggle" aria-pressed="false" disabled>強風軸</button><button type="button" class="layer-detail-button" data-layer-detail="jet" aria-label="強風軸の詳細" aria-expanded="false" aria-controls="detail-jet">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-jet" class="layer-details" hidden><span class="legend jet-key">赤い矢印 · 300hPa</span><p class="gesture-note">各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。</p></div>
       </article>
       </div><div class="layer-group" data-layer-group><h3>500 hPa <span>下段</span></h3>
@@ -65,8 +66,8 @@
         <div id="detail-temperature500" class="layer-details" hidden><div id="temperature500-legend" class="temperature-legend" aria-label="500hPaの元の黒い破線に半透明の色を重ねます。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−3〜−30℃の全10段階。元の黒い破線が透けるように、細い半透明の色を重ねます。</p></div>
       </article>
       <article class="layer-tool" data-layer="trough">
-        <div class="layer-row"><button type="button" id="trough" class="layer-toggle" aria-pressed="false" disabled>トラフ候補</button><button type="button" class="layer-detail-button" data-layer-detail="trough" aria-label="トラフ候補の詳細" aria-expanded="false" aria-controls="detail-trough">詳細 <span aria-hidden="true">⌄</span></button></div>
-        <div id="detail-trough" class="layer-details" hidden><span class="legend trough-key">茶色の二重線 · 500hPa</span><p class="gesture-note">等高度線の曲がりから推定した候補です。</p></div>
+        <div class="layer-row"><button type="button" id="trough" class="layer-toggle" aria-pressed="false" disabled>トラフ</button><button type="button" class="layer-detail-button" data-layer-detail="trough" aria-label="トラフの詳細" aria-expanded="false" aria-controls="detail-trough">詳細 <span aria-hidden="true">⌄</span></button></div>
+        <div id="detail-trough" class="layer-details" hidden><span class="legend trough-key">赤い二重線 · 500hPa</span><p class="gesture-note">等高度線の曲がりからトラフを推定します。</p></div>
       </article>
       </div><div class="layer-group" data-layer-group><h3>共通 <span>上段・下段</span></h3>      <article class="layer-tool" data-layer="symbols">
         <div class="layer-row"><button type="button" id="symbol-color" class="layer-toggle" aria-pressed="false" disabled>L・H・C・Wの文字</button><button type="button" class="layer-detail-button" data-layer-detail="symbols" aria-label="L・H・C・Wの文字の詳細" aria-expanded="false" aria-controls="detail-symbols">詳細 <span aria-hidden="true">⌄</span></button></div>
@@ -87,7 +88,6 @@
 </div>
       </article>
       </div><p id="no-active-layers" class="gesture-note" hidden>表示中の解析はありません。「表示中」を解除すると追加できます。</p>
-      <button type="button" id="analyze" class="analysis-preset" disabled>トラフ・強風軸をまとめて表示</button>
       </div>
       <div id="manual-only" class="empty-analysis" hidden><h2>この図は手描きで解析</h2><p>自動の色塗り・解析はまだありません。原図を確認しながら、色や太さを選んで書き込めます。</p><button type="button" id="start-manual">手描きを開く</button></div>
     </section>
@@ -133,7 +133,7 @@
         <img id="chart" src="assets/aupq35.png" alt="気象庁AUPQ35。2026年10月2日00UTCの300hPaと500hPaの高度・気温・風の実況図。上段は300hPa、下段は500hPa。" draggable="false">
         <canvas id="geography-layer" aria-label="陸海の模様・標高・地形の陰影・参考衛星画像"></canvas>
         <canvas id="wind-layer" aria-label="300hPa等風速線に沿った緑色の塗り分け"></canvas>
-        <canvas id="analysis-layer" aria-label="500hPaのトラフの推定候補"></canvas>
+        <canvas id="analysis-layer" aria-label="500hPaのトラフ"></canvas>
         <canvas id="jet-layer" aria-label="300hPaの強風帯の中心を流れに沿ってたどる赤い矢印"></canvas>
         <canvas id="temperature-layer" aria-label="300hPaの−27から−51℃、500hPaの−3から−30℃の気温線。暖かい薄い青から寒い濃い紫"></canvas>
         <canvas id="symbol-layer" aria-label="原図のLは赤、Hは青、Cは水色、Wはオレンジ。文字部分だけの色分け"></canvas>
