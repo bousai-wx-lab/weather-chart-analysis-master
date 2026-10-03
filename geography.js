@@ -4,9 +4,8 @@ const ChartGeography = (() => {
     { id: "dots", label: "細かなドット", land: "dots" },
     { id: "elevation", label: "標高で色分け", terrain: 0 },
     { id: "diagonal", label: "斜線", land: "diagonal" },
-    { id: "relief", label: "地形の陰影", terrain: 1 },
     { id: "cross", label: "クロスハッチ", land: "cross" },
-    { id: "elevation-relief", label: "標高＋陰影", terrain: 2 },
+    { id: "elevation-relief", label: "標高＋陰影＋水面", terrain: 2, sea: "ripples" },
     { id: "waves", label: "陸は点・海は波", land: "dots", sea: "waves" },
     { id: "paper", label: "紙の質感", land: "paper", sea: "sea-paper" },
     { id: "sand", label: "砂と水面", land: "sand", sea: "ripples" },
@@ -90,6 +89,12 @@ const ChartGeography = (() => {
       ctx.save(); ctx.beginPath(); ctx.rect(left, top, right - left, bottom - top); ctx.clip();
       if (style.satellite) ctx.drawImage(satellite, 0, data.satellite.top_y + panel.offset_y);
       else if (style.terrain !== undefined) {
+        if (style.sea) {
+          ctx.save(); ctx.beginPath(); ctx.rect(left, top, right - left, bottom - top);
+          ringPath(ctx, data.rings, panel.offset_y); ctx.clip("evenodd");
+          ctx.fillStyle = ctx.createPattern(tile(style.sea), "repeat");
+          ctx.fillRect(left, top, right - left, bottom - top); ctx.restore();
+        }
         ctx.beginPath(); ringPath(ctx, data.rings, panel.offset_y); ctx.clip("evenodd");
         ctx.drawImage(terrainImage, 0, style.terrain * 1322, 2048, 1322, 0, data.satellite.top_y + panel.offset_y, 2048, 1322);
       }
@@ -104,12 +109,20 @@ const ChartGeography = (() => {
     }
     ctx.restore();
   }
-  function preview(canvas, id, satellite, terrainImage) {
+  function preview(canvas, id, satellite, terrainImage, data) {
     const c = canvas.getContext("2d"), style = patterns.find(p => p.id === id);
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.fillStyle = "white"; c.fillRect(0, 0, canvas.width, canvas.height);
     if (style.satellite) { if (satellite) c.drawImage(satellite, 480, 230, 1000, 700, 0, 0, canvas.width, canvas.height); return; }
-    if (style.terrain !== undefined) { if (terrainImage) c.drawImage(terrainImage, 120, style.terrain * 1322 + 220, 1050, 700, 0, 0, canvas.width, canvas.height); return; }
+    if (style.terrain !== undefined) {
+      if (style.sea) { c.fillStyle = c.createPattern(tile(style.sea), "repeat"); c.fillRect(0, 0, canvas.width, canvas.height); }
+      if (terrainImage) {
+        c.save(); c.scale(canvas.width / 1050, canvas.height / 700); c.translate(-120, -220);
+        if (style.sea && data) { c.beginPath(); ringPath(c, data.rings, -data.satellite.top_y); c.clip("evenodd"); }
+        c.drawImage(terrainImage, 0, style.terrain * 1322, 2048, 1322, 0, 0, 2048, 1322); c.restore();
+      }
+      return;
+    }
     c.scale(0.6, 0.6);
     const w = canvas.width / 0.6, h = canvas.height / 0.6;
     if (style.sea) { c.fillStyle = c.createPattern(tile(style.sea), "repeat"); c.fillRect(0, 0, w, h); }

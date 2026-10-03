@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-03T12:41:06.118657+00:00",
+  "generated_at": "2026-10-03T22:13:53.211157+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -47,8 +47,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 44399,
-      "sha256": "6e030c0643be7c1940a19042f1a197bdea395e0d3db25e62606adda11a01ed5b",
+      "bytes": 44752,
+      "sha256": "351a4e553c911c128da8ba1f186911a7ea8ba96c57bf29a6f18fac81aa1cfbc9",
       "mime_type": "text/javascript"
     },
     {
@@ -467,14 +467,14 @@
     },
     {
       "path": "geography.js",
-      "bytes": 9026,
-      "sha256": "f05742dc0ce1b78aae89a2140cb140676d0c6797bee036be16967681cfa7c8fd",
+      "bytes": 9708,
+      "sha256": "acb1baa814de20819ced4be7e1895616c9003b5e6075dca57e53d9a97b5b23d6",
       "mime_type": "text/javascript"
     },
     {
       "path": "index.html",
       "bytes": 17363,
-      "sha256": "71c9287802318d1c6b73051de436d78428533c22c463bfffca19221503034658",
+      "sha256": "03958961ebd7275efeca00769ca740257f76668eeddc5b690bc22abea163da46",
       "mime_type": "text/html"
     },
     {
@@ -515,8 +515,8 @@
     },
     {
       "path": "scripts/test_analysis.js",
-      "bytes": 18300,
-      "sha256": "a5903ff7ac7e7ed238332395f7cca21ae7f5772b1042146c261e7a0918052065",
+      "bytes": 18287,
+      "sha256": "b3eeaee2bee535346b2fd63086e4b8d1b0444e19c52c3c7458f44d8c001d6b80",
       "mime_type": "text/javascript"
     },
     {

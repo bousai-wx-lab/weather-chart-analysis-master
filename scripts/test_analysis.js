@@ -190,9 +190,9 @@ console.log(`WIND_AXES_OK strongest_strip=checked shifted_maximum=checked no_hei
 const geography = require("../geography.js");
 const coast = JSON.parse(fs.readFileSync(path.join(root, "land-sea.json")));
 geography.validate(coast, chart);
-assert.equal(geography.patterns.length, 10);
-assert.equal(new Set(geography.patterns.map(p => p.id)).size, 10);
-assert.deepEqual(geography.patterns.map(p => p.id), ['dots', 'elevation', 'diagonal', 'relief', 'cross', 'elevation-relief', 'waves', 'paper', 'sand', 'satellite']);
+assert.equal(geography.patterns.length, 9);
+assert.equal(new Set(geography.patterns.map(p => p.id)).size, 9);
+assert.deepEqual(geography.patterns.map(p => p.id), ['dots', 'elevation', 'diagonal', 'cross', 'elevation-relief', 'waves', 'paper', 'sand', 'satellite']);
 for (const key of ["source_sha256", "image_sha256", "observation_time", "width", "height"]) assert.throws(() => geography.validate({ ...coast, [key]: "mismatch" }, chart));
 for (const change of [
   g => { g.rings.pop(); },
@@ -215,7 +215,7 @@ for (const [longitude, latitude, land, name] of [
 ]) assert.equal(inRegion(geoPoint(longitude, latitude), coast.rings), land, name);
 assert.equal(require("node:crypto").createHash("sha256").update(fs.readFileSync(path.join(root, coast.satellite.path))).digest("hex"), coast.satellite.image_sha256);
 assert.ok(coast.projection.maximum_graticule_fit_error_px < 0.5);
-console.log("LAND_SEA_OK patterns=10 source_binding=checked malformed_data=blocked geographic_land_and_water=10 satellite_hash=checked projection_fit=checked");
+console.log("LAND_SEA_OK patterns=9 source_binding=checked malformed_data=blocked geographic_land_and_water=10 satellite_hash=checked projection_fit=checked");
 
 const terrain = JSON.parse(fs.readFileSync(path.join(root, "elevation.json")));
 geography.validateElevation(terrain, chart);

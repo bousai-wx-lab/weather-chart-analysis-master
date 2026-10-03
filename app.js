@@ -20,7 +20,8 @@ let satelliteImage = null;
 let elevationData = null;
 let terrainImage = null;
 let terrainError = "";
-let geographyStyle = "dots";
+const defaultGeographyStyle = "elevation-relief";
+let geographyStyle = defaultGeographyStyle;
 let geographyOpacity = 0.4;
 let showGeography = true;
 let geographyError = "";
@@ -621,7 +622,7 @@ async function loadSelection(retry = false) {
   showSymbols = state?.showSymbols ?? true; showGeography = state?.showGeography ?? true;
   showTemperature = state?.showTemperature ?? true;
   showTemperature500 = state?.showTemperature500 ?? true;
-  geographyStyle = state?.geographyStyle || "dots"; geographyOpacity = state?.geographyOpacity ?? 0.4;
+  geographyStyle = state?.geographyStyle || defaultGeographyStyle; geographyOpacity = state?.geographyOpacity ?? 0.4;
   byId("geography-opacity").value = String(Math.round(geographyOpacity * 100));
   fitView = true;
   if (exportUrl) { URL.revokeObjectURL(exportUrl); exportUrl = null; }
@@ -692,7 +693,9 @@ async function loadFeatures(selected, revision, signal) {
       try {
         const checked = ChartGeography.validate(await fetchJSON("land-sea.json", signal), data);
         if (!current()) return;
-        geography = checked; drawGeography(); controls();
+        geography = checked;
+        if (terrainImage) for (const style of ChartGeography.patterns.filter(p => p.terrain !== undefined)) ChartGeography.preview(byId("geography-patterns").querySelector(`[data-pattern="${style.id}"] canvas`), style.id, null, terrainImage, geography);
+        drawGeography(); controls();
         try {
           const image = await checkedImage(checked.satellite.path, checked.satellite.image_sha256, checked.satellite.width, checked.satellite.height, signal);
           if (current()) { satelliteImage = image; ChartGeography.preview(byId("geography-patterns").querySelector('[data-pattern="satellite"] canvas'), "satellite", image); drawGeography(); controls(); }
@@ -705,7 +708,7 @@ async function loadFeatures(selected, revision, signal) {
         const image = await checkedImage(checked.image.path, checked.image.sha256, checked.image.width, checked.image.height, signal);
         if (!current()) return;
         elevationData = checked; terrainImage = image;
-        for (const style of ChartGeography.patterns.filter(p => p.terrain !== undefined)) ChartGeography.preview(byId("geography-patterns").querySelector(`[data-pattern="${style.id}"] canvas`), style.id, null, image);
+        for (const style of ChartGeography.patterns.filter(p => p.terrain !== undefined)) ChartGeography.preview(byId("geography-patterns").querySelector(`[data-pattern="${style.id}"] canvas`), style.id, null, image, geography);
         byId("elevation-legend").replaceChildren();
         for (const [index, label] of checked.legend.labels.entries()) {
           const entry = document.createElement("span"), swatch = document.createElement("i");
