@@ -185,9 +185,10 @@ const ChartAnalysis = (() => {
   function drawSymbols(ctx, data) {
     ctx.save();
     ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 0.5;
     ctx.lineJoin = "miter";
     for (const symbol of data.symbols) for (const stroke of symbol.strokes) {
-      ctx.strokeStyle = symbolPalette[symbol.letter]; ctx.lineWidth = stroke.width_px; ctx.lineCap = stroke.line_cap;
+      ctx.strokeStyle = symbolPalette[symbol.letter]; ctx.lineWidth = stroke.width_px + 1.5; ctx.lineCap = stroke.line_cap;
       ctx.beginPath(); ctx.moveTo(...stroke.points[0]);
       for (const point of stroke.points.slice(1)) ctx.lineTo(...point);
       ctx.stroke();
@@ -266,6 +267,35 @@ const ChartAnalysis = (() => {
     ctx.restore();
     }
   }
-  return { validate, analyze, troughs, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments };
+  function drawTroughs(ctx, curves) {
+    ctx.save(); ctx.strokeStyle = "#f02020"; ctx.lineWidth = 4;
+    ctx.globalAlpha = 0.85; ctx.lineCap = ctx.lineJoin = "round";
+    for (const points of curves) {
+      if (points.length < 2) continue;
+      const sides = [[], []];
+      // Offset the smooth centerline along its own normals, then interpolate
+      // both edges. Short samples keep the two red curves evenly separated.
+      for (const [index, segment] of isothermSegments(points).entries()) {
+        const {start, c1, c2, end} = segment;
+        const steps = Math.max(2, Math.ceil((Math.hypot(c1[0]-start[0],c1[1]-start[1]) + Math.hypot(c2[0]-c1[0],c2[1]-c1[1]) + Math.hypot(end[0]-c2[0],end[1]-c2[1])) / 4));
+        for (let i = Number(index > 0); i <= steps; i++) {
+          const t = i / steps, u = 1 - t;
+          const center = start.map((v,k) => u*u*u*v + 3*u*u*t*c1[k] + 3*u*t*t*c2[k] + t*t*t*end[k]);
+          let dx = u*u*(c1[0]-start[0]) + 2*u*t*(c2[0]-c1[0]) + t*t*(end[0]-c2[0]);
+          let dy = u*u*(c1[1]-start[1]) + 2*u*t*(c2[1]-c1[1]) + t*t*(end[1]-c2[1]);
+          if (Math.hypot(dx,dy) < 1e-9) { dx = end[0]-start[0]; dy = end[1]-start[1]; }
+          const length = Math.hypot(dx,dy);
+          for (const [side,sign] of [-1,1].entries()) sides[side].push([center[0]-sign*dy*5/length,center[1]+sign*dx*5/length]);
+        }
+      }
+      for (const side of sides) {
+        ctx.beginPath(); ctx.moveTo(...side[0]);
+        for (const segment of isothermSegments(side)) ctx.bezierCurveTo(...segment.c1,...segment.c2,...segment.end);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+  return { validate, analyze, troughs, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs };
 })();
 if (typeof module !== "undefined") module.exports = ChartAnalysis;

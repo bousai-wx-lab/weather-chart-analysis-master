@@ -27,9 +27,6 @@ let showGeography = true;
 let geographyError = "";
 const symbolLayer = byId("symbol-layer");
 const symbolContext = symbolLayer.getContext("2d");
-const symbolMask = document.createElement("canvas");
-const symbolMaskContext = symbolMask.getContext("2d");
-let originalPixels = null;
 let symbols = null;
 let showSymbols = true;
 let symbolError = "";
@@ -197,26 +194,12 @@ for (const [index, style] of ChartGeography.patterns.entries()) {
 byId("geography-toggle").addEventListener("click", () => { showGeography = !showGeography; drawGeography(); controls(); });
 byId("geography-opacity").addEventListener("input", (event) => { geographyOpacity = Number(event.target.value) / 100; drawGeography(); controls(); });
 
-function line(ctx, points, width, color) {
-  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = "round"; ctx.lineJoin = "round";
-  ctx.beginPath(); ctx.moveTo(...points[0]);
-  for (const point of points.slice(1)) ctx.lineTo(...point);
-  ctx.stroke();
-}
 function drawAnalysis() {
   analysisContext.clearRect(0, 0, analysisLayer.width, analysisLayer.height);
   jetContext.clearRect(0, 0, jetLayer.width, jetLayer.height);
   if (!candidates) return;
   if (showJet) ChartAnalysis.drawJetAxes(jetContext, candidates.jets, windBands.bounds);
-  if (showTrough) for (const points of candidates.troughs) {
-    analysisContext.globalAlpha = 0.85;
-    for (const sign of [-1, 1]) line(analysisContext, points.map((p, i) => {
-      const left = points[Math.max(0, i - 1)], right = points[Math.min(points.length - 1, i + 1)];
-      const dx = right[0] - left[0], dy = right[1] - left[1], length = Math.hypot(dx, dy) || 1;
-      return [p[0] - sign * dy * 5 / length, p[1] + sign * dx * 5 / length];
-    }), 4, "#f02020");
-  }
-  analysisContext.globalAlpha = 1;
+  if (showTrough) ChartAnalysis.drawTroughs(analysisContext, candidates.troughs);
 }
 const windLabels = ["40–60 kt", "60–80 kt", "80–100 kt", "100–120 kt", "120 kt以上"];
 for (const [index, color] of ChartAnalysis.windPalette.entries()) {
@@ -235,27 +218,8 @@ byId("wind").addEventListener("click", () => {
 });
 function drawSymbols() {
   symbolContext.clearRect(0, 0, symbolLayer.width, symbolLayer.height);
-  if (!showSymbols || !symbols || !originalPixels) return;
-  const output = symbolContext.createImageData(symbolLayer.width, symbolLayer.height);
-  for (const symbol of symbols.symbols) {
-    const [left, top, right, bottom] = symbol.bounds;
-    const x0 = Math.floor(left - 4), y0 = Math.floor(top - 4), width = Math.ceil(right + 4) - x0, height = Math.ceil(bottom + 4) - y0;
-    symbolMaskContext.clearRect(x0, y0, width, height);
-    // A one-pixel selection tolerance captures the source renderer's ink fringe.
-    // Only existing nonwhite ink can be recolored; the tolerance adds no paint.
-    ChartAnalysis.drawSymbols(symbolMaskContext, { symbols: [{ ...symbol, strokes: symbol.strokes.map((s) => ({ ...s, width_px: s.width_px + 1 })) }] });
-    const mask = symbolMaskContext.getImageData(x0, y0, width, height).data;
-    const rgb = ChartAnalysis.symbolPalette[symbol.letter].slice(1).match(/../g).map((v) => parseInt(v, 16));
-    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
-      if (mask[(y * width + x) * 4 + 3] <= 16) continue;
-      const index = ((y0 + y) * symbolLayer.width + x0 + x) * 4;
-      const gray = originalPixels.data[index];
-      if (gray === 255) continue;
-      for (let channel = 0; channel < 3; channel++) output.data[index + channel] = Math.round(gray + rgb[channel] * (1 - gray / 255));
-      output.data[index + 3] = 255;
-    }
-  }
-  symbolContext.putImageData(output, 0, 0);
+  if (!ready || !showSymbols || !symbols) return;
+  ChartAnalysis.drawSymbols(symbolContext, symbols);
 }
 byId("symbol-color").addEventListener("click", () => {
   if (!ready || !symbols) return;
@@ -552,15 +516,10 @@ function initialize(selected) {
     canvas.width = chart.naturalWidth; canvas.height = chart.naturalHeight;
   }
   const reviewed = selected.variant.features === "reviewed-aupq35";
-  for (const canvas of [analysisLayer, jetLayer, windLayer, geographyLayer, symbolLayer, symbolMask, temperatureLayer]) {
+  for (const canvas of [analysisLayer, jetLayer, windLayer, geographyLayer, symbolLayer, temperatureLayer]) {
     canvas.width = reviewed ? chart.naturalWidth : 1;
     canvas.height = reviewed ? chart.naturalHeight : 1;
     canvas.hidden = !reviewed;
-  }
-  if (selected.variant.features === "reviewed-aupq35") {
-    symbolMaskContext.drawImage(chart, 0, 0);
-    originalPixels = symbolMaskContext.getImageData(0, 0, chart.naturalWidth, chart.naturalHeight);
-    symbolMaskContext.clearRect(0, 0, symbolMask.width, symbolMask.height);
   }
   paper.style.aspectRatio = `${ink.width} / ${ink.height}`;
   ready = true; paper.hidden = false; paper.dataset.ready = "true"; paper.dataset.chart = selected.product.id; paper.dataset.source = selected.variant.id;
@@ -620,7 +579,7 @@ async function loadSelection(retry = false) {
   const signal = loadController.signal;
   const selected = ChartCatalog.selection(catalog, byId("chart-select").value, byId("source-select").value, Number(byId("page-select").value));
   currentSelection = selected; ready = false; paper.hidden = true; paper.dataset.ready = "false";
-  active = pointer = pan = originalPixels = null;
+  active = pointer = pan = null;
   geography = satelliteImage = elevationData = terrainImage = symbols = windBands = candidates = isotherms = null;
   loadingError = geographyError = terrainError = symbolError = analysisError = temperatureError = "";
   history.length = future.length = 0;

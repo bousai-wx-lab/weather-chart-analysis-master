@@ -9,10 +9,10 @@
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
   <link rel="stylesheet" href="styles.css?v=1c855a3deab1af20">
-  <script src="analysis.js?v=ddea2f07fb300167" defer></script>
+  <script src="analysis.js?v=d16030f42bac1f75" defer></script>
   <script src="geography.js?v=acb1baa814de2081" defer></script>
   <script src="catalog.js?v=9d1519ba693ab9cf" defer></script>
-  <script src="app.js?v=d635015f4ddf9253" defer></script>
+  <script src="app.js?v=4c4f8ee59ed035a7" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -71,7 +71,7 @@
       </article>
       </div><div class="layer-group" data-layer-group><h3>共通 <span>上段・下段</span></h3>      <article class="layer-tool" data-layer="symbols">
         <div class="layer-row"><button type="button" id="symbol-color" class="layer-toggle" aria-pressed="false" disabled>L・H・C・Wの文字</button><button type="button" class="layer-detail-button" data-layer-detail="symbols" aria-label="L・H・C・Wの文字の詳細" aria-expanded="false" aria-controls="detail-symbols">詳細 <span aria-hidden="true">⌄</span></button></div>
-        <div id="detail-symbols" class="layer-details" hidden><p class="symbol-legend"><span class="symbol-l">L：赤</span><span class="symbol-h">H：青</span><span class="symbol-c">C：水色</span><span class="symbol-w">W：オレンジ</span></p><p class="gesture-note">原図の文字部分だけを色分けします。</p></div>
+        <div id="detail-symbols" class="layer-details" hidden><p class="symbol-legend"><span class="symbol-l">L：赤</span><span class="symbol-h">H：青</span><span class="symbol-c">C：水色</span><span class="symbol-w">W：オレンジ</span></p><p class="gesture-note">元の黒字が透けるように、少し太い半透明の色線を重ねます。</p></div>
       </article>
       <article class="layer-tool" data-layer="geography">
         <div class="layer-row"><button type="button" id="geography-toggle" class="layer-toggle" aria-pressed="false" disabled>陸海・地形</button><button type="button" class="layer-detail-button" data-layer-detail="geography" aria-label="陸海・地形の詳細" aria-expanded="false" aria-controls="detail-geography">詳細 <span aria-hidden="true">⌄</span></button></div>
@@ -136,7 +136,7 @@
         <canvas id="analysis-layer" aria-label="500hPaのトラフ"></canvas>
         <canvas id="jet-layer" aria-label="300hPaの強風帯の中心を流れに沿ってたどる赤い矢印"></canvas>
         <canvas id="temperature-layer" aria-label="300hPaの−27から−51℃、500hPaの−3から−30℃の気温線。暖かい薄い青から寒い濃い紫"></canvas>
-        <canvas id="symbol-layer" aria-label="原図のLは赤、Hは青、Cは水色、Wはオレンジ。文字部分だけの色分け"></canvas>
+        <canvas id="symbol-layer" aria-label="元の黒字が透ける少し太い半透明の色線。Lは赤、Hは青、Cは水色、Wはオレンジ"></canvas>
         <canvas id="ink" aria-label="天気図の色塗り面"></canvas>
       </div>
     </div>

@@ -71,11 +71,12 @@ for (const change of [
   (m) => { m.symbols[0].strokes[0].points[0][1] = NaN; }
 ]) { const bad = structuredClone(marks); change(bad); assert.throws(() => analysis.validateSymbols(bad, chart)); }
 const symbolStrokes = [];
-const symbolCtx = { save(){}, restore(){}, beginPath(){}, moveTo(){}, lineTo(){}, stroke(){symbolStrokes.push({ color:this.strokeStyle, width:this.lineWidth, composite:this.globalCompositeOperation });}, fill(){throw Error("symbol background fill forbidden");}, fillRect(){throw Error("symbol rectangle fill forbidden");} };
+const symbolCtx = { save(){}, restore(){}, beginPath(){}, moveTo(){}, lineTo(){}, stroke(){symbolStrokes.push({ color:this.strokeStyle, width:this.lineWidth, composite:this.globalCompositeOperation, alpha:this.globalAlpha });}, fill(){throw Error("symbol background fill forbidden");}, fillRect(){throw Error("symbol rectangle fill forbidden");} };
 analysis.drawSymbols(symbolCtx, marks);
 assert.equal(symbolStrokes.length, marks.symbols.reduce((n,s) => n+s.strokes.length,0));
-assert.ok(symbolStrokes.every(s => Object.values(analysis.symbolPalette).includes(s.color) && s.composite === "source-over" && s.width <= 4));
-console.log("CENTER_SYMBOL_COLORS_OK fixed_glyphs=50 both_panels=checked source_binding=checked background_fill=absent malformed_data=blocked");
+assert.ok(symbolStrokes.every(s => Object.values(analysis.symbolPalette).includes(s.color) && s.composite === "source-over" && s.alpha === 0.5));
+assert.deepEqual(symbolStrokes.map(s=>s.width), marks.symbols.flatMap(s=>s.strokes.map(stroke=>stroke.width_px+1.5)), "color extends slightly beyond original glyph strokes");
+console.log("CENTER_SYMBOL_COLORS_OK fixed_glyphs=50 both_panels=checked source_binding=checked original_black=visible opacity=50_percent stroke_expansion=1.5px background_fill=absent malformed_data=blocked");
 const pole = [1400, -300];
 function panel(radii, bend = 0) {
   return { pole, curves: radii.map((radius) => Array.from({ length: 81 }, (_, i) => {
@@ -103,6 +104,33 @@ for (const [name, index] of [["troughs", 1]]) {
   for (const curve of result[name]) for (const [x, y] of curve) assert.ok(x >= left && x <= right && y >= top && y <= bottom, "candidate must stay inside its pressure panel");
 }
 console.log("TROUGH_GEOMETRY_OK synthetic_bends=checked insufficient_data=checked source_binding=checked reviewed_chart=checked");
+for (const points of [result.troughs[0], [[100,100],[100,200],[200,200]], [[100,100],[100,200]]]) {
+  const input = structuredClone(points), paths = [];
+  let segments, start, previous, saved;
+  const ctx = { globalAlpha: 1, save(){ saved = this.globalAlpha; }, restore(){ this.globalAlpha = saved; },
+    beginPath(){ segments = []; }, moveTo(x,y){ start = previous = [x,y]; },
+    bezierCurveTo(x1,y1,x2,y2,x,y){ const end=[x,y]; segments.push({start:previous,c1:[x1,y1],c2:[x2,y2],end}); previous=end; },
+    lineTo(){ throw Error("troughs must use curves, not straight vertices"); },
+    stroke(){ paths.push({start,segments,color:this.strokeStyle,width:this.lineWidth,alpha:this.globalAlpha}); }
+  };
+  analysis.drawTroughs(ctx,[points]);
+  assert.deepEqual(points,input,"display smoothing must not change analysis anchors");
+  assert.equal(paths.length,2); assert.equal(ctx.globalAlpha,1);
+  assert.ok(paths.every(p=>p.color==="#f02020" && p.width===4 && p.alpha===0.85));
+  assert.equal(paths[0].segments.length,paths[1].segments.length);
+  const vertices=paths.map(p=>[p.start,...p.segments.map(s=>s.end)]);
+  const centers=vertices[0].map((p,i)=>p.map((v,k)=>(v+vertices[1][i][k])/2));
+  for (const anchor of points) assert.ok(centers.some(p=>Math.hypot(p[0]-anchor[0],p[1]-anchor[1])<1e-7),"curved center must pass through every original anchor");
+  for (const [i,p] of vertices[0].entries()) assert.ok(Math.abs(Math.hypot(p[0]-vertices[1][i][0],p[1]-vertices[1][i][1])-10)<1e-7,"double-line separation stays ten pixels");
+  for (const path of paths) for (const [i,s] of path.segments.entries()) {
+    assert.ok([s.start,s.c1,s.c2,s.end].flat().every(Number.isFinite));
+    if (i) {
+      const before=path.segments[i-1],u=before.end.map((v,k)=>v-before.c2[k]),v=s.c1.map((n,k)=>n-s.start[k]);
+      assert.ok(Math.abs(u[0]*v[1]-u[1]*v[0])<1e-6 && u[0]*v[0]+u[1]*v[1]>0,"no corner or reversal at a curve join");
+    }
+  }
+}
+console.log("TROUGH_CURVES_OK anchors=preserved shared_tangents=continuous double_line_spacing=10px color=red straight_and_bent_and_reviewed=checked");
 const wind = JSON.parse(fs.readFileSync(path.join(root, "wind-bands.json")));
 analysis.validateWindBands(wind, chart);
 for (const key of ["source_sha256", "image_sha256", "observation_time", "width", "height", "pressure_hpa", "unit"]) assert.throws(() => analysis.validateWindBands({ ...wind, [key]: "mismatch" }, chart));
