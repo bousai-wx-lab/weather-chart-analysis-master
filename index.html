@@ -8,11 +8,11 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=1c855a3deab1af20">
-  <script src="analysis.js?v=d16030f42bac1f75" defer></script>
+  <link rel="stylesheet" href="styles.css?v=8866917053078e8d">
+  <script src="analysis.js?v=b38207fda606cfbf" defer></script>
   <script src="geography.js?v=acb1baa814de2081" defer></script>
   <script src="catalog.js?v=9d1519ba693ab9cf" defer></script>
-  <script src="app.js?v=4c4f8ee59ed035a7" defer></script>
+  <script src="app.js?v=b3553c8319eaa04a" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -67,7 +67,11 @@
       </article>
       <article class="layer-tool" data-layer="trough">
         <div class="layer-row"><button type="button" id="trough" class="layer-toggle" aria-pressed="false" disabled>トラフ</button><button type="button" class="layer-detail-button" data-layer-detail="trough" aria-label="トラフの詳細" aria-expanded="false" aria-controls="detail-trough">詳細 <span aria-hidden="true">⌄</span></button></div>
-        <div id="detail-trough" class="layer-details" hidden><span class="legend trough-key">赤い二重線 · 500hPa</span><p class="gesture-note">等高度線の曲がりからトラフを推定します。</p></div>
+        <div id="detail-trough" class="layer-details" hidden><span class="legend trough-key">赤い二重線 · 500hPa</span><p class="gesture-note">この原図の等高度線の谷を確認した4本。短い波と低気圧の周りも含みます。<br><a href="https://www.jma.go.jp/jma/kishou/know/expert/pdf/kaisetsu_jikkyo.pdf#page=11" target="_blank" rel="noopener noreferrer">解析の見方（気象庁）</a></p></div>
+      </article>
+      <article class="layer-tool" data-layer="ridge">
+        <div class="layer-row"><button type="button" id="ridge" class="layer-toggle" aria-pressed="false" disabled>リッジ</button><button type="button" class="layer-detail-button" data-layer-detail="ridge" aria-label="リッジの詳細" aria-expanded="false" aria-controls="detail-ridge">詳細 <span aria-hidden="true">⌄</span></button></div>
+        <div id="detail-ridge" class="layer-details" hidden><span class="legend ridge-key"><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><path d="M1 6L5 2L9 10L13 2L17 10L23 4" fill="none" stroke="#2563eb" stroke-width="2"/></svg>青いジグザグ線 · 500hPa</span><p class="gesture-note">この原図の等高度線の尾根を確認した2本です。</p></div>
       </article>
       </div><div class="layer-group" data-layer-group><h3>共通 <span>上段・下段</span></h3>      <article class="layer-tool" data-layer="symbols">
         <div class="layer-row"><button type="button" id="symbol-color" class="layer-toggle" aria-pressed="false" disabled>L・H・C・Wの文字</button><button type="button" class="layer-detail-button" data-layer-detail="symbols" aria-label="L・H・C・Wの文字の詳細" aria-expanded="false" aria-controls="detail-symbols">詳細 <span aria-hidden="true">⌄</span></button></div>
@@ -133,7 +137,7 @@
         <img id="chart" src="assets/aupq35.png" alt="気象庁AUPQ35。2026年10月2日00UTCの300hPaと500hPaの高度・気温・風の実況図。上段は300hPa、下段は500hPa。" draggable="false">
         <canvas id="geography-layer" aria-label="陸海の模様・標高・地形の陰影・参考衛星画像"></canvas>
         <canvas id="wind-layer" aria-label="300hPa等風速線に沿った緑色の塗り分け"></canvas>
-        <canvas id="analysis-layer" aria-label="500hPaのトラフ"></canvas>
+        <canvas id="analysis-layer" aria-label="500hPaのトラフは赤い二重曲線、リッジは青いジグザグ線"></canvas>
         <canvas id="jet-layer" aria-label="300hPaの強風帯の中心を流れに沿ってたどる赤い矢印"></canvas>
         <canvas id="temperature-layer" aria-label="300hPaの−27から−51℃、500hPaの−3から−30℃の気温線。暖かい薄い青から寒い濃い紫"></canvas>
         <canvas id="symbol-layer" aria-label="元の黒字が透ける少し太い半透明の色線。Lは赤、Hは青、Cは水色、Wはオレンジ"></canvas>

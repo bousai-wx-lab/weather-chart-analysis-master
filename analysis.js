@@ -1,57 +1,41 @@
 "use strict";
-// Height-contour trough candidates and wind-band centerlines on one reviewed chart.
+// Review-bound height axes and wind-band centerlines on one chart.
 const ChartAnalysis = (() => {
-  const radial = (point, pole) => ({ angle: Math.atan2(point[0] - pole[0], point[1] - pole[1]), radius: Math.hypot(point[0] - pole[0], point[1] - pole[1]) });
-  const cartesian = (angle, radius, pole) => [pole[0] + radius * Math.sin(angle), pole[1] + radius * Math.cos(angle)];
   function validate(data, chart) {
     if (data.schema_version !== 1 || data.source_sha256 !== chart.source_sha256 || data.image_sha256 !== chart.image_sha256 || data.observation_time !== chart.observation_time || data.width !== chart.width || data.height !== chart.height || !Array.isArray(data.panels) || data.panels.length !== 2) throw new Error("解析資料が原図と一致しません");
     for (const [index, panel] of data.panels.entries()) {
       if (panel.pressure_hpa !== [300, 500][index] || panel.bounds.length !== 4 || panel.pole.length !== 2 || ![...panel.bounds, ...panel.pole].every(Number.isFinite) || !Array.isArray(panel.curves) || panel.curves.length > 100) throw new Error("解析資料の形式を確認できません");
       for (const curve of panel.curves) if (!Array.isArray(curve) || curve.length < 2 || curve.length > 1500 || !curve.every((p) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite) && p[0] >= 0 && p[0] <= data.width && p[1] >= 0 && p[1] <= data.height)) throw new Error("解析資料の線を確認できません");
     }
+    if (data.height_axes) validateHeightAxes(data);
     return data;
   }
-  function profiles(panel) {
-    return panel.curves.filter((curve) => Math.hypot(curve[0][0] - curve.at(-1)[0], curve[0][1] - curve.at(-1)[1]) > 40)
-      .map((curve) => curve.map((p) => radial(p, panel.pole)))
-      .filter((curve) => Math.max(...curve.map((p) => p.angle)) - Math.min(...curve.map((p) => p.angle)) > 0.48);
-  }
-  function crossing(curve, angle) {
-    const radii = [];
-    for (let i = 1; i < curve.length; i++) {
-      const a = curve[i - 1], b = curve[i];
-      if ((a.angle <= angle && angle < b.angle) || (b.angle <= angle && angle < a.angle)) radii.push(a.radius + (b.radius - a.radius) * (angle - a.angle) / (b.angle - a.angle));
-    }
-    return radii.length ? Math.max(...radii) : null;
-  }
-  function troughs(panel) {
-    const peaks = [];
-    for (const [curveIndex, curve] of profiles(panel).entries()) {
-      const samples = [];
-      for (let angle = -1.05; angle <= 0.5; angle += 0.012) {
-        const radius = crossing(curve, angle);
-        if (radius !== null) samples.push({ angle, radius });
+  function validateHeightAxes(data) {
+    const reviewed = data.height_axes, panel = data.panels[1];
+    if (!reviewed || reviewed.pressure_hpa !== 500 || panel.pressure_hpa !== 500 || !Array.isArray(reviewed.axes) || !reviewed.axes.length || reviewed.axes.length > 20) throw new Error("トラフ・リッジの資料を確認できません");
+    const ids = new Set(), [left, top, right, bottom] = panel.bounds;
+    const validPoint = p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite) && left <= p[0] && p[0] <= right && top <= p[1] && p[1] <= bottom;
+    const distanceToSegment = (p,a,b) => {
+      const dx=b[0]-a[0],dy=b[1]-a[1],length=dx*dx+dy*dy;
+      const t=length ? Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/length)) : 0;
+      return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);
+    };
+    for (const axis of reviewed.axes) {
+      if (typeof axis.id !== "string" || !/^[a-z-]{1,40}$/.test(axis.id) || ids.has(axis.id) || !["trough","ridge"].includes(axis.kind) || !Array.isArray(axis.points) || axis.points.length < 2 || axis.points.length > 100 || !axis.points.every((p,i) => validPoint(p) && (!i || Math.hypot(p[0]-axis.points[i-1][0],p[1]-axis.points[i-1][1]) > 1)) || !Array.isArray(axis.contour_crossings) || axis.contour_crossings.length < 2 || axis.contour_crossings.length > 50) throw new Error("トラフ・リッジの軸が不正です");
+      ids.add(axis.id);
+      const contours = new Set();
+      for (const crossing of axis.contour_crossings) {
+        const curve = panel.curves[crossing.curve_index];
+        if (!Number.isInteger(crossing.curve_index) || !curve || !validPoint(crossing.point) || !axis.points.some(p => Math.hypot(p[0]-crossing.point[0],p[1]-crossing.point[1]) < 0.01) || !curve.slice(1).some((p,i) => distanceToSegment(crossing.point,curve[i],p) < 0.01)) throw new Error("解析軸と原図の等高度線が一致しません");
+        contours.add(crossing.curve_index);
       }
-      for (let i = 8; i < samples.length - 8; i++) {
-        const p = samples[i], left = samples[i - 8], right = samples[i + 8];
-        if (right.angle - left.angle > 0.20) continue;
-        const local = samples.slice(i - 8, i + 9);
-        if (p.radius !== Math.max(...local.map((v) => v.radius)) || p.radius - Math.max(left.radius, right.radius) < 7) continue;
-        peaks.push({ ...p, curveIndex });
-        i += 8;
-      }
+      if (contours.size < 2) throw new Error("解析軸の等高度線を確認できません");
     }
-    // Require bends on at least three distinct open contours, across 90 pixels.
-    const groups = [];
-    for (const peak of peaks.sort((a, b) => a.radius - b.radius)) {
-      const group = groups.find((g) => Math.abs(g.at(-1).angle - peak.angle) < 0.18 && peak.radius - g.at(-1).radius < 210);
-      if (group) group.push(peak); else groups.push([peak]);
-    }
-    return groups.filter((g) => new Set(g.map((p) => p.curveIndex)).size >= 3 && g.at(-1).radius - g[0].radius >= 90)
-      .map((g) => g.map((p) => cartesian(p.angle, p.radius, panel.pole)));
+    return reviewed;
   }
   function analyze(data, wind, guides) {
-    return { troughs: troughs(data.panels[1]), jets: wind && guides ? jets(wind, guides) : [] };
+    const axes = validateHeightAxes(data).axes;
+    return { troughs: axes.filter(a => a.kind === "trough").map(a => a.points), ridges: axes.filter(a => a.kind === "ridge").map(a => a.points), jets: wind && guides ? jets(wind, guides) : [] };
   }
   const windPalette = ["#dcfce7", "#a7edbc", "#65d58d", "#2aaf63", "#087c3d"];
   function validateWindBands(data, chart) {
@@ -296,6 +280,35 @@ const ChartAnalysis = (() => {
     }
     ctx.restore();
   }
-  return { validate, analyze, troughs, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs };
+  function drawRidges(ctx, curves) {
+    ctx.save(); ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 4;
+    ctx.globalAlpha = 0.85; ctx.lineCap = "round"; ctx.lineJoin = "miter";
+    for (const points of curves) {
+      if (points.length < 2) continue;
+      const samples = []; let distance = 0;
+      for (const [index,{start,c1,c2,end}] of isothermSegments(points).entries()) {
+        const steps = Math.max(2,Math.ceil((Math.hypot(c1[0]-start[0],c1[1]-start[1])+Math.hypot(c2[0]-c1[0],c2[1]-c1[1])+Math.hypot(end[0]-c2[0],end[1]-c2[1]))/2));
+        for (let i=Number(index>0);i<=steps;i++) {
+          const t=i/steps,u=1-t;
+          const p=start.map((v,k)=>u*u*u*v+3*u*u*t*c1[k]+3*u*t*t*c2[k]+t*t*t*end[k]);
+          if (samples.length) distance+=Math.hypot(p[0]-samples.at(-1).point[0],p[1]-samples.at(-1).point[1]);
+          samples.push({point:p,distance});
+        }
+      }
+      ctx.beginPath(); ctx.moveTo(...points[0]);
+      let index=1,sign=1;
+      // Equal distances along the curved axis keep the zigzag evenly spaced.
+      for (let along=14;along<distance;along+=14) {
+        while (samples[index].distance<along) index++;
+        const a=samples[index-1],b=samples[index],dx=b.point[0]-a.point[0],dy=b.point[1]-a.point[1];
+        const length=Math.hypot(dx,dy),t=(along-a.distance)/(b.distance-a.distance);
+        ctx.lineTo(a.point[0]+t*dx-sign*dy*6/length,a.point[1]+t*dy+sign*dx*6/length);
+        sign=-sign;
+      }
+      ctx.lineTo(...points.at(-1)); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  return { validate, validateHeightAxes, analyze, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges };
 })();
 if (typeof module !== "undefined") module.exports = ChartAnalysis;

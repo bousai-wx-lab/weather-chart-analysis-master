@@ -40,6 +40,7 @@ let windBands = null;
 let showWind = false;
 let candidates = null;
 let showTrough = false;
+let showRidge = false;
 let showJet = false;
 let analysisError = "";
 const history = [];
@@ -68,6 +69,7 @@ const analysisTools = [
   { id: "jet", button: "jet", label: "強風軸", plane: "300hPa", setEnabled: on => { showJet = on; } },
   { id: "temperature500", button: "temperature500", label: "気温線", plane: "500hPa", setEnabled: on => { showTemperature500 = on; } },
   { id: "trough", button: "trough", label: "トラフ", plane: "500hPa", setEnabled: on => { showTrough = on; } },
+  { id: "ridge", button: "ridge", label: "リッジ", plane: "500hPa", setEnabled: on => { showRidge = on; } },
   { id: "symbols", button: "symbol-color", label: "L・H・C・Wの文字", plane: "300/500hPa", setEnabled: on => { showSymbols = on; } },
   { id: "geography", button: "geography-toggle", label: "陸海・地形", plane: "300/500hPa", setEnabled: on => { showGeography = on; } }
 ];
@@ -129,7 +131,7 @@ function controls() {
   byId("redo").disabled = !future.length;
   byId("clear").disabled = !paintCount;
   byId("save").disabled = !ready || featuresLoading;
-  for (const id of ["trough", "jet"]) byId(id).disabled = !ready || !candidates;
+  for (const id of ["trough", "ridge", "jet"]) byId(id).disabled = !ready || !candidates;
   byId("wind").disabled = !ready || !windBands;
   byId("wind").setAttribute("aria-pressed", String(Boolean(showWind && windBands)));
   byId("wind").textContent = "風速の色塗り";
@@ -141,7 +143,7 @@ function controls() {
   byId("temperature").textContent = "気温線";
   byId("temperature500").disabled = !ready || !isotherms;
   byId("temperature500").setAttribute("aria-pressed", String(Boolean(showTemperature500 && isotherms)));
-  byId("original").disabled = !showWind && !showTrough && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
+  byId("original").disabled = !showWind && !showTrough && !showRidge && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
   byId("geography-toggle").disabled = byId("geography-opacity").disabled = !ready || !geography;
   byId("geography-toggle").setAttribute("aria-pressed", String(Boolean(showGeography && geography)));
   byId("geography-opacity-value").textContent = `${Math.round(geographyOpacity * 100)}%`;
@@ -158,11 +160,13 @@ function controls() {
   byId("relief-note").hidden = !isTerrain || geographyStyle === "elevation";
   for (const swatch of byId("elevation-legend").querySelectorAll("i")) swatch.style.opacity = String(geographyOpacity);
   byId("trough").setAttribute("aria-pressed", String(Boolean(showTrough && candidates)));
+  byId("ridge").setAttribute("aria-pressed", String(Boolean(showRidge && candidates)));
   byId("jet").setAttribute("aria-pressed", String(Boolean(showJet && candidates)));
   byId("zoom-in").disabled = !ready || (!fitView && zoomFactor >= 4);
   byId("zoom-out").disabled = !ready || (!fitView && zoomFactor <= 0.25);
   paper.dataset.strokes = String(history.length);
   paper.dataset.trough = String(Boolean(showTrough && candidates));
+  paper.dataset.ridge = String(Boolean(showRidge && candidates));
   paper.dataset.jet = String(Boolean(showJet && candidates));
   paper.dataset.wind = String(Boolean(showWind && windBands));
   paper.dataset.symbols = String(Boolean(showSymbols && symbols));
@@ -200,6 +204,7 @@ function drawAnalysis() {
   if (!candidates) return;
   if (showJet) ChartAnalysis.drawJetAxes(jetContext, candidates.jets, windBands.bounds);
   if (showTrough) ChartAnalysis.drawTroughs(analysisContext, candidates.troughs);
+  if (showRidge) ChartAnalysis.drawRidges(analysisContext, candidates.ridges);
 }
 const windLabels = ["40–60 kt", "60–80 kt", "80–100 kt", "100–120 kt", "120 kt以上"];
 for (const [index, color] of ChartAnalysis.windPalette.entries()) {
@@ -243,13 +248,14 @@ byId("temperature500").addEventListener("click", () => {
   if (!ready || !isotherms) return;
   showTemperature500 = !showTemperature500; drawTemperature(); controls();
 });
-for (const id of ["analyze", "trough", "jet", "original"]) byId(id).addEventListener("click", () => {
+for (const id of ["analyze", "trough", "ridge", "jet", "original"]) byId(id).addEventListener("click", () => {
   if (!ready || byId(id).disabled) return;
   if (id === "analyze") {
     const on = byId(id).getAttribute("aria-pressed") !== "true";
     for (const tool of analysisTools) if (!byId(tool.button).disabled) tool.setEnabled(on);
   }
   if (id === "trough") showTrough = !showTrough;
+  if (id === "ridge") showRidge = !showRidge;
   if (id === "jet") showJet = !showJet;
   if (id === "original") for (const tool of analysisTools) tool.setEnabled(false);
   drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); controls();
@@ -447,7 +453,7 @@ byId("save").addEventListener("click", () => {
   ctx.globalCompositeOperation = "multiply"; ctx.drawImage(ink, 0, 0); ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = "#243247"; ctx.font = "24px sans-serif";
   ctx.fillText(`出典：気象庁 ${selected.product.code}（画像化） / ${chartLabel}`, 26, ink.height + 38, output.width - 52);
-  ctx.fillText(`解析案：${showTrough ? "500hPaトラフ " : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
+  ctx.fillText(`解析案：${showTrough ? "500hPaトラフ " : ""}${showRidge ? "500hPaリッジ " : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
   if (showSymbols && symbols) for (const [index, letter] of ["L", "H", "C", "W"].entries()) {
     ctx.fillStyle = ChartAnalysis.symbolPalette[letter]; ctx.fillText(letter, 1610 + index * 90, ink.height + 76);
   }
@@ -547,7 +553,7 @@ async function checkedImage(path, expectedHash, width, height, signal, retry = f
 function keepDrawing() {
   if (!ready || !currentSelection) return;
   if (pointer !== null) finish({ pointerId: pointer });
-  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500 });
+  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500 });
 }
 function setOptions(select, records, value) {
   select.replaceChildren();
@@ -585,7 +591,7 @@ async function loadSelection(retry = false) {
   history.length = future.length = 0;
   const state = drawingStates.get(selected.key);
   if (state) { history.push(...state.history); future.push(...state.future); }
-  showWind = state?.showWind || false; showTrough = state?.showTrough || false; showJet = state?.showJet || false;
+  showWind = state?.showWind || false; showTrough = state?.showTrough || false; showRidge = state?.showRidge || false; showJet = state?.showJet || false;
   showSymbols = state?.showSymbols ?? true; showGeography = state?.showGeography ?? true;
   showTemperature = state?.showTemperature ?? true;
   showTemperature500 = state?.showTemperature500 ?? true;
@@ -645,6 +651,7 @@ async function loadFeatures(selected, revision, signal) {
       try {
         const [contours, wind, guides] = await Promise.all(["contours.json", "wind-bands.json", "jet-guides.json"].map(path => fetchJSON(path, signal)));
         const checkedContours = ChartAnalysis.validate(contours, data), checkedWind = ChartAnalysis.validateWindBands(wind, data);
+        ChartAnalysis.validateHeightAxes(checkedContours);
         const checkedGuides = ChartAnalysis.validateJetGuides(guides, data, checkedWind);
         const checkedCandidates = ChartAnalysis.analyze(checkedContours, checkedWind, checkedGuides);
         if (current()) { windBands = checkedWind; candidates = checkedCandidates; drawAnalysis(); drawWind(); controls(); }

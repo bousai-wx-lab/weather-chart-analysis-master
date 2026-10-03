@@ -53,6 +53,7 @@ h2 { margin: 0 0 9px; font-size: 12px; color: #164b68; }
 .legend { display: inline-flex; align-items: center; gap: 6px; }
 .legend::before { content: ''; width: 22px; height: 0; border-top: 3px solid #f02020; }
 .trough-key::before { border-top: 5px double #f02020; }
+.ridge-key::before { display: none; }
 .wind-button { width: 100%; color: #17683e; border-color: #50a97b; font-weight: 600; }
 .wind-button[aria-pressed='true'] { color: #fff; background: #17683e; border-color: #17683e; box-shadow: none; }
 .wind-button[aria-pressed='true']:hover { background: #125431; }

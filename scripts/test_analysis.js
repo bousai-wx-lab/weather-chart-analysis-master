@@ -77,34 +77,31 @@ assert.equal(symbolStrokes.length, marks.symbols.reduce((n,s) => n+s.strokes.len
 assert.ok(symbolStrokes.every(s => Object.values(analysis.symbolPalette).includes(s.color) && s.composite === "source-over" && s.alpha === 0.5));
 assert.deepEqual(symbolStrokes.map(s=>s.width), marks.symbols.flatMap(s=>s.strokes.map(stroke=>stroke.width_px+1.5)), "color extends slightly beyond original glyph strokes");
 console.log("CENTER_SYMBOL_COLORS_OK fixed_glyphs=50 both_panels=checked source_binding=checked original_black=visible opacity=50_percent stroke_expansion=1.5px background_fill=absent malformed_data=blocked");
-const pole = [1400, -300];
-function panel(radii, bend = 0) {
-  return { pole, curves: radii.map((radius) => Array.from({ length: 81 }, (_, i) => {
-    const angle = -0.8 + i * 0.02;
-    const r = radius + bend * Math.exp(-angle * angle / 0.02);
-    return [pole[0] + Math.sin(angle) * r, pole[1] + Math.cos(angle) * r];
-  })) };
-}
-// Independent geometric expectations in polar coordinates, not chart snapshots.
-assert.equal(analysis.troughs(panel([600, 660, 720, 780, 840])).length, 0);
-const troughs = analysis.troughs(panel([600, 660, 720, 780, 840], 50));
-assert.equal(troughs.length, 1);
-assert.equal(troughs[0].length, 5);
-for (const point of troughs[0]) assert.ok(Math.abs(point[0] - pole[0]) < 12, "trough must follow known southern bends");
-assert.equal(analysis.troughs(panel([600, 660], 50)).length, 0, "two contours are insufficient");
-assert.deepEqual(analysis.analyze({ panels: [{ pole, curves: [] }, { pole, curves: [] }] }), { troughs: [], jets: [] });
+assert.throws(() => analysis.analyze({panels:[{}, {pressure_hpa:500}]}), "missing reviewed height axes must not silently fall back to an incomplete heuristic");
 analysis.validate(actual, chart);
 for (const key of ["source_sha256", "image_sha256", "observation_time", "width", "height"]) assert.throws(() => analysis.validate({ ...actual, [key]: "mismatch" }, chart));
 const invalid = structuredClone(actual); invalid.panels[0].curves[0][0][0] = Infinity;
 assert.throws(() => analysis.validate(invalid, chart));
 const result = analysis.analyze(actual);
-assert.equal(result.troughs.length, 1); assert.equal(result.jets.length, 0, "height contours alone must not create a strong-wind axis");
-for (const [name, index] of [["troughs", 1]]) {
+assert.equal(result.troughs.length, 4); assert.equal(result.ridges.length, 2); assert.equal(result.jets.length, 0, "height contours alone must not create a strong-wind axis");
+for (const [name, index] of [["troughs", 1],["ridges",1]]) {
   const [left, top, right, bottom] = actual.panels[index].bounds;
   for (const curve of result[name]) for (const [x, y] of curve) assert.ok(x >= left && x <= right && y >= top && y <= bottom, "candidate must stay inside its pressure panel");
 }
-console.log("TROUGH_GEOMETRY_OK synthetic_bends=checked insufficient_data=checked source_binding=checked reviewed_chart=checked");
-for (const points of [result.troughs[0], [[100,100],[100,200],[200,200]], [[100,100],[100,200]]]) {
+assert.deepEqual(actual.height_axes.axes.filter(a=>a.kind==="trough").map(a=>a.id),["west-short","north-short","low-southwest","japan"]);
+assert.deepEqual(actual.height_axes.axes.filter(a=>a.kind==="ridge").map(a=>a.id),["west-ridge","east-ridge"]);
+assert.equal(actual.height_axes.axes[0].contour_crossings.length,2,"short waves are no longer excluded by a three-open-contour condition");
+assert.ok(actual.height_axes.axes[2].contour_crossings.some(h=>h.curve_index===2),"the low-adjacent trough includes a closed height contour");
+for (const change of [
+ d=>{delete d.height_axes;},d=>{d.height_axes.pressure_hpa=300;},
+ d=>{d.height_axes.axes[0].kind="jet";},d=>{d.height_axes.axes[0].points[0][1]=200;},
+ d=>{d.height_axes.axes[0].points[0][0]=NaN;},d=>{d.height_axes.axes[0].contour_crossings[0].curve_index=100;},
+ d=>{d.height_axes.axes[0].contour_crossings[0].point[0]+=20;},
+ d=>{d.height_axes.axes.push(structuredClone(d.height_axes.axes[0]));},
+ d=>{d.panels[1].curves[7]=d.panels[1].curves[7].map(p=>[p[0]+30,p[1]]);}
+]) {const bad=structuredClone(actual);change(bad);assert.throws(()=>analysis.validateHeightAxes(bad));}
+console.log("HEIGHT_AXES_OK reviewed_troughs=4 reviewed_ridges=2 short_waves=covered closed_low=covered source_contour_anchors=checked malformed_and_missing=blocked");
+for (const points of [...result.troughs, [[100,100],[100,200],[200,200]], [[100,100],[100,200]]]) {
   const input = structuredClone(points), paths = [];
   let segments, start, previous, saved;
   const ctx = { globalAlpha: 1, save(){ saved = this.globalAlpha; }, restore(){ this.globalAlpha = saved; },
@@ -131,6 +128,19 @@ for (const points of [result.troughs[0], [[100,100],[100,200],[200,200]], [[100,
   }
 }
 console.log("TROUGH_CURVES_OK anchors=preserved shared_tangents=continuous double_line_spacing=10px color=red straight_and_bent_and_reviewed=checked");
+for (const points of [...result.ridges,[[100,100],[212,100]]]) {
+ const paths=[];let current,saved;
+ const ctx={globalAlpha:1,save(){saved=this.globalAlpha;},restore(){this.globalAlpha=saved;},beginPath(){current=[];},moveTo(x,y){current.push([x,y]);},lineTo(x,y){current.push([x,y]);},stroke(){paths.push({points:current,color:this.strokeStyle,width:this.lineWidth,alpha:this.globalAlpha});}};
+ analysis.drawRidges(ctx,[points]);
+ assert.equal(paths.length,1);assert.equal(ctx.globalAlpha,1);
+ const path=paths[0];assert.equal(path.color,"#2563eb");assert.equal(path.width,4);assert.equal(path.alpha,0.85);
+ assert.deepEqual(path.points[0],points[0]);assert.deepEqual(path.points.at(-1),points.at(-1));
+ assert.ok(path.points.flat().every(Number.isFinite));assert.ok(path.points.length>4);
+ if (points[0][0]===100) for (const [i,p] of path.points.slice(1,-1).entries()) {
+  assert.ok(Math.abs(p[0]-(114+i*14))<1e-7);assert.ok(Math.abs(p[1]-(100+(i%2 ? -6:6)))<1e-7,"ridge must alternate across the axis in a true zigzag");
+ }
+}
+console.log("RIDGE_ZIGZAG_OK blue=checked alternating_teeth=checked spacing=14px amplitude=6px endpoints=preserved actual_branches=checked");
 const wind = JSON.parse(fs.readFileSync(path.join(root, "wind-bands.json")));
 analysis.validateWindBands(wind, chart);
 for (const key of ["source_sha256", "image_sha256", "observation_time", "width", "height", "pressure_hpa", "unit"]) assert.throws(() => analysis.validateWindBands({ ...wind, [key]: "mismatch" }, chart));
