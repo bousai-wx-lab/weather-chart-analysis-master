@@ -12,8 +12,8 @@
   <script src="analysis.js?v=6e210e2a68561306" defer></script>
   <script src="geography.js?v=acb1baa814de2081" defer></script>
   <script src="catalog.js?v=16658648a095e358" defer></script>
-  <script src="low-level.js?v=6b2e4233c9ae8a57" defer></script>
-  <script src="app.js?v=a7e41f8b69f40fb3" defer></script>
+  <script src="low-level.js?v=d569340c0fa3413a" defer></script>
+  <script src="app.js?v=1eef9cfaae2240fb" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -59,7 +59,8 @@
         <div class="layer-row"><button type="button" id="temperature" class="layer-toggle" aria-pressed="false" disabled>気温線</button><button type="button" class="layer-detail-button" data-layer-detail="temperature" aria-label="気温線の詳細" aria-expanded="false" aria-controls="detail-temperature">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-temperature" class="layer-details" hidden><div id="temperature-legend" class="temperature-legend" aria-label="300hPaの気温線。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−27〜−51℃の全5段階。原図の同じ気温の数字を滑らかにつなぐ補助線です。</p></div>
       </article>
-<article class="layer-tool" data-layer="trough700"><div class="layer-row"><button type="button" id="trough700" class="layer-toggle" aria-pressed="false" disabled>トラフ</button><button type="button" class="layer-detail-button" data-layer-detail="trough700" aria-label="トラフの詳細" aria-expanded="false" aria-controls="detail-trough700">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-trough700" class="layer-details" hidden><span class="legend trough-key">赤い二重線 · 700hPa</span><p class="gesture-note">この原図の等高度線で確認した2枝。固定図での近似で、すべての谷を網羅するものではありません。</p></div></article>
+<article class="layer-tool" data-layer="trough700"><div class="layer-row"><button type="button" id="trough700" class="layer-toggle" aria-pressed="false" disabled>トラフ</button><button type="button" class="layer-detail-button" data-layer-detail="trough700" aria-label="トラフの詳細" aria-expanded="false" aria-controls="detail-trough700">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-trough700" class="layer-details" hidden><span class="legend trough-key">赤い二重線 · 700hPa</span><p class="gesture-note">日本周辺の広い谷を4本に分けて表示します。</p></div></article>
+<article class="layer-tool" data-layer="ridge700"><div class="layer-row"><button type="button" id="ridge700" class="layer-toggle" aria-pressed="false" disabled>リッジ</button><button type="button" class="layer-detail-button" data-layer-detail="ridge700" aria-label="リッジの詳細" aria-expanded="false" aria-controls="detail-ridge700">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-ridge700" class="layer-details" hidden><span class="legend ridge-key">青いジグザグ線 · 700hPa</span><p class="gesture-note">日本に影響する西側・東側の尾根2本。</p></div></article>
 <article class="layer-tool" data-layer="cold700"><div class="layer-row"><button type="button" id="cold700" class="layer-toggle" aria-pressed="false" disabled>寒気の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="cold700" aria-label="寒気の色塗りの詳細" aria-expanded="false" aria-controls="detail-cold700">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-cold700" class="layer-details" hidden><div id="cold700-legend" class="cold-legend"></div><p class="gesture-note">指定温度以下を薄い水色から濃い紫で表示します。</p></div></article>
       <article class="layer-tool" data-layer="wind">
         <div class="layer-row"><button type="button" id="wind" class="layer-toggle" aria-pressed="false" disabled>風速の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="wind" aria-label="風速の色塗りの詳細" aria-expanded="false" aria-controls="detail-wind">詳細 <span aria-hidden="true">⌄</span></button></div>

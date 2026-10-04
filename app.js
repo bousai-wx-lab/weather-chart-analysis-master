@@ -43,7 +43,7 @@ const temperatureLayer = byId("temperature-layer");
 const temperatureContext = temperatureLayer.getContext("2d");
 let isotherms = null;
 let lowLevel = null;
-let showWet = true, showCold700 = false, showCold850 = false, showTrough700 = false;
+let showWet = true, showCold700 = false, showCold850 = false, showTrough700 = false, showRidge700 = false;
 let coldOpacity = .35;
 const isReviewed = selected => ["reviewed-aupq35","reviewed-aupq78"].includes(selected.variant.features);
 let showTemperature = true;
@@ -81,6 +81,7 @@ const analysisTools = [
   {id:"cold700",button:"cold700",label:"寒気の色塗り",plane:"700hPa",lowLevel:true,setEnabled:on=>{showCold700=on;}},
   {id:"cold850",button:"cold850",label:"寒気の色塗り",plane:"850hPa",lowLevel:true,setEnabled:on=>{showCold850=on;}},
   {id:"trough700",button:"trough700",label:"トラフ",plane:"700hPa",lowLevel:true,setEnabled:on=>{showTrough700=on;}},
+  {id:"ridge700",button:"ridge700",label:"リッジ",plane:"700hPa",lowLevel:true,setEnabled:on=>{showRidge700=on;}},
   { id: "temperature", button: "temperature", label: "気温線", plane: "300hPa", setEnabled: on => { showTemperature = on; } },
   { id: "wind", button: "wind", label: "風速の色塗り", plane: "300hPa", setEnabled: on => { showWind = on; } },
   { id: "jet", button: "jet", label: "強風軸", plane: "300hPa", setEnabled: on => { showJet = on; } },
@@ -274,12 +275,12 @@ function controls() {
   byId("temperature").textContent = "気温線";
   byId("temperature500").disabled = !ready || !isotherms;
   byId("temperature500").setAttribute("aria-pressed", String(Boolean(showTemperature500 && isotherms)));
-  for (const [id,on] of [["wet",showWet],["cold700",showCold700],["cold850",showCold850],["trough700",showTrough700]]) {
+  for (const [id,on] of [["wet",showWet],["cold700",showCold700],["cold850",showCold850],["trough700",showTrough700],["ridge700",showRidge700]]) {
     byId(id).disabled = !ready || !lowLevel; byId(id).setAttribute("aria-pressed",String(Boolean(lowLevel && on)));
   }
-  paper.dataset.wet = String(Boolean(lowLevel && showWet)); paper.dataset.cold850 = String(Boolean(lowLevel && showCold850)); paper.dataset.cold700 = String(Boolean(lowLevel && showCold700)); paper.dataset.trough700 = String(Boolean(lowLevel && showTrough700));
+  paper.dataset.wet = String(Boolean(lowLevel && showWet)); paper.dataset.cold850 = String(Boolean(lowLevel && showCold850)); paper.dataset.cold700 = String(Boolean(lowLevel && showCold700)); paper.dataset.trough700 = String(Boolean(lowLevel && showTrough700)); paper.dataset.ridge700 = String(Boolean(lowLevel && showRidge700));
   byId("cold-opacity-value").textContent = `${Math.round(coldOpacity*100)}%`;
-  byId("original").disabled = !(lowLevel && (showWet || showCold700 || showCold850 || showTrough700)) && !enabledOverlays().length && !showWind && !showTrough && !showRidge && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
+  byId("original").disabled = !(lowLevel && (showWet || showCold700 || showCold850 || showTrough700 || showRidge700)) && !enabledOverlays().length && !showWind && !showTrough && !showRidge && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
   byId("geography-toggle").disabled = byId("geography-opacity").disabled = !ready || !geography;
   byId("geography-toggle").setAttribute("aria-pressed", String(Boolean(showGeography && geography)));
   byId("geography-opacity-value").textContent = `${Math.round(geographyOpacity * 100)}%`;
@@ -342,6 +343,7 @@ function drawAnalysis() {
   if (showJet) ChartAnalysis.drawJetAxes(jetContext, candidates.jets, windBands.bounds);
   if (showTrough) ChartAnalysis.drawTroughs(analysisContext, candidates.troughs);
   if (lowLevel && showTrough700) ChartAnalysis.drawTroughs(analysisContext,lowLevel.panels[0].troughs.map(a=>a.points));
+  if (lowLevel && showRidge700) ChartAnalysis.drawRidges(analysisContext,lowLevel.panels[0].ridges.map(a=>a.points));
   if (showRidge) ChartAnalysis.drawRidges(analysisContext, candidates.ridges);
   drawOverlays();
 }
@@ -390,16 +392,16 @@ function temperatureLegends() {
     byId(plane?"detail-temperature500":"detail-temperature").querySelector("p").textContent=lowLevel?"原図の破線の上に細い半透明の色線を重ね、気温の数字を読める隙間を残します。":plane?"−3〜−30℃の全10段階。元の黒い破線が透けるように、細い半透明の色を重ねます。":"−27〜−51℃の全5段階。原図の同じ気温の数字を滑らかにつなぐ補助線です。";
   }
   byId("detail-trough").querySelector(".legend").textContent=`赤い二重線 · ${lowLevel?850:500}hPa`;
-  byId("detail-trough").querySelector("p").firstChild.textContent=lowLevel?"この原図の等高度線で確認した2枝。固定図での近似です。":"この原図の等高度線の谷を確認した4本。短い波と低気圧の周りも含みます。";
+  byId("detail-trough").querySelector("p").firstChild.textContent=lowLevel?"この原図の等高度線で確認した1本。固定図での近似です。":"この原図の等高度線の谷を確認した4本。短い波と低気圧の周りも含みます。";
   for (const [id,values] of [["cold700",[-15,-18,-21,-24,-27]],["cold850",[0,-3,-6,-9,-12]]]) {
     byId(`${id}-legend`).replaceChildren();
     for (const [i,v] of values.entries()) {const span=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=LowLevelAnalysis.coldColors[i];span.append(swatch,`${v}℃以下`);byId(`${id}-legend`).append(span);}
   }
 }
 temperatureLegends();
-for (const id of ["wet","cold700","cold850","trough700"]) byId(id).addEventListener("click",()=>{
+for (const id of ["wet","cold700","cold850","trough700","ridge700"]) byId(id).addEventListener("click",()=>{
   if (!ready || !lowLevel) return;
-  if(id==="wet")showWet=!showWet;if(id==="cold700")showCold700=!showCold700;if(id==="cold850")showCold850=!showCold850;if(id==="trough700")showTrough700=!showTrough700;drawWind();drawAnalysis();controls();
+  if(id==="wet")showWet=!showWet;if(id==="cold700")showCold700=!showCold700;if(id==="cold850")showCold850=!showCold850;if(id==="trough700")showTrough700=!showTrough700;if(id==="ridge700")showRidge700=!showRidge700;drawWind();drawAnalysis();controls();
 });
 byId("cold-opacity").addEventListener("input",event=>{coldOpacity=Number(event.target.value)/100;drawWind();controls();});
 function drawTemperature() {
@@ -626,7 +628,7 @@ byId("save").addEventListener("click", () => {
   ctx.globalCompositeOperation = "multiply"; ctx.drawImage(overlayLayer, 0, 0); ctx.drawImage(ink, 0, 0); ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = "#243247"; ctx.font = "24px sans-serif";
   ctx.fillText(`出典：気象庁 ${selected.product.code}（画像化） / ${chartLabel}`, 26, ink.height + 38, output.width - 52);
-  ctx.fillText(`解析案：${showTrough700 && lowLevel ? "700hPaトラフ " : ""}${showTrough ? (lowLevel?"850hPaトラフ ":"500hPaトラフ ") : ""}${showRidge ? "500hPaリッジ " : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough700 && !showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
+  ctx.fillText(`解析案：${showTrough700 && lowLevel ? "700hPaトラフ " : ""}${showTrough ? (lowLevel?"850hPaトラフ ":"500hPaトラフ ") : ""}${showRidge700 && lowLevel ? "700hPaリッジ " : ""}${showRidge ? "500hPaリッジ " : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough700 && !showRidge700 && !showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
   if (showSymbols && symbols) for (const [index, letter] of ["L", "H", "C", "W"].entries()) {
     ctx.fillStyle = ChartAnalysis.symbolPalette[letter]; ctx.fillText(letter, 1610 + index * 90, ink.height + 76);
   }
@@ -719,7 +721,7 @@ function initialize(selected) {
   const low=selected.variant.features==="reviewed-aupq78";
   for (const canvas of [jetLayer,geographyLayer,overlayLayer]) canvas.hidden = !reviewed || low;
   windLayer.setAttribute("aria-label",low?"700・850hPaの湿域と寒気の色塗り":"300hPa等風速線に沿った緑色の塗り分け");
-  analysisLayer.setAttribute("aria-label",low?"700・850hPaのトラフ、赤い二重曲線":"500hPaのトラフは赤い二重曲線、リッジは青いジグザグ線");
+  analysisLayer.setAttribute("aria-label",low?"700・850hPaのトラフ、赤い二重曲線。700hPaのリッジ、青いジグザグ線":"500hPaのトラフは赤い二重曲線、リッジは青いジグザグ線");
   temperatureLayer.setAttribute("aria-label",low?"700・850hPaの気温線。暖かい薄い青から寒い濃い紫":"300・500hPaの気温線。暖かい薄い青から寒い濃い紫");
   paper.style.aspectRatio = `${ink.width} / ${ink.height}`;
   ready = true; paper.hidden = false; paper.dataset.ready = "true"; paper.dataset.chart = selected.product.id; paper.dataset.source = selected.variant.id;
@@ -747,7 +749,7 @@ async function checkedImage(path, expectedHash, width, height, signal, retry = f
 function keepDrawing() {
   if (!ready || !currentSelection) return;
   if (pointer !== null) finish({ pointerId: pointer });
-  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, showWet, showCold700, showCold850, showTrough700, coldOpacity, overlayTarget, overlays: overlayState.map(layer => ({...layer})) });
+  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, showWet, showCold700, showCold850, showTrough700, showRidge700, coldOpacity, overlayTarget, overlays: overlayState.map(layer => ({...layer})) });
 }
 function setOptions(select, records, value) {
   select.replaceChildren();
@@ -790,7 +792,7 @@ async function loadSelection(retry = false) {
   byId("overlay-dialog").close(); selectedOverlay = null;
   overlayTarget = state?.overlayTarget || 500;
   if (state) { history.push(...state.history); future.push(...state.future); }
-  showWet=state?.showWet ?? true;showCold700=state?.showCold700 ?? false;showCold850=state?.showCold850 ?? false;showTrough700=state?.showTrough700 ?? false;coldOpacity=state?.coldOpacity ?? .35;byId("cold-opacity").value=String(Math.round(coldOpacity*100));
+  showWet=state?.showWet ?? true;showCold700=state?.showCold700 ?? false;showCold850=state?.showCold850 ?? false;showTrough700=state?.showTrough700 ?? false;showRidge700=state?.showRidge700 ?? false;coldOpacity=state?.coldOpacity ?? .35;byId("cold-opacity").value=String(Math.round(coldOpacity*100));
   showWind = state?.showWind || false; showTrough = state?.showTrough || false; showRidge = state?.showRidge || false; showJet = state?.showJet || false;
   showSymbols = state?.showSymbols ?? true; showGeography = state?.showGeography ?? true;
   showTemperature = state?.showTemperature ?? true;
