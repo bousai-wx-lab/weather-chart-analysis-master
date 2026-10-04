@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-04T05:20:55.706066+00:00",
+  "generated_at": "2026-10-04T09:28:17.460578+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -587,8 +587,8 @@
     },
     {
       "path": "feas50-analysis.json",
-      "bytes": 108396,
-      "sha256": "c44fe82bb3d8dcfeb917e583b68f9ed2f6bc2bcc1629ec244a15ee79ea731b32",
+      "bytes": 108940,
+      "sha256": "bc3a04061b1bffa7663870b54f289ea7c09629ef9f8bfc2025c46deddb4066d5",
       "mime_type": "application/json"
     },
     {
