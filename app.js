@@ -16,8 +16,10 @@ const overlayContext = overlayLayer.getContext("2d");
 let panelRegistration = null;
 let overlayError = "";
 let overlayTarget = 500;
-const newOverlayState = () => Object.fromEntries(ChartAnalysis.overlayTools.map(tool => [tool.id, { enabled: false, opacity: .6 }]));
-let overlayState = newOverlayState();
+let overlayState = [];
+let overlayView = "picker";
+let selectedOverlay = null;
+let selectedOverlayAnalysis = "jet";
 const windLayer = byId("wind-layer");
 const windContext = windLayer.getContext("2d");
 const geographyLayer = byId("geography-layer");
@@ -83,57 +85,115 @@ const analysisTools = [
 let activeOnly = false;
 let selectedDetail = null;
 
-const overlayTime = () => panelRegistration ? `${panelRegistration.observation_time.slice(0,10).replaceAll("-", "/")} ${panelRegistration.observation_time.slice(11,13)}Z` : "位置合わせを確認中";
-const enabledOverlays = () => ready && panelRegistration && candidates ? ChartAnalysis.overlayTools.filter(tool => overlayState[tool.id].enabled) : [];
-const overlayDescription = tool => `${tool.source_hpa}hPa ${tool.label} → ${tool.target_hpa}hPa`;
-for (const tool of ChartAnalysis.overlayTools) {
-  const article = document.createElement("article"); article.className = "overlay-tool layer-tool"; article.dataset.overlay = tool.id;
-  const button = document.createElement("button"); button.type = "button"; button.id = `overlay-${tool.id}`; button.className = "layer-toggle";
-  button.textContent = `${tool.source_hpa}hPaの${tool.label}`; button.setAttribute("aria-pressed", "false"); button.disabled = true;
-  button.addEventListener("click", () => {
-    if (!ready || !panelRegistration || !candidates || featuresLoading) return;
-    overlayState[tool.id].enabled = !overlayState[tool.id].enabled; drawOverlays(); controls();
-  });
-  const settings = document.createElement("div"); settings.className = "overlay-opacity"; settings.id = `overlay-settings-${tool.id}`; settings.hidden = true;
-  const label = document.createElement("label"); label.htmlFor = `overlay-opacity-${tool.id}`; label.textContent = "濃さ ";
-  const output = document.createElement("output"); output.id = `overlay-value-${tool.id}`; label.append(output);
-  const input = document.createElement("input"); input.type = "range"; input.id = label.htmlFor; input.min = "0"; input.max = "100"; input.step = "5"; input.value = "60";
-  input.setAttribute("aria-label", `${tool.target_hpa}hPaに重ねる${tool.source_hpa}hPaの${tool.label}の濃さ`);
-  input.addEventListener("input", () => {
-    overlayState[tool.id].opacity = Number(input.value)/100; drawOverlays(); controls();
-  });
-  settings.append(label,input); article.append(button,settings); byId("overlay-tools").append(article);
+const overlayTime = (layer = panelRegistration) => layer ? `${layer.observation_time.slice(0,10).replaceAll("-", "/")} ${layer.observation_time.slice(11,13)}Z` : "時刻を確認中";
+const overlayAvailable = () => Boolean(ready && panelRegistration && candidates && !featuresLoading);
+const validOverlays = () => !ready || !panelRegistration || !candidates ? [] : overlayState.filter(layer => {
+  try { ChartAnalysis.validatePanelOverlay(layer,panelRegistration,currentSelection.key); return true; } catch { return false; }
+});
+const enabledOverlays = () => validOverlays().filter(layer => layer.enabled);
+const overlayDescription = layer => `${layer.source_hpa}hPa ${ChartAnalysis.overlayAnalyses.find(t => t.id === layer.analysis_id).label} → ${layer.target_hpa}hPa`;
+const overlayDestination = () => `${overlayTarget}hPa（${overlayTarget === 300 ? "上段" : "下段"}）`;
+function overlayButton(text, handler) {
+  const button = document.createElement("button"); button.type = "button"; button.textContent = text;
+  button.addEventListener("click",handler); return button;
+}
+function openOverlay(view, id = null) {
+  overlayView = view; selectedOverlay = id;
+  if (view === "picker") {
+    byId("overlay-source").value = String(overlayTarget === 500 ? 300 : 500);
+    selectedOverlayAnalysis = ChartAnalysis.overlayAnalyses.find(t => t.source_hpa === Number(byId("overlay-source").value))?.id;
+  }
+  updateOverlayDialog();
+  if (!byId("overlay-dialog").open) byId("overlay-dialog").showModal();
+}
+function updateOverlayDialog() {
+  const available = overlayAvailable();
+  for (const [id,view] of [["overlay-picker","picker"],["overlay-settings","settings"],["overlay-list","list"]]) byId(id).hidden = overlayView !== view;
+  const layer = validOverlays().find(item => item.id === selectedOverlay);
+  if (overlayView === "settings" && !layer) { overlayView = "list"; updateOverlayDialog(); return; }
+  byId("overlay-dialog-title").textContent = overlayView === "picker" ? "解析を重ねる" : overlayView === "list" ? "重ねた解析" : overlayDescription(layer);
+  if (overlayView === "picker") {
+    byId("overlay-destination").textContent = `重ねる先：${currentSelection?.product.code || ""} · ${overlayDestination()}`;
+    byId("overlay-time").value = overlayTime();
+    byId("overlay-source").disabled = !available;
+    for (const option of byId("overlay-source").options) option.disabled = Number(option.value) === overlayTarget;
+    const tools = ChartAnalysis.overlayAnalyses.filter(t => t.source_hpa === Number(byId("overlay-source").value) && t.source_hpa !== overlayTarget);
+    if (!tools.some(t => t.id === selectedOverlayAnalysis)) selectedOverlayAnalysis = tools[0]?.id;
+    byId("overlay-items").replaceChildren(...tools.map(tool => {
+      const button = overlayButton(tool.label,() => { selectedOverlayAnalysis = tool.id; updateOverlayDialog(); });
+      button.dataset.analysis = tool.id; button.setAttribute("aria-pressed",String(tool.id === selectedOverlayAnalysis)); button.disabled = !available; return button;
+    }));
+    const tool = tools.find(t => t.id === selectedOverlayAnalysis);
+    const existing = validOverlays().find(item => item.analysis_id === tool?.id && item.target_hpa === overlayTarget);
+    byId("overlay-route").textContent = tool ? `${tool.source_hpa}hPa · ${tool.label} → ${overlayDestination()}` : "別の気圧面の解析を選んでください。";
+    byId("overlay-apply").disabled = !available || !tool || Boolean(existing?.enabled);
+    byId("overlay-apply").textContent = existing ? existing.enabled ? "追加済み" : "この図に再表示" : "この図に重ねる";
+  }
+  if (overlayView === "settings") {
+    byId("overlay-provenance").textContent = `解析元：${layer.source_product} · ${layer.source_hpa}hPa · ${overlayTime(layer)}\n重ねる先：${layer.target_hpa}hPa（${layer.target_hpa === 300 ? "上段" : "下段"}）`;
+    byId("overlay-toggle").textContent = `表示 ${layer.enabled ? "ON" : "OFF"}`;
+    byId("overlay-toggle").setAttribute("aria-pressed",String(layer.enabled));
+    byId("overlay-opacity").value = String(Math.round(layer.opacity*100));
+    byId("overlay-opacity-value").textContent = `${Math.round(layer.opacity*100)}%`;
+    for (const id of ["overlay-toggle","overlay-opacity","overlay-remove"]) byId(id).disabled = !available;
+  }
+  if (overlayView === "list") {
+    byId("overlay-added").replaceChildren(...validOverlays().map(item => {
+      const button = overlayButton(`${overlayDescription(item)} · ${item.enabled ? "ON" : "OFF"}\n${item.source_product} · ${overlayTime(item)} · 濃さ${Math.round(item.opacity*100)}%`,() => openOverlay("settings",item.id));
+      button.dataset.layerId = item.id; return button;
+    }));
+    byId("overlay-clear").disabled = !available || !validOverlays().length;
+  }
 }
 byId("overlay-target").addEventListener("change", event => { overlayTarget = Number(event.target.value); controls(); });
+byId("overlay-add").addEventListener("click", () => { if (overlayAvailable()) openOverlay("picker"); });
+byId("overlay-manage").addEventListener("click", () => openOverlay("list"));
+byId("overlay-close").addEventListener("click", () => byId("overlay-dialog").close());
+byId("overlay-back").addEventListener("click", () => openOverlay("list"));
+byId("overlay-source").addEventListener("change", () => updateOverlayDialog());
+byId("overlay-apply").addEventListener("click", () => {
+  if (!overlayAvailable() || byId("overlay-apply").disabled) return;
+  const layer = ChartAnalysis.createPanelOverlay(panelRegistration,currentSelection.key,selectedOverlayAnalysis,overlayTarget);
+  const existing = overlayState.find(item => item.id === layer.id);
+  if (existing) existing.enabled = true;
+  else overlayState.push({...layer,source_product:currentSelection.product.code});
+  byId("overlay-dialog").close(); drawOverlays(); controls();
+});
+byId("overlay-toggle").addEventListener("click", () => {
+  const layer = validOverlays().find(item => item.id === selectedOverlay);
+  if (!overlayAvailable() || !layer) return;
+  layer.enabled = !layer.enabled; drawOverlays(); controls();
+});
+byId("overlay-opacity").addEventListener("input", event => {
+  const layer = validOverlays().find(item => item.id === selectedOverlay);
+  if (!overlayAvailable() || !layer) return;
+  layer.opacity = Number(event.target.value)/100; drawOverlays(); controls();
+});
+byId("overlay-remove").addEventListener("click", () => {
+  if (!overlayAvailable()) return;
+  overlayState = overlayState.filter(item => item.id !== selectedOverlay);
+  byId("overlay-dialog").close(); drawOverlays(); controls();
+});
 byId("overlay-clear").addEventListener("click", () => {
-  for (const state of Object.values(overlayState)) state.enabled = false;
-  drawOverlays(); controls();
+  if (!overlayAvailable()) return;
+  overlayState = []; byId("overlay-dialog").close(); drawOverlays(); controls();
 });
 function updateOverlayPanel() {
-  const available = Boolean(ready && panelRegistration && candidates);
-  byId("overlay-target").disabled = !available || featuresLoading;
+  const available = overlayAvailable(), added = validOverlays(), active = enabledOverlays();
+  byId("overlay-toolbar").hidden = currentSelection?.variant.features !== "reviewed-aupq35";
+  byId("overlay-target").disabled = byId("overlay-add").disabled = !available;
   byId("overlay-target").value = String(overlayTarget);
-  byId("overlay-source").textContent = `解析元：${overlayTarget === 500 ? 300 : 500}hPa · ${overlayTime()}`;
-  for (const tool of ChartAnalysis.overlayTools) {
-    const state = overlayState[tool.id], button = byId(`overlay-${tool.id}`);
-    document.querySelector(`[data-overlay="${tool.id}"]`).hidden = tool.target_hpa !== overlayTarget;
-    button.disabled = !available || featuresLoading;
-    button.setAttribute("aria-pressed", String(available && state.enabled));
-    button.title = `${overlayDescription(tool)} · ${overlayTime()}`;
-    byId(`overlay-settings-${tool.id}`).hidden = !state.enabled;
-    byId(`overlay-opacity-${tool.id}`).value = String(Math.round(state.opacity*100));
-    byId(`overlay-opacity-${tool.id}`).disabled = button.disabled || !state.enabled;
-    byId(`overlay-value-${tool.id}`).textContent = `${Math.round(state.opacity*100)}%`;
-  }
-  const active = enabledOverlays();
-  byId("overlay-count").textContent = `表示中 ${active.length}`;
-  byId("overlay-clear").disabled = !active.length;
-  byId("overlay-active-list").replaceChildren(...active.map(tool => {
-    const item = document.createElement("li"); item.textContent = `${overlayDescription(tool)} · 濃さ${Math.round(overlayState[tool.id].opacity*100)}%`; return item;
+  byId("overlay-chips").replaceChildren(...added.slice(0,3).map(item => {
+    const button = overlayButton(`${overlayDescription(item)}${item.enabled ? "" : " · OFF"}`,() => openOverlay("settings",item.id));
+    button.className = "overlay-chip"; button.dataset.layerId = item.id;
+    button.setAttribute("aria-label",`${overlayDescription(item)} · ${item.enabled ? "ON" : "OFF"} · 設定を開く`);
+    button.dataset.enabled = String(item.enabled); button.disabled = !available;
+    button.title = `${item.source_product} · ${overlayTime(item)} · 濃さ${Math.round(item.opacity*100)}%`; return button;
   }));
-  byId("overlay-notice").hidden = !active.length;
-  byId("overlay-notice").textContent = active.length ? `重ね：${active.map(overlayDescription).join(" / ")} · ${overlayTime()}` : "";
-  paper.dataset.overlays = active.map(tool => tool.id).join(",");
+  byId("overlay-manage").hidden = !added.length;
+  byId("overlay-manage").textContent = `重ねた解析 ${added.length}件`;
+  paper.dataset.overlays = active.map(item => `${item.analysis_id}-on-${item.target_hpa}`).join(",");
+  if (byId("overlay-dialog").open) updateOverlayDialog();
   return active.length;
 }
 
@@ -156,7 +216,7 @@ function updateAnalysisPanel() {
   byId("active-only").setAttribute("aria-pressed", String(activeOnly));
   byId("no-active-layers").hidden = !activeOnly || count > 0;
   const available = analysisTools.filter(tool => !byId(tool.button).disabled);
-  const allOn = !featuresLoading && available.length > 0 && available.every(tool => byId(tool.button).getAttribute("aria-pressed") === "true");
+  const allOn = !featuresLoading && available.length > 0 && available.every(tool => byId(tool.button).getAttribute("aria-pressed") === "true") && validOverlays().every(layer => layer.enabled);
   byId("analyze").disabled = !ready || featuresLoading || !available.length;
   byId("analyze").setAttribute("aria-pressed", String(allOn));
   byId("analyze").textContent = `すべての解析を${allOn ? "OFF" : "ON"}`;
@@ -271,7 +331,7 @@ function drawAnalysis() {
 }
 function drawOverlays() {
   overlayContext.clearRect(0,0,overlayLayer.width,overlayLayer.height);
-  for (const tool of enabledOverlays()) ChartAnalysis.drawPanelOverlay(overlayContext,candidates,panelRegistration,tool.id,overlayState[tool.id].opacity);
+  for (const layer of enabledOverlays()) ChartAnalysis.drawPanelOverlay(overlayContext,candidates,panelRegistration,layer,currentSelection.key);
 }
 const windLabels = ["40–60 kt", "60–80 kt", "80–100 kt", "100–120 kt", "120 kt以上"];
 for (const [index, color] of ChartAnalysis.windPalette.entries()) {
@@ -320,14 +380,14 @@ for (const id of ["analyze", "trough", "ridge", "jet", "original"]) byId(id).add
   if (id === "analyze") {
     const on = byId(id).getAttribute("aria-pressed") !== "true";
     for (const tool of analysisTools) if (!byId(tool.button).disabled) tool.setEnabled(on);
-    if (!on) for (const state of Object.values(overlayState)) state.enabled = false;
+    for (const state of validOverlays()) state.enabled = on;
   }
   if (id === "trough") showTrough = !showTrough;
   if (id === "ridge") showRidge = !showRidge;
   if (id === "jet") showJet = !showJet;
   if (id === "original") {
     for (const tool of analysisTools) tool.setEnabled(false);
-    for (const state of Object.values(overlayState)) state.enabled = false;
+    for (const state of overlayState) state.enabled = false;
   }
   drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); controls();
 });
@@ -576,7 +636,7 @@ byId("save").addEventListener("click", () => {
     const y = ink.height+footerHeight+temperatureFooterHeight+30;
     ctx.fillStyle = "#243247"; ctx.font = "22px sans-serif";
     ctx.fillText("重ね合わせ（解析元の気圧面・時刻）",26,y);
-    for (const [index,tool] of exportOverlays.entries()) ctx.fillText(`${overlayDescription(tool)} / ${overlayTime()} / 濃さ${Math.round(overlayState[tool.id].opacity*100)}%`,26,y+(index+1)*44,output.width-52);
+    for (const [index,tool] of exportOverlays.entries()) ctx.fillText(`${overlayDescription(tool)} / ${tool.source_product} · ${overlayTime(tool)} / 濃さ${Math.round(tool.opacity*100)}%`,26,y+(index+1)*44,output.width-52);
   }
   output.toBlob((blob) => {
     if (loadRevision !== exportRevision || currentSelection?.key !== selected.key || !ready) return;
@@ -591,7 +651,7 @@ byId("save").addEventListener("click", () => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z" && !["INPUT", "SELECT"].includes(event.target.tagName)) {
+  if (!byId("overlay-dialog").open && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z" && !["INPUT", "SELECT"].includes(event.target.tagName)) {
     event.preventDefault(); byId(event.shiftKey ? "redo" : "undo").click();
   }
 });
@@ -633,7 +693,7 @@ async function checkedImage(path, expectedHash, width, height, signal, retry = f
 function keepDrawing() {
   if (!ready || !currentSelection) return;
   if (pointer !== null) finish({ pointerId: pointer });
-  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, overlayTarget, overlays: Object.fromEntries(Object.entries(overlayState).map(([id,state]) => [id,{...state}])) });
+  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, overlayTarget, overlays: overlayState.map(layer => ({...layer})) });
 }
 function setOptions(select, records, value) {
   select.replaceChildren();
@@ -671,7 +731,8 @@ async function loadSelection(retry = false) {
   loadingError = geographyError = terrainError = symbolError = analysisError = temperatureError = overlayError = "";
   history.length = future.length = 0;
   const state = drawingStates.get(selected.key);
-  overlayState = state?.overlays ? Object.fromEntries(Object.entries(state.overlays).map(([id,item]) => [id,{...item}])) : newOverlayState();
+  overlayState = state?.overlays ? state.overlays.map(layer => ({...layer})) : [];
+  byId("overlay-dialog").close(); selectedOverlay = null;
   overlayTarget = state?.overlayTarget || 500;
   if (state) { history.push(...state.history); future.push(...state.future); }
   showWind = state?.showWind || false; showTrough = state?.showTrough || false; showRidge = state?.showRidge || false; showJet = state?.showJet || false;

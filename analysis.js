@@ -310,10 +310,11 @@ const ChartAnalysis = (() => {
     }
     ctx.restore();
   }
-  const overlayTools = Object.freeze([
-    { id: "jet-on-500", kind: "jet", source_hpa: 300, target_hpa: 500, label: "強風軸" },
-    { id: "trough-on-300", kind: "trough", source_hpa: 500, target_hpa: 300, label: "トラフ" },
-    { id: "ridge-on-300", kind: "ridge", source_hpa: 500, target_hpa: 300, label: "リッジ" }
+  // Register analyses by their source, rather than every possible destination.
+  const overlayAnalyses = Object.freeze([
+    { id: "jet", kind: "jet", source_hpa: 300, label: "強風軸" },
+    { id: "trough", kind: "trough", source_hpa: 500, label: "トラフ" },
+    { id: "ridge", kind: "ridge", source_hpa: 500, label: "リッジ" }
   ].map(Object.freeze));
   function validatePanelRegistration(data, chart) {
     for (const key of ["source_sha256", "image_sha256", "observation_time", "width", "height"])
@@ -328,13 +329,31 @@ const ChartAnalysis = (() => {
           !Array.isArray(panel.bounds) || panel.bounds.length !== 4 || !panel.bounds.every((v,k) => Number.isFinite(v) && Math.abs(v-expected[i][k]) < .001)) throw Error("重ね合わせの位置を確認できません");
       return Object.freeze({ pressure_hpa: panel.pressure_hpa, offset_y: panel.offset_y, bounds: Object.freeze([...panel.bounds]) });
     });
-    return Object.freeze({ observation_time: data.observation_time, panels: Object.freeze(panels) });
+    return Object.freeze({ source_sha256: data.source_sha256, image_sha256: data.image_sha256, observation_time: data.observation_time, panels: Object.freeze(panels) });
   }
-  function drawPanelOverlay(ctx, candidates, registration, id, opacity) {
-    const tool = overlayTools.find(t => t.id === id);
-    const source = registration?.panels.find(p => p.pressure_hpa === tool?.source_hpa);
-    const target = registration?.panels.find(p => p.pressure_hpa === tool?.target_hpa);
-    if (!tool || !source || !target || !candidates || !Number.isFinite(opacity) || opacity < 0 || opacity > 1) throw Error("重ね合わせの設定を確認できません");
+  function validatePanelOverlay(layer, registration, sourceKey) {
+    const tool = overlayAnalyses.find(t => t.id === layer?.analysis_id && t.source_hpa === layer.source_hpa);
+    const source = registration?.panels.find(p => p.pressure_hpa === layer?.source_hpa);
+    const target = registration?.panels.find(p => p.pressure_hpa === layer?.target_hpa);
+    if (!tool || !source || !target || source === target || !sourceKey || layer.source_key !== sourceKey ||
+        ["source_sha256", "image_sha256", "observation_time"].some(key => layer[key] !== registration[key]) ||
+        typeof layer.enabled !== "boolean" || !Number.isFinite(layer.opacity) || layer.opacity < 0 || layer.opacity > 1)
+      throw Error("重ね合わせの設定を確認できません");
+    return { tool, source, target };
+  }
+  function createPanelOverlay(registration, sourceKey, analysisId, targetHpa) {
+    const tool = overlayAnalyses.find(t => t.id === analysisId);
+    const layer = { id: `${sourceKey}|${registration?.observation_time}|${analysisId}|${targetHpa}`, source_key: sourceKey,
+      source_hpa: tool?.source_hpa, analysis_id: analysisId, target_hpa: targetHpa,
+      source_sha256: registration?.source_sha256, image_sha256: registration?.image_sha256,
+      observation_time: registration?.observation_time, enabled: true, opacity: .6 };
+    validatePanelOverlay(layer, registration, sourceKey);
+    return layer;
+  }
+  function drawPanelOverlay(ctx, candidates, registration, layer, sourceKey) {
+    const { tool, source, target } = validatePanelOverlay(layer, registration, sourceKey);
+    if (!candidates) throw Error("重ね合わせの解析を確認できません");
+    const opacity = layer.opacity;
     ctx.save();
     try {
       const [left,top,right,bottom] = target.bounds;
@@ -347,6 +366,6 @@ const ChartAnalysis = (() => {
       if (tool.kind === "ridge") drawRidges(ctx,candidates.ridges,opacity);
     } finally { ctx.restore(); }
   }
-  return { validate, validateHeightAxes, analyze, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges, overlayTools, validatePanelRegistration, drawPanelOverlay };
+  return { validate, validateHeightAxes, analyze, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges, overlayAnalyses, validatePanelRegistration, validatePanelOverlay, createPanelOverlay, drawPanelOverlay };
 })();
 if (typeof module !== "undefined") module.exports = ChartAnalysis;

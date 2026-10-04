@@ -292,16 +292,18 @@ function recordCanvas() {
   stroke(){strokes.push({points:[...points],alpha:this.globalAlpha,color:this.strokeStyle,width:this.lineWidth});}
  };
 }
-for (const tool of analysis.overlayTools) {
+for (const tool of analysis.overlayAnalyses) {
+ const targetHpa=tool.source_hpa===300 ? 500 : 300;
+ const layer=analysis.createPanelOverlay(registration,"reviewed-source",tool.id,targetHpa);
  const base=recordCanvas();
  if(tool.kind==="jet")analysis.drawJetAxes(base,overlayCandidates.jets,coast.panels[0].bounds);
  if(tool.kind==="trough")analysis.drawTroughs(base,overlayCandidates.troughs);
  if(tool.kind==="ridge")analysis.drawRidges(base,overlayCandidates.ridges);
  // Independent geographic expectation: corresponding pixels have identical x
  // and a fixed 1416.38px map-origin separation in this reviewed source page.
- const expectedShift=tool.target_hpa===500 ? 1416.38 : -1416.38;
+ const expectedShift=targetHpa===500 ? 1416.38 : -1416.38;
  for(const opacity of [0,.35,1]) {
-  const copy=recordCanvas();analysis.drawPanelOverlay(copy,overlayCandidates,registration,tool.id,opacity);
+  const copy=recordCanvas();analysis.drawPanelOverlay(copy,overlayCandidates,registration,{...layer,opacity},"reviewed-source");
   assert.equal(copy.strokes.length,base.strokes.length);
   for(let i=0;i<base.strokes.length;i++) {
    const original=base.strokes[i],overlaid=copy.strokes[i];
@@ -313,13 +315,24 @@ for (const tool of analysis.overlayTools) {
     assert.ok(Math.abs(overlaid.points[j][1]-original.points[j][1]-expectedShift)<1e-9);
    }
   }
-  const bounds=coast.panels.find(p=>p.pressure_hpa===tool.target_hpa).bounds;
+  const bounds=coast.panels.find(p=>p.pressure_hpa===targetHpa).bounds;
   assert.deepEqual(copy.clips[0],[bounds[0],bounds[1],bounds[2]-bounds[0],bounds[3]-bounds[1]],"clip to destination map, including jet arrowheads");
   assert.equal(copy.tx,0);assert.equal(copy.ty,0);assert.equal(copy.globalAlpha,1);
  }
 }
-for(const opacity of [-.1,1.1,NaN,Infinity])assert.throws(()=>analysis.drawPanelOverlay(recordCanvas(),overlayCandidates,registration,"jet-on-500",opacity));
-assert.throws(()=>analysis.drawPanelOverlay(recordCanvas(),overlayCandidates,null,"jet-on-500",.6));
-assert.throws(()=>analysis.drawPanelOverlay(recordCanvas(),overlayCandidates,registration,"jet-on-850",.6));
+const sampleOverlay=analysis.createPanelOverlay(registration,"reviewed-source","jet",500);
+for(const opacity of [-.1,1.1,NaN,Infinity])assert.throws(()=>analysis.drawPanelOverlay(recordCanvas(),overlayCandidates,registration,{...sampleOverlay,opacity},"reviewed-source"));
+assert.throws(()=>analysis.drawPanelOverlay(recordCanvas(),overlayCandidates,null,sampleOverlay,"reviewed-source"));
+assert.throws(()=>analysis.createPanelOverlay(registration,"reviewed-source","jet",850));
+assert.throws(()=>analysis.createPanelOverlay(registration,"reviewed-source","jet",300));
+assert.throws(()=>analysis.createPanelOverlay(registration,"reviewed-source","unknown",500));
+for(const [key,value] of [["source_hpa",500],["source_key","other-source"],["observation_time","2026-10-01T12:00:00Z"],["source_sha256","other-file"],["image_sha256","other-image"],["enabled","yes"]]) {
+ assert.throws(()=>analysis.validatePanelOverlay({...sampleOverlay,[key]:value},registration,"reviewed-source"));
+}
+const restored=JSON.parse(JSON.stringify({...sampleOverlay,enabled:false,opacity:.35}));
+analysis.validatePanelOverlay(restored,registration,"reviewed-source");
+assert.equal(restored.enabled,false);assert.equal(restored.opacity,.35);
+assert.equal(sampleOverlay.id,analysis.createPanelOverlay(registration,"reviewed-source","jet",500).id,"the same source/item/destination has one stable identity");
+assert.notEqual(sampleOverlay.id,analysis.createPanelOverlay(registration,"other-source","jet",500).id,"different source charts have distinct identities");
 assert.equal(JSON.stringify(overlayCandidates),untouchedCandidates,"copies never modify native analyses");
 console.log("PANEL_OVERLAYS_OK directions=both types=jet_trough_ridge geometry=every_vertex_and_arrowhead clip=destination opacity=zero_middle_full source_and_time_binding=checked originals=unchanged invalid_registration=blocked");

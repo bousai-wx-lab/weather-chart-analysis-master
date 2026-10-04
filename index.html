@@ -8,11 +8,11 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=74721e5285c29d58">
-  <script src="analysis.js?v=08c9afc4f46d0353" defer></script>
+  <link rel="stylesheet" href="styles.css?v=cc564e36643babad">
+  <script src="analysis.js?v=d8552bdf002bf1c2" defer></script>
   <script src="geography.js?v=acb1baa814de2081" defer></script>
   <script src="catalog.js?v=9d1519ba693ab9cf" defer></script>
-  <script src="app.js?v=ced7db8e82b1c044" defer></script>
+  <script src="app.js?v=60b60d3e0c6c891e" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -45,15 +45,6 @@
     <section id="analysis-panel" aria-label="この図の解析">
       <div data-requires="reviewed-aupq35" id="automatic-tools">
       <button type="button" id="analyze" class="analysis-preset" aria-pressed="false" disabled>すべての解析をON</button>
-      <details id="overlay-panel" class="overlay-panel">
-        <summary>重ね合わせ <span id="overlay-count">表示中 0</span></summary>
-        <label class="overlay-target-label" for="overlay-target">重ねる先<select id="overlay-target" disabled><option value="500">500hPa（下段）</option><option value="300">300hPa（上段）</option></select></label>
-        <p id="overlay-source" class="overlay-source">解析元を確認中</p>
-        <div id="overlay-tools" role="group" aria-label="別の気圧面から重ねる解析"></div>
-        <ul id="overlay-active-list" aria-label="表示中の重ね合わせ"></ul>
-        <button type="button" id="overlay-clear" disabled>重ね合わせをすべて外す</button>
-        <p class="gesture-note">元の気圧面の表示と独立して切り替えます。同じ時刻の解析を、同じ地理的位置へ重ねます。</p>
-      </details>
       <div class="analysis-list-heading"><h2>この図の解析</h2><button type="button" id="active-only" aria-pressed="false">表示中 <span id="layer-count">0</span></button></div>
       <p class="list-help">項目で表示切替 · 詳細で凡例・設定</p>
       <div class="layer-group" data-layer-group><h3>300 hPa <span>上段</span></h3>
@@ -141,7 +132,12 @@
     <section class="viewer" aria-label="資料の表示">
     <button type="button" id="panel-open" class="panel-open" aria-label="操作パネルを開く" aria-controls="control-panel" aria-expanded="false" hidden>› 操作</button>
     <span id="status" role="status" aria-live="polite">読み込み中</span>
-    <div id="overlay-notice" class="overlay-notice" hidden></div>
+    <div id="overlay-toolbar" class="overlay-toolbar" hidden>
+      <label for="overlay-target">重ねる先 <select id="overlay-target" disabled><option value="500">500hPa（下段）</option><option value="300">300hPa（上段）</option></select></label>
+      <button type="button" id="overlay-add" class="primary" disabled>＋ 重ねる</button>
+      <div id="overlay-chips" aria-label="追加した解析"></div>
+      <button type="button" id="overlay-manage" hidden>重ねた解析 0件</button>
+    </div>
     <div id="viewport" tabindex="0" aria-label="天気図。ホイールで拡大・縮小、移動モードでドラッグして移動できます。">
       <div id="paper" data-ready="false" data-strokes="0" hidden>
         <img id="chart" src="assets/aupq35.png" alt="気象庁AUPQ35。2026年10月2日00UTCの300hPaと500hPaの高度・気温・風の実況図。上段は300hPa、下段は500hPa。" draggable="false">
@@ -163,5 +159,24 @@
     <span>解析案は本ツールの推定で、気象庁の解析ではありません。</span>
   </footer>
   <dialog id="clear-dialog"><form method="dialog"><p>手描きの色塗りをすべて消しますか？</p><p class="dialog-note">原図と解析案は残ります。取り消しで戻せます。</p><div><button value="cancel">戻る</button><button value="clear" class="danger">手描きを消す</button></div></form></dialog>
+  <dialog id="overlay-dialog" aria-labelledby="overlay-dialog-title">
+    <div class="overlay-dialog-heading"><h2 id="overlay-dialog-title">解析を重ねる</h2><button type="button" id="overlay-close" aria-label="重ね合わせの画面を閉じる">×</button></div>
+    <section id="overlay-picker">
+      <p id="overlay-destination" class="overlay-destination"></p>
+      <label for="overlay-source">元の天気図</label><select id="overlay-source"><option value="300">AUPQ35 · 300hPa（上段）</option><option value="500">AUPQ35 · 500hPa（下段）</option></select>
+      <label for="overlay-time">元の図の時刻</label><input type="text" id="overlay-time" readonly>
+      <p class="overlay-field-label">持ってくる解析</p><div id="overlay-items" role="group" aria-label="元の図の解析項目"></div>
+      <p id="overlay-route" class="overlay-route" aria-live="polite"></p>
+      <button type="button" id="overlay-apply" class="primary">この図に重ねる</button>
+      <p class="dialog-note overlay-help">いまは、この資料で位置と時刻を確認した解析を選べます。元の図の表示と独立して切り替わります。</p>
+    </section>
+    <section id="overlay-settings" hidden>
+      <p id="overlay-provenance" class="overlay-provenance"></p>
+      <button type="button" id="overlay-toggle" aria-pressed="true">表示 ON</button>
+      <label for="overlay-opacity">濃さ <output id="overlay-opacity-value">60%</output></label><input type="range" id="overlay-opacity" min="0" max="100" step="5" value="60">
+      <div class="overlay-dialog-actions"><button type="button" id="overlay-remove" class="danger">この重ね合わせを外す</button><button type="button" id="overlay-back">一覧へ</button></div>
+    </section>
+    <section id="overlay-list" hidden><p class="dialog-note">項目を押すと、表示・濃さを変更できます。</p><div id="overlay-added"></div><button type="button" id="overlay-clear" class="danger">重ね合わせをすべて外す</button></section>
+  </dialog>
 </body>
 </html>
