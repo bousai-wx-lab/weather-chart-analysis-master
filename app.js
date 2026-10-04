@@ -11,6 +11,13 @@ const analysisLayer = byId("analysis-layer");
 const analysisContext = analysisLayer.getContext("2d");
 const jetLayer = byId("jet-layer");
 const jetContext = jetLayer.getContext("2d");
+const overlayLayer = byId("overlay-layer");
+const overlayContext = overlayLayer.getContext("2d");
+let panelRegistration = null;
+let overlayError = "";
+let overlayTarget = 500;
+const newOverlayState = () => Object.fromEntries(ChartAnalysis.overlayTools.map(tool => [tool.id, { enabled: false, opacity: .6 }]));
+let overlayState = newOverlayState();
 const windLayer = byId("wind-layer");
 const windContext = windLayer.getContext("2d");
 const geographyLayer = byId("geography-layer");
@@ -75,6 +82,60 @@ const analysisTools = [
 ];
 let activeOnly = false;
 let selectedDetail = null;
+
+const overlayTime = () => panelRegistration ? `${panelRegistration.observation_time.slice(0,10).replaceAll("-", "/")} ${panelRegistration.observation_time.slice(11,13)}Z` : "位置合わせを確認中";
+const enabledOverlays = () => ready && panelRegistration && candidates ? ChartAnalysis.overlayTools.filter(tool => overlayState[tool.id].enabled) : [];
+const overlayDescription = tool => `${tool.source_hpa}hPa ${tool.label} → ${tool.target_hpa}hPa`;
+for (const tool of ChartAnalysis.overlayTools) {
+  const article = document.createElement("article"); article.className = "overlay-tool layer-tool"; article.dataset.overlay = tool.id;
+  const button = document.createElement("button"); button.type = "button"; button.id = `overlay-${tool.id}`; button.className = "layer-toggle";
+  button.textContent = `${tool.source_hpa}hPaの${tool.label}`; button.setAttribute("aria-pressed", "false"); button.disabled = true;
+  button.addEventListener("click", () => {
+    if (!ready || !panelRegistration || !candidates || featuresLoading) return;
+    overlayState[tool.id].enabled = !overlayState[tool.id].enabled; drawOverlays(); controls();
+  });
+  const settings = document.createElement("div"); settings.className = "overlay-opacity"; settings.id = `overlay-settings-${tool.id}`; settings.hidden = true;
+  const label = document.createElement("label"); label.htmlFor = `overlay-opacity-${tool.id}`; label.textContent = "濃さ ";
+  const output = document.createElement("output"); output.id = `overlay-value-${tool.id}`; label.append(output);
+  const input = document.createElement("input"); input.type = "range"; input.id = label.htmlFor; input.min = "0"; input.max = "100"; input.step = "5"; input.value = "60";
+  input.setAttribute("aria-label", `${tool.target_hpa}hPaに重ねる${tool.source_hpa}hPaの${tool.label}の濃さ`);
+  input.addEventListener("input", () => {
+    overlayState[tool.id].opacity = Number(input.value)/100; drawOverlays(); controls();
+  });
+  settings.append(label,input); article.append(button,settings); byId("overlay-tools").append(article);
+}
+byId("overlay-target").addEventListener("change", event => { overlayTarget = Number(event.target.value); controls(); });
+byId("overlay-clear").addEventListener("click", () => {
+  for (const state of Object.values(overlayState)) state.enabled = false;
+  drawOverlays(); controls();
+});
+function updateOverlayPanel() {
+  const available = Boolean(ready && panelRegistration && candidates);
+  byId("overlay-target").disabled = !available || featuresLoading;
+  byId("overlay-target").value = String(overlayTarget);
+  byId("overlay-source").textContent = `解析元：${overlayTarget === 500 ? 300 : 500}hPa · ${overlayTime()}`;
+  for (const tool of ChartAnalysis.overlayTools) {
+    const state = overlayState[tool.id], button = byId(`overlay-${tool.id}`);
+    document.querySelector(`[data-overlay="${tool.id}"]`).hidden = tool.target_hpa !== overlayTarget;
+    button.disabled = !available || featuresLoading;
+    button.setAttribute("aria-pressed", String(available && state.enabled));
+    button.title = `${overlayDescription(tool)} · ${overlayTime()}`;
+    byId(`overlay-settings-${tool.id}`).hidden = !state.enabled;
+    byId(`overlay-opacity-${tool.id}`).value = String(Math.round(state.opacity*100));
+    byId(`overlay-opacity-${tool.id}`).disabled = button.disabled || !state.enabled;
+    byId(`overlay-value-${tool.id}`).textContent = `${Math.round(state.opacity*100)}%`;
+  }
+  const active = enabledOverlays();
+  byId("overlay-count").textContent = `表示中 ${active.length}`;
+  byId("overlay-clear").disabled = !active.length;
+  byId("overlay-active-list").replaceChildren(...active.map(tool => {
+    const item = document.createElement("li"); item.textContent = `${overlayDescription(tool)} · 濃さ${Math.round(overlayState[tool.id].opacity*100)}%`; return item;
+  }));
+  byId("overlay-notice").hidden = !active.length;
+  byId("overlay-notice").textContent = active.length ? `重ね：${active.map(overlayDescription).join(" / ")} · ${overlayTime()}` : "";
+  paper.dataset.overlays = active.map(tool => tool.id).join(",");
+  return active.length;
+}
 
 function updateAnalysisPanel() {
   let count = 0;
@@ -143,7 +204,7 @@ function controls() {
   byId("temperature").textContent = "気温線";
   byId("temperature500").disabled = !ready || !isotherms;
   byId("temperature500").setAttribute("aria-pressed", String(Boolean(showTemperature500 && isotherms)));
-  byId("original").disabled = !showWind && !showTrough && !showRidge && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
+  byId("original").disabled = !enabledOverlays().length && !showWind && !showTrough && !showRidge && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
   byId("geography-toggle").disabled = byId("geography-opacity").disabled = !ready || !geography;
   byId("geography-toggle").setAttribute("aria-pressed", String(Boolean(showGeography && geography)));
   byId("geography-opacity-value").textContent = `${Math.round(geographyOpacity * 100)}%`;
@@ -174,8 +235,9 @@ function controls() {
   paper.dataset.temperature500 = String(Boolean(showTemperature500 && isotherms));
   paper.dataset.geography = showGeography && geography ? geographyStyle : "off";
   const layerCount = updateAnalysisPanel();
-  const layers = [layerCount ? `解析${layerCount}項目` : "原図", paintCount ? `手描き${paintCount}筆` : ""].filter(Boolean);
-  byId("status").textContent = loadingError || (!ready ? "図を読み込み中" : [geographyError, terrainError, symbolError, temperatureError, analysisError].filter(Boolean).join("・") || [currentSelection?.product.code, ...(layers.length ? layers : ["原図を表示中"])].filter(Boolean).join("・"));
+  const overlayCount = updateOverlayPanel();
+  const layers = [layerCount ? `解析${layerCount}項目` : "原図", overlayCount ? `重ね合わせ${overlayCount}項目` : "", paintCount ? `手描き${paintCount}筆` : ""].filter(Boolean);
+  byId("status").textContent = loadingError || (!ready ? "図を読み込み中" : [geographyError, terrainError, symbolError, temperatureError, analysisError, overlayError].filter(Boolean).join("・") || [currentSelection?.product.code, ...(layers.length ? layers : ["原図を表示中"])].filter(Boolean).join("・"));
 }
 
 function drawGeography() {
@@ -205,6 +267,11 @@ function drawAnalysis() {
   if (showJet) ChartAnalysis.drawJetAxes(jetContext, candidates.jets, windBands.bounds);
   if (showTrough) ChartAnalysis.drawTroughs(analysisContext, candidates.troughs);
   if (showRidge) ChartAnalysis.drawRidges(analysisContext, candidates.ridges);
+  drawOverlays();
+}
+function drawOverlays() {
+  overlayContext.clearRect(0,0,overlayLayer.width,overlayLayer.height);
+  for (const tool of enabledOverlays()) ChartAnalysis.drawPanelOverlay(overlayContext,candidates,panelRegistration,tool.id,overlayState[tool.id].opacity);
 }
 const windLabels = ["40–60 kt", "60–80 kt", "80–100 kt", "100–120 kt", "120 kt以上"];
 for (const [index, color] of ChartAnalysis.windPalette.entries()) {
@@ -253,11 +320,15 @@ for (const id of ["analyze", "trough", "ridge", "jet", "original"]) byId(id).add
   if (id === "analyze") {
     const on = byId(id).getAttribute("aria-pressed") !== "true";
     for (const tool of analysisTools) if (!byId(tool.button).disabled) tool.setEnabled(on);
+    if (!on) for (const state of Object.values(overlayState)) state.enabled = false;
   }
   if (id === "trough") showTrough = !showTrough;
   if (id === "ridge") showRidge = !showRidge;
   if (id === "jet") showJet = !showJet;
-  if (id === "original") for (const tool of analysisTools) tool.setEnabled(false);
+  if (id === "original") {
+    for (const tool of analysisTools) tool.setEnabled(false);
+    for (const state of Object.values(overlayState)) state.enabled = false;
+  }
   drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); controls();
 });
 
@@ -441,8 +512,11 @@ byId("save").addEventListener("click", () => {
   const selectedGeography = ChartGeography.patterns.find(p => p.id === geographyStyle);
   const exportTerrain = Boolean(showGeography && geography && terrainImage && selectedGeography.terrain !== undefined);
   const exportTemperatures = isotherms ? ChartAnalysis.isothermScales.filter(s=>s.pressure_hpa===300 ? showTemperature : showTemperature500) : [];
+  const exportOverlays = enabledOverlays();
+  const temperatureFooterHeight = exportTemperatures.length ? exportTemperatures.length*40+56 : 0;
+  const overlayFooterHeight = exportOverlays.length ? (exportOverlays.length+1)*44 : 0;
   const footerHeight = exportTerrain ? 340 : 260;
-  output.width = ink.width; output.height = ink.height + footerHeight + (exportTemperatures.length ? exportTemperatures.length*40+56 : 0);
+  output.width = ink.width; output.height = ink.height + footerHeight + temperatureFooterHeight + overlayFooterHeight;
   const ctx = output.getContext("2d");
   ctx.fillStyle = "white"; ctx.fillRect(0, 0, output.width, output.height);
   ctx.drawImage(chart, 0, 0);
@@ -450,7 +524,7 @@ byId("save").addEventListener("click", () => {
   ctx.globalCompositeOperation = "source-over"; ctx.drawImage(jetLayer, 0, 0);
   ctx.drawImage(temperatureLayer, 0, 0);
   ctx.drawImage(symbolLayer, 0, 0);
-  ctx.globalCompositeOperation = "multiply"; ctx.drawImage(ink, 0, 0); ctx.globalCompositeOperation = "source-over";
+  ctx.globalCompositeOperation = "multiply"; ctx.drawImage(overlayLayer, 0, 0); ctx.drawImage(ink, 0, 0); ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = "#243247"; ctx.font = "24px sans-serif";
   ctx.fillText(`出典：気象庁 ${selected.product.code}（画像化） / ${chartLabel}`, 26, ink.height + 38, output.width - 52);
   ctx.fillText(`解析案：${showTrough ? "500hPaトラフ " : ""}${showRidge ? "500hPaリッジ " : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
@@ -498,6 +572,12 @@ byId("save").addEventListener("click", () => {
     }
     ctx.fillText("原図の気温表示・破線をもとに滑らかにつなぐ補助線。気温の格子データから算出した線ではありません。", 26, ink.height+footerHeight+exportTemperatures.length*40+28, output.width-52);
   }
+  if (exportOverlays.length) {
+    const y = ink.height+footerHeight+temperatureFooterHeight+30;
+    ctx.fillStyle = "#243247"; ctx.font = "22px sans-serif";
+    ctx.fillText("重ね合わせ（解析元の気圧面・時刻）",26,y);
+    for (const [index,tool] of exportOverlays.entries()) ctx.fillText(`${overlayDescription(tool)} / ${overlayTime()} / 濃さ${Math.round(overlayState[tool.id].opacity*100)}%`,26,y+(index+1)*44,output.width-52);
+  }
   output.toBlob((blob) => {
     if (loadRevision !== exportRevision || currentSelection?.key !== selected.key || !ready) return;
     if (!blob) { byId("status").textContent = "保存できませんでした"; return; }
@@ -522,7 +602,7 @@ function initialize(selected) {
     canvas.width = chart.naturalWidth; canvas.height = chart.naturalHeight;
   }
   const reviewed = selected.variant.features === "reviewed-aupq35";
-  for (const canvas of [analysisLayer, jetLayer, windLayer, geographyLayer, symbolLayer, temperatureLayer]) {
+  for (const canvas of [analysisLayer, jetLayer, windLayer, geographyLayer, symbolLayer, temperatureLayer, overlayLayer]) {
     canvas.width = reviewed ? chart.naturalWidth : 1;
     canvas.height = reviewed ? chart.naturalHeight : 1;
     canvas.hidden = !reviewed;
@@ -553,7 +633,7 @@ async function checkedImage(path, expectedHash, width, height, signal, retry = f
 function keepDrawing() {
   if (!ready || !currentSelection) return;
   if (pointer !== null) finish({ pointerId: pointer });
-  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500 });
+  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, overlayTarget, overlays: Object.fromEntries(Object.entries(overlayState).map(([id,state]) => [id,{...state}])) });
 }
 function setOptions(select, records, value) {
   select.replaceChildren();
@@ -587,9 +667,12 @@ async function loadSelection(retry = false) {
   currentSelection = selected; ready = false; paper.hidden = true; paper.dataset.ready = "false";
   active = pointer = pan = null;
   geography = satelliteImage = elevationData = terrainImage = symbols = windBands = candidates = isotherms = null;
-  loadingError = geographyError = terrainError = symbolError = analysisError = temperatureError = "";
+  panelRegistration = null;
+  loadingError = geographyError = terrainError = symbolError = analysisError = temperatureError = overlayError = "";
   history.length = future.length = 0;
   const state = drawingStates.get(selected.key);
+  overlayState = state?.overlays ? Object.fromEntries(Object.entries(state.overlays).map(([id,item]) => [id,{...item}])) : newOverlayState();
+  overlayTarget = state?.overlayTarget || 500;
   if (state) { history.push(...state.history); future.push(...state.future); }
   showWind = state?.showWind || false; showTrough = state?.showTrough || false; showRidge = state?.showRidge || false; showJet = state?.showJet || false;
   showSymbols = state?.showSymbols ?? true; showGeography = state?.showGeography ?? true;
@@ -668,8 +751,10 @@ async function loadFeatures(selected, revision, signal) {
         const checked = ChartGeography.validate(await fetchJSON("land-sea.json", signal), data);
         if (!current()) return;
         geography = checked;
+        try { panelRegistration = ChartAnalysis.validatePanelRegistration(checked,data); }
+        catch { overlayError = "重ね合わせの位置を確認できません。各気圧面の解析は使えます。"; }
         if (terrainImage) for (const style of ChartGeography.patterns.filter(p => p.terrain !== undefined)) ChartGeography.preview(byId("geography-patterns").querySelector(`[data-pattern="${style.id}"] canvas`), style.id, null, terrainImage, geography);
-        drawGeography(); controls();
+        drawGeography(); drawOverlays(); controls();
         try {
           const image = await checkedImage(checked.satellite.path, checked.satellite.image_sha256, checked.satellite.width, checked.satellite.height, signal);
           if (current()) { satelliteImage = image; ChartGeography.preview(byId("geography-patterns").querySelector('[data-pattern="satellite"] canvas'), "satellite", image); drawGeography(); controls(); }

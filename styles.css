@@ -103,6 +103,22 @@ input[type='color'] { display: block; border: 0; padding: 0; width: 30px; height
 #temperature-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 #ink { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: multiply; cursor: crosshair; touch-action: none; z-index: 6; }
 #ink[data-mode='move'] { cursor: grab; } #ink[data-dragging='true'][data-mode='move'] { cursor: grabbing; }
+#overlay-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: multiply; z-index: 5; }
+.overlay-panel { margin: 0 0 10px; border: 1px solid #bacbd8; border-radius: 6px; background: #f7fafc; }
+.overlay-panel > summary { min-height: 36px; padding: 8px; font-size: 12px; }
+#overlay-count { float: right; font-size: 10px; font-weight: 400; color: #58677a; }
+.overlay-panel[open] { padding: 0 8px 8px; }
+.overlay-panel[open] > summary { margin: 0 -8px 6px; border-bottom: 1px solid #dce3eb; }
+.overlay-target-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; }
+.overlay-target-label select { min-width: 0; flex: 1; margin: 0; font-size: 11px; }
+.overlay-source { font-size: 10px; line-height: 1.6; color: #58677a; margin: 7px 0; }
+.overlay-tool > button { width: 100%; }
+.overlay-opacity { padding: 6px 8px; border-top: 1px solid #dce3eb; }
+.overlay-opacity label { display: block; font-size: 11px; }
+.overlay-opacity input { width: 100%; accent-color: #164b68; margin: 6px 0 0; }
+#overlay-active-list { padding: 0; margin: 8px 0; list-style: none; font-size: 10px; line-height: 1.6; color: #405367; }
+#overlay-clear { width: 100%; font-size: 11px; }
+.overlay-notice { position: absolute; left: 60px; right: 16px; top: 38px; z-index: 2; width: fit-content; max-width: calc(100% - 76px); border: 1px solid #c2d0dd; border-radius: 4px; background: #f8fafcee; color: #31475b; padding: 4px 7px; font-size: 10px; line-height: 1.5; pointer-events: none; }
 footer { display: flex; justify-content: space-between; flex-wrap: wrap; flex-shrink: 0; gap: 2px 14px; font-size: 10px; color: #68778b; background: #fff; border-top: 1px solid #d4dce6; padding: 4px 12px; }
 a { color: #315f8a; text-underline-offset: 2px; }
 dialog { max-width: calc(100vw - 32px); border: 1px solid #d4dce6; border-radius: 7px; padding: 18px; box-shadow: 0 6px 30px #18263526; }

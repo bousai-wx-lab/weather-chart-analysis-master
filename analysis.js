@@ -132,8 +132,9 @@ const ChartAnalysis = (() => {
     }
     return axes;
   }
-  function drawJetAxes(ctx, axes, bounds) {
+  function drawJetAxes(ctx, axes, bounds, opacity = 1) {
     ctx.save();
+    ctx.globalAlpha = opacity;
     ctx.beginPath(); ctx.rect(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1]); ctx.clip();
     ctx.strokeStyle = "#f02020"; ctx.lineWidth = 10; ctx.lineCap = "round"; ctx.lineJoin = "round";
     for (const axis of axes) {
@@ -251,9 +252,9 @@ const ChartAnalysis = (() => {
     ctx.restore();
     }
   }
-  function drawTroughs(ctx, curves) {
+  function drawTroughs(ctx, curves, opacity = 1) {
     ctx.save(); ctx.strokeStyle = "#f02020"; ctx.lineWidth = 4;
-    ctx.globalAlpha = 0.85; ctx.lineCap = ctx.lineJoin = "round";
+    ctx.globalAlpha = 0.85 * opacity; ctx.lineCap = ctx.lineJoin = "round";
     for (const points of curves) {
       if (points.length < 2) continue;
       const sides = [[], []];
@@ -280,9 +281,9 @@ const ChartAnalysis = (() => {
     }
     ctx.restore();
   }
-  function drawRidges(ctx, curves) {
+  function drawRidges(ctx, curves, opacity = 1) {
     ctx.save(); ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 4;
-    ctx.globalAlpha = 0.85; ctx.lineCap = "round"; ctx.lineJoin = "miter";
+    ctx.globalAlpha = 0.85 * opacity; ctx.lineCap = "round"; ctx.lineJoin = "miter";
     for (const points of curves) {
       if (points.length < 2) continue;
       const samples = []; let distance = 0;
@@ -309,6 +310,43 @@ const ChartAnalysis = (() => {
     }
     ctx.restore();
   }
-  return { validate, validateHeightAxes, analyze, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges };
+  const overlayTools = Object.freeze([
+    { id: "jet-on-500", kind: "jet", source_hpa: 300, target_hpa: 500, label: "強風軸" },
+    { id: "trough-on-300", kind: "trough", source_hpa: 500, target_hpa: 300, label: "トラフ" },
+    { id: "ridge-on-300", kind: "ridge", source_hpa: 500, target_hpa: 300, label: "リッジ" }
+  ].map(Object.freeze));
+  function validatePanelRegistration(data, chart) {
+    for (const key of ["source_sha256", "image_sha256", "observation_time", "width", "height"])
+      if (data?.[key] !== chart[key]) throw Error("重ね合わせの資料が原図と一致しません");
+    if (data.projection?.type !== "north-polar-stereographic" || data.projection.central_longitude !== 140 ||
+        !Number.isFinite(data.projection.radius_scale_px) || data.projection.radius_scale_px <= 0 ||
+        !Array.isArray(data.projection.pole) || data.projection.pole.length !== 2 || !data.projection.pole.every(Number.isFinite) ||
+        !Array.isArray(data.panels) || data.panels.length !== 2 || !Number.isFinite(Date.parse(data.observation_time))) throw Error("重ね合わせの地図を確認できません");
+    const expected = [[55,121.3,1990.96,1441.63], [55,1537.68,1990.96,2858]];
+    const panels = data.panels.map((panel, i) => {
+      if (panel.pressure_hpa !== [300,500][i] || panel.offset_y !== [0,1416.38][i] ||
+          !Array.isArray(panel.bounds) || panel.bounds.length !== 4 || !panel.bounds.every((v,k) => Number.isFinite(v) && Math.abs(v-expected[i][k]) < .001)) throw Error("重ね合わせの位置を確認できません");
+      return Object.freeze({ pressure_hpa: panel.pressure_hpa, offset_y: panel.offset_y, bounds: Object.freeze([...panel.bounds]) });
+    });
+    return Object.freeze({ observation_time: data.observation_time, panels: Object.freeze(panels) });
+  }
+  function drawPanelOverlay(ctx, candidates, registration, id, opacity) {
+    const tool = overlayTools.find(t => t.id === id);
+    const source = registration?.panels.find(p => p.pressure_hpa === tool?.source_hpa);
+    const target = registration?.panels.find(p => p.pressure_hpa === tool?.target_hpa);
+    if (!tool || !source || !target || !candidates || !Number.isFinite(opacity) || opacity < 0 || opacity > 1) throw Error("重ね合わせの設定を確認できません");
+    ctx.save();
+    try {
+      const [left,top,right,bottom] = target.bounds;
+      ctx.beginPath(); ctx.rect(left,top,right-left,bottom-top); ctx.clip();
+      // Both reviewed panels share their geographic frame. Move only the
+      // analysis, and clip it to the destination map without altering its data.
+      ctx.translate(0, target.offset_y-source.offset_y);
+      if (tool.kind === "jet") drawJetAxes(ctx,candidates.jets,source.bounds,opacity);
+      if (tool.kind === "trough") drawTroughs(ctx,candidates.troughs,opacity);
+      if (tool.kind === "ridge") drawRidges(ctx,candidates.ridges,opacity);
+    } finally { ctx.restore(); }
+  }
+  return { validate, validateHeightAxes, analyze, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges, overlayTools, validatePanelRegistration, drawPanelOverlay };
 })();
 if (typeof module !== "undefined") module.exports = ChartAnalysis;

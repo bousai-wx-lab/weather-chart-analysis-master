@@ -270,3 +270,56 @@ assert.equal(require("node:crypto").createHash("sha256").update(fs.readFileSync(
 assert.deepEqual(terrain.legend.boundaries_m, [200, 500, 1000, 2000, 4000, 6000]);
 for (const p of terrain.reviewed_points) assert.ok(p.elevation_m >= p.expected_range_m[0] && p.elevation_m <= p.expected_range_m[1], p.place);
 console.log("ELEVATION_OK native_units=metres source_binding=checked atlas_hash=checked legend=checked source_points=5 removed_options=3 invalid_data=blocked");
+
+const registration = analysis.validatePanelRegistration(coast,chart);
+assert.equal(registration.observation_time,"2026-10-02T00:00:00Z");
+for (const key of ["source_sha256","image_sha256","observation_time","width","height"]) assert.throws(() => analysis.validatePanelRegistration({...coast,[key]:"mismatch"},chart));
+for (const change of [
+ d=>{d.panels.reverse();}, d=>{d.panels[1].offset_y+=10;}, d=>{d.panels[0].bounds[0]+=10;},
+ d=>{d.panels[1].pressure_hpa=850;}, d=>{d.projection.type="mercator";}, d=>{d.projection.radius_scale_px=NaN;}
+]) { const bad=structuredClone(coast);change(bad);assert.throws(()=>analysis.validatePanelRegistration(bad,chart)); }
+const overlayCandidates = analysis.analyze(actual,wind,guides), untouchedCandidates = JSON.stringify(overlayCandidates);
+function recordCanvas() {
+ const stack=[],strokes=[],clips=[];let points=[],rectangles=[];
+ return { tx:0,ty:0,globalAlpha:1,strokes,clips,
+  save(){stack.push({tx:this.tx,ty:this.ty,globalAlpha:this.globalAlpha});},
+  restore(){Object.assign(this,stack.pop());},
+  translate(x,y){this.tx+=x;this.ty+=y;},
+  beginPath(){points=[];rectangles=[];},
+  rect(x,y,w,h){rectangles.push([x+this.tx,y+this.ty,w,h]);},clip(){clips.push(...rectangles);},
+  moveTo(x,y){points.push([x+this.tx,y+this.ty]);},lineTo(x,y){points.push([x+this.tx,y+this.ty]);},
+  bezierCurveTo(...p){for(let i=0;i<p.length;i+=2)points.push([p[i]+this.tx,p[i+1]+this.ty]);},
+  stroke(){strokes.push({points:[...points],alpha:this.globalAlpha,color:this.strokeStyle,width:this.lineWidth});}
+ };
+}
+for (const tool of analysis.overlayTools) {
+ const base=recordCanvas();
+ if(tool.kind==="jet")analysis.drawJetAxes(base,overlayCandidates.jets,coast.panels[0].bounds);
+ if(tool.kind==="trough")analysis.drawTroughs(base,overlayCandidates.troughs);
+ if(tool.kind==="ridge")analysis.drawRidges(base,overlayCandidates.ridges);
+ // Independent geographic expectation: corresponding pixels have identical x
+ // and a fixed 1416.38px map-origin separation in this reviewed source page.
+ const expectedShift=tool.target_hpa===500 ? 1416.38 : -1416.38;
+ for(const opacity of [0,.35,1]) {
+  const copy=recordCanvas();analysis.drawPanelOverlay(copy,overlayCandidates,registration,tool.id,opacity);
+  assert.equal(copy.strokes.length,base.strokes.length);
+  for(let i=0;i<base.strokes.length;i++) {
+   const original=base.strokes[i],overlaid=copy.strokes[i];
+   assert.equal(overlaid.color,original.color);assert.equal(overlaid.width,original.width);
+   assert.ok(Math.abs(overlaid.alpha-original.alpha*opacity)<1e-12);
+   assert.equal(overlaid.points.length,original.points.length);
+   for(let j=0;j<original.points.length;j++) {
+    assert.ok(Math.abs(overlaid.points[j][0]-original.points[j][0])<1e-9);
+    assert.ok(Math.abs(overlaid.points[j][1]-original.points[j][1]-expectedShift)<1e-9);
+   }
+  }
+  const bounds=coast.panels.find(p=>p.pressure_hpa===tool.target_hpa).bounds;
+  assert.deepEqual(copy.clips[0],[bounds[0],bounds[1],bounds[2]-bounds[0],bounds[3]-bounds[1]],"clip to destination map, including jet arrowheads");
+  assert.equal(copy.tx,0);assert.equal(copy.ty,0);assert.equal(copy.globalAlpha,1);
+ }
+}
+for(const opacity of [-.1,1.1,NaN,Infinity])assert.throws(()=>analysis.drawPanelOverlay(recordCanvas(),overlayCandidates,registration,"jet-on-500",opacity));
+assert.throws(()=>analysis.drawPanelOverlay(recordCanvas(),overlayCandidates,null,"jet-on-500",.6));
+assert.throws(()=>analysis.drawPanelOverlay(recordCanvas(),overlayCandidates,registration,"jet-on-850",.6));
+assert.equal(JSON.stringify(overlayCandidates),untouchedCandidates,"copies never modify native analyses");
+console.log("PANEL_OVERLAYS_OK directions=both types=jet_trough_ridge geometry=every_vertex_and_arrowhead clip=destination opacity=zero_middle_full source_and_time_binding=checked originals=unchanged invalid_registration=blocked");
