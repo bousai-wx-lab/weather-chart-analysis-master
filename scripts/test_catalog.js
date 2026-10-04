@@ -24,7 +24,7 @@ for (const product of data.products) for (const variant of product.variants) for
   assert.equal(allowed.sha256, page.image_sha256);
   pages++; if (variant.features === "reviewed-aupq35") reviewed++;
 }
-assert.equal(pages, 61); assert.equal(reviewed, 1);
+assert.equal(pages, 122); assert.equal(reviewed, 1);
 const original = JSON.parse(fs.readFileSync(path.join(root, "chart.json")));
 const selected = catalog.selection(data, "aupq35", "aupq35-reviewed", 1);
 assert.equal(selected.page.image_sha256, original.image_sha256);

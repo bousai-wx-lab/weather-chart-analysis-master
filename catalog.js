@@ -1,7 +1,8 @@
 "use strict";
 const ChartCatalog = (() => {
   const hash = /^[a-f0-9]{64}$/;
-  function validate(data) {
+  function validate(data, {local=false}={}) {
+    const localCollection=local && data?.collection_kind==="local";
     if (!data || data.schema_version !== 1 || data.refresh !== "none" || !Number.isFinite(Date.parse(data.compiled_at)) || !Array.isArray(data.products) || !data.products.length || data.products.length > 100) throw Error("Invalid chart catalog");
     const ids = new Set(), drawings = new Set();
     for (const product of data.products) {
@@ -10,10 +11,11 @@ const ChartCatalog = (() => {
       const variants = new Set();
       for (const variant of product.variants) {
         const source = new URL(variant.source_url);
-        if (!/^[a-z0-9-]+$/.test(variant.id) || variants.has(variant.id) || typeof variant.label !== "string" || !hash.test(variant.source_sha256) || !Number.isFinite(Date.parse(variant.retrieved_at)) || source.protocol !== "https:" || source.username || source.password || !["www.jma.go.jp", "www.data.jma.go.jp"].includes(source.hostname) || !/\.(pdf|png)$/.test(source.pathname) || !["manual", "reviewed-aupq35", "reviewed-aupq78", "reviewed-axfe578", "reviewed-feas50"].includes(variant.features) || !Array.isArray(variant.pages) || !variant.pages.length || variant.pages.length > 12) throw Error("Invalid chart source");
+        if (!/^[a-z0-9-]+$/.test(variant.id) || variants.has(variant.id) || typeof variant.label !== "string" || !hash.test(variant.source_sha256) || !Number.isFinite(Date.parse(variant.retrieved_at)) || source.protocol !== "https:" || source.username || source.password || !["www.jma.go.jp", "www.data.jma.go.jp"].includes(source.hostname) || !/\.(pdf|png)$/.test(source.pathname) || !["manual", "reviewed-aupq35", "reviewed-aupq78", "reviewed-axfe578", "reviewed-feas50", "experimental-snapshot", ...(localCollection?["experimental-local"]:[])].includes(variant.features) || !Array.isArray(variant.pages) || !variant.pages.length || variant.pages.length > 12) throw Error("Invalid chart source");
+        if(variant.features==="experimental-snapshot" && (!/^assets\/analysis\/[a-z0-9-]+\.json$/.test(variant.analysis_path) || !hash.test(variant.analysis_sha256) || !["aupq35","aupq78","axfe578","feas-feas50"].includes(product.id))) throw Error("Invalid snapshot analysis");
         variants.add(variant.id);
         for (const [index, page] of variant.pages.entries()) {
-          if (page.number !== index + 1 || !hash.test(page.image_sha256) || !/^assets\/(charts\/[a-z0-9-]+|aupq35)\.png$/.test(page.image_path) || !Number.isInteger(page.width) || !Number.isInteger(page.height) || page.width < 200 || page.height < 200 || page.width > 8192 || page.height > 12288 || page.width * page.height > 40000000) throw Error("Invalid chart image");
+          if (page.number !== index + 1 || !hash.test(page.image_sha256) || !(/^assets\/(charts\/[a-z0-9-]+|aupq35)\.png$/.test(page.image_path) || (localCollection && /^local-collection\/charts\/[a-z0-9-]+\.png$/.test(page.image_path))) || !Number.isInteger(page.width) || !Number.isInteger(page.height) || page.width < 200 || page.height < 200 || page.width > 8192 || page.height > 12288 || page.width * page.height > 40000000) throw Error("Invalid chart image");
           const key = `${product.id}/${variant.id}/${page.number}`;
           if (drawings.has(key)) throw Error("Duplicate chart drawing");
           drawings.add(key);

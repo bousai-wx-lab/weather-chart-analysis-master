@@ -11,7 +11,7 @@ allowlist = json.loads((root / "release-allowlist.json").read_text())
 # Content versions keep browsers from combining new HTML with cached old code.
 html_path = root / "index.html"
 html = html_path.read_text()
-for asset in ("styles.css", "analysis.js", "geography.js", "catalog.js", "low-level.js", "app.js"):
+for asset in ("styles.css", "analysis.js", "geography.js", "geography-atlas.js", "catalog.js", "low-level.js", "dynamics.js", "snapshot-analysis.js", "app.js"):
     version = hashlib.sha256((root / asset).read_bytes()).hexdigest()[:16]
     html, count = re.subn(
         rf'((?:src|href)=")({re.escape(asset)})(?:\?v=[a-f0-9]+)?(")',

@@ -1,7 +1,7 @@
 "use strict";
 const GeographyAtlas=(()=>{
   function validate(data,selected) {
-    if(data?.schema_version!==1 || data.selections?.length!==61 || data.coast_source?.license!=="Public domain")throw Error("Invalid geography catalog");
+    if(data?.schema_version!==1 || !Array.isArray(data.selections) || !data.selections.length || data.selections.length>2000 || data.coast_source?.license!=="Public domain")throw Error("Invalid geography catalog");
     const records=data.selections.filter(r=>r.product===selected.product.id && r.variant===selected.variant.id && r.page===selected.page.number);
     if(records.length!==1)throw Error("Geography selection mismatch");
     const r=records[0];

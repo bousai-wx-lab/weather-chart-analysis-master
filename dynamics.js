@@ -9,11 +9,12 @@ const ChartDynamics = (() => {
     return [{pressure_hpa:500,values:[],colors:[],dash:[],opacity:.5},{...scales[1],values,colors:values.map((v,i)=>["#4c1d95","#5932a4","#6847b3","#6d5dc4","#6071ce","#5485d7","#5799df","#6aafe8","#85c5f1","#a0d8fa"][Math.round((v+12)*9/39)])}];
   }
   function validateFeas(data,selected) {
+    if(data?.trough_analysis && data.trough_analysis.operationally_approved!==true)throw Error("500hPaトラフは検証中のため表示できません");
     if(selected.product.id!=="feas-feas50" || selected.variant.id!=="feas50-12" || selected.page.number!==1 || data?.schema_version!==1 || data.product!=="FEAS50" || data.unit!=="degC" || data.source_sha256!=="dfd41a8166153acb51060740a879f0bc3643e61d0b887aad48f087eaa064f8b9" || data.image_sha256!=="870cf0872dabb09e4bccad522f4be247125bb875bd0675cdbe372049f4ee6b09" || data.source_sha256!==selected.variant.source_sha256 || data.image_sha256!==selected.page.image_sha256 || data.width!==2048 || data.height!==2605 || data.observation_time!=="2026-10-02T12:00:00Z" || data.symbols?.length!==28 || data.panels?.length!==2)throw Error("FEAS50の資料が原図と一致しません");
     const inside=(p,b)=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&p[0]>=b[0]-5&&p[0]<=b[2]+5&&p[1]>=b[1]-5&&p[1]<=b[3]+5;
     for(const [i,p] of data.panels.entries()) {
       const b=p.bounds;
-      if(p.pressure_hpa!==[500,850][i] || b?.length!==4 || !b.every(Number.isFinite) || b[0]<117 || b[2]>1929 || b[1]<[146,1402][i] || b[3]>[1213,2469][i] || p.troughs?.length!==2 || p.ridges?.length!==2 || [...p.troughs,...p.ridges].some(a=>a.points?.length<3||!a.points.every(q=>inside(q,b))))throw Error("FEAS50の気圧面が一致しません");
+      if(p.pressure_hpa!==[500,850][i] || b?.length!==4 || !b.every(Number.isFinite) || b[0]<117 || b[2]>1929 || b[1]<[146,1402][i] || b[3]>[1213,2469][i] || !Array.isArray(p.troughs) || (i && p.troughs.length!==2) || p.ridges?.length!==2 || p.troughs.some(a=>a.points?.length<(i?3:2)||!a.points.every(q=>inside(q,b))) || p.ridges.some(a=>a.points?.length<3||!a.points.every(q=>inside(q,b))))throw Error("FEAS50の気圧面が一致しません");
       if(i) {
         if(p.axis_pressure_hpa!==0 || p.vertical_velocity_pressure_hpa!==undefined || p.ascent_rectangles!==undefined || JSON.stringify(p.cold_thresholds)!==JSON.stringify([0,-3,-6,-9,-12]) || p.levels?.length!==14)throw Error("FEAS下段の要素が一致しません");
         for(const [j,l] of p.levels.entries())if(l.temperature_c!==-12+3*j || !l.lines?.length || l.lines.some(line=>typeof line.closed!=="boolean"||line.points?.length<2||!line.points.every(q=>inside(q,b))))throw Error("FEASの等温線が一致しません");

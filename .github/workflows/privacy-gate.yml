@@ -45,6 +45,8 @@ jobs:
         run: |
           node --check app.js
           node --check analysis.js
+          node --check snapshot-analysis.js
+          node scripts/test_snapshot_analysis.js
           node --check catalog.js
           node scripts/test_analysis.js
           node scripts/test_catalog.js

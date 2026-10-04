@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,".."),atlas=require("../geography-atlas.js"),c
 const c=catalog.validate(read("chart-catalog.json")),a=read("geography-catalog.json"),allowed=read("release-allowlist.json"),nomap=[];
 for(const product of c.products)for(const variant of product.variants)for(const page of variant.pages) {
  const s=catalog.selection(c,product.id,variant.id,page.number),r=atlas.validate(a,s);
- if(!r.panels.length){nomap.push(variant.id);continue;}
+ if(!r.panels.length){if(!variant.id.endsWith("-20261005"))nomap.push(variant.id);continue;}
  const bytes=fs.readFileSync(path.join(root,r.mask.path));assert.equal(crypto.createHash("sha256").update(bytes).digest("hex"),r.mask.sha256);
  assert.equal(bytes.readUInt32BE(16),r.width);assert.equal(bytes.readUInt32BE(20),r.height);assert.equal(bytes[25],6);
  const approved=allowed.allowed_binary_assets.find(x=>x.path===r.mask.path);assert.equal(approved?.sha256,r.mask.sha256);

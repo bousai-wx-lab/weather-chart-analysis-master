@@ -11,6 +11,10 @@ for(const [file,id,variant,symbols] of [["axfe578-analysis.json","axfe578","axfe
  for(const [i,t] of low.scales[1].values.entries())assert.equal(scale.colors[scale.values.indexOf(t)],low.scales[1].colors[i]);
  for(const mutate of [x=>x.source_sha256="0".repeat(64),x=>x.image_sha256="0".repeat(64),x=>x.observation_time="2026-10-03T00:00:00Z",x=>x.panels[0].pressure_hpa=850,x=>x.panels[1].levels[0].temperature_c=-15,x=>x.panels[0].troughs[0].points[0]=[0,0]]) {const bad=structuredClone(d);mutate(bad);assert.throws(()=>dynamics.validate(bad,s));}
  if(id==="axfe578") {assert.equal(d.panels[1].vertical_velocity_pressure_hpa,700);const bad=structuredClone(d);bad.panels[1].vertical_velocity_pressure_hpa=850;assert.throws(()=>dynamics.validate(bad,s));assert.throws(()=>dynamics.validate(d,catalog.selection(c,id,"axfe578-12",1)));}
- else {assert.equal(d.panels[1].axis_pressure_hpa,0);assert.equal(d.panels[1].ascent_rectangles,undefined);const bad=structuredClone(d);bad.panels[1].vertical_velocity_pressure_hpa=700;assert.throws(()=>dynamics.validate(bad,s));}
+ else {
+  assert.equal(d.panels[1].axis_pressure_hpa,0);assert.equal(d.panels[1].ascent_rectangles,undefined);const bad=structuredClone(d);bad.panels[1].vertical_velocity_pressure_hpa=700;assert.throws(()=>dynamics.validate(bad,s));
+  for(const count of [0,1,3,6]) {const flexible=structuredClone(d);flexible.panels[0].troughs=Array.from({length:count},(_,i)=>({...structuredClone(d.panels[0].troughs[0]),id:`axis-${i}`,points:structuredClone(d.panels[0].troughs[0].points.slice(0,2))}));assert.equal(dynamics.validate(flexible,s),flexible);}
+  const experimental=structuredClone(d);experimental.trough_analysis={status:"EXPERIMENTAL_UNVERIFIED",operationally_approved:false};assert.throws(()=>dynamics.validate(experimental,s),/検証中/);
+ }
 }
 console.log("DYNAMICS_TESTS_OK source_time_pressure_labels_and_missing_cold_boundaries");
