@@ -6,7 +6,7 @@ const LowLevelAnalysis = (() => {
     {pressure_hpa:850,values:[-6,-3,0,3,6,9,12,15,18,21]}
   ].map(s => ({...s,colors:s.values.map((v,i) => {
     const colors=["#4c1d95","#5932a4","#6847b3","#6d5dc4","#6071ce","#5485d7","#5799df","#6aafe8","#85c5f1","#a0d8fa"];
-    return colors[Math.round(i*(colors.length-1)/(s.values.length-1))];
+    return colors[s.pressure_hpa===850?Math.round((v+12)*9/39):Math.round(i*(colors.length-1)/(s.values.length-1))];
   }),dash:[],opacity:.5}));
   const sourceHash = "58be2c8fd8bcc5b27c87a8fa748869a2145ca7d8403a9ecdc3ce586cfc95f249";
   const imageHash = "a45b011b2c5329b4f3c2dabd035ef7daac90669fb08d848974cf95852321382c";
@@ -16,7 +16,7 @@ const LowLevelAnalysis = (() => {
     const inside=(p,b)=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&p[0]>=b[0]-8&&p[0]<=b[2]+8&&p[1]>=b[1]-8&&p[1]<=b[3]+8;
     for (const [index,panel] of data.panels.entries()) {
       const scale=scales[index], b=expectedBounds[index];
-      if (panel.pressure_hpa!==scale.pressure_hpa || !Array.isArray(panel.bounds) || panel.bounds.length!==4 || panel.bounds.some((v,i)=>v!==b[i]) || panel.levels?.length!==scale.values.length || JSON.stringify(panel.cold_thresholds)!==JSON.stringify(index? [0,-3,-6,-9,-12]:[-15,-18,-21,-24,-27]) || !Array.isArray(panel.wet_rectangles) || !panel.wet_rectangles.length || panel.wet_rectangles.length>600 || panel.troughs?.length!==(index?1:4) || panel.ridges?.length!==(index?0:2)) throw Error("AUPQ78の気圧面を確認できません");
+      if (panel.pressure_hpa!==scale.pressure_hpa || !Array.isArray(panel.bounds) || panel.bounds.length!==4 || panel.bounds.some((v,i)=>v!==b[i]) || panel.levels?.length!==scale.values.length || JSON.stringify(panel.cold_thresholds)!==JSON.stringify(index? [0,-3,-6,-9,-12]:[-15,-18,-21,-24,-27]) || !Array.isArray(panel.wet_rectangles) || !panel.wet_rectangles.length || panel.wet_rectangles.length>600 || panel.troughs?.length!==(index?3:4) || panel.ridges?.length!==2) throw Error("AUPQ78の気圧面を確認できません");
       for (const [i,level] of panel.levels.entries()) {
         if (level.temperature_c!==scale.values[i] || !Array.isArray(level.lines) || !level.lines.length || !Array.isArray(level.labels)) throw Error("AUPQ78の等温線を確認できません");
         for (const line of level.lines) if (typeof line.closed!=="boolean" || line.points?.length<2 || line.points.length>1500 || !line.points.every(p=>inside(p,b)) || line.points.some((p,j)=>j&&Math.hypot(p[0]-line.points[j-1][0],p[1]-line.points[j-1][1])<.1)) throw Error("AUPQ78の等温線の位置を確認できません");
@@ -24,12 +24,17 @@ const LowLevelAnalysis = (() => {
       }
       for (const r of panel.wet_rectangles) if (r?.length!==4 || !inside(r.slice(0,2),b) || !inside(r.slice(2),b) || r[2]<=r[0] || r[3]<=r[1] || r[3]-r[1]>14.1) throw Error("AUPQ78の湿域を確認できません");
       const reviewedCrossings=index?[11503,11507,11509,11514]:[3336,3341,3342,3344,3345,3349];
-      if (JSON.stringify(panel.troughs.map(a=>a.id))!==JSON.stringify(index?['japan']:['west-low','southwest','japan','east-low']) || JSON.stringify(panel.ridges.map(a=>a.id))!==JSON.stringify(index?[]:['west-ridge','east-ridge'])) throw Error("AUPQ78の解析の枝が一致しません");
-      const area=index?[1350,1800,1580,2200]:[930,290,1880,825];
+      if (JSON.stringify(panel.troughs.map(a=>a.id))!==JSON.stringify(index?['west-low','northeast-low','east-low']:['west-low','southwest','japan','east-low']) || JSON.stringify(panel.ridges.map(a=>a.id))!==JSON.stringify(index?['northwest-ridge','east-ridge']:['west-ridge','east-ridge'])) throw Error("AUPQ78の解析の枝が一致しません");
+      const area=index?[1060,1655,1930,2240]:[930,290,1880,825];
       for (const [kind,axes] of [['trough',panel.troughs],['ridge',panel.ridges]]) for (const axis of axes) {
-        if (axis.kind!==kind || axis.points?.length<2 || axis.points.length>4 || !axis.points.every(p=>inside(p,area)) || axis.height_crossings?.length<2 || axis.height_crossings.some(c=>!reviewedCrossings.includes(c.height_path)||!inside(c.point,b))) throw Error("AUPQ78の谷・尾根を確認できません");
-        for (const dim of [0,1]) {const sign=Math.sign(axis.points.at(-1)[dim]-axis.points[0][dim]);if (!sign || axis.points.some((p,j)=>j&&sign*(p[dim]-axis.points[j-1][dim])<=0)) throw Error("AUPQ78の軸の方向を確認できません");}
+        if (axis.kind!==kind || axis.points?.length<2 || axis.points.length>6 || !axis.points.every(p=>inside(p,area)) || (!index && axis.height_crossings?.length<2) || axis.height_crossings.some(c=>!reviewedCrossings.includes(c.height_path)||!inside(c.point,b))) throw Error("AUPQ78の谷・尾根を確認できません");
+        if (!index) for (const dim of [0,1]) {const sign=Math.sign(axis.points.at(-1)[dim]-axis.points[0][dim]);if (!sign || axis.points.some((p,j)=>j&&sign*(p[dim]-axis.points[j-1][dim])<=0)) throw Error("AUPQ78の軸の方向を確認できません");}
       }
+    }
+    for (const axis of [...data.panels[1].troughs,...data.panels[1].ridges]) {
+      if (axis.review!=="user-drawn fixed-source branch") throw Error("850hPaの参照解析を確認できません");
+      const turns=axis.points.slice(2).map((p,i)=>{const a=axis.points[i],b=axis.points[i+1];return (b[0]-a[0])*(p[1]-b[1])-(b[1]-a[1])*(p[0]-b[0]);}).filter(v=>Math.abs(v)>100);
+      if (turns.some(v=>v*turns[0]<0)) throw Error("850hPaの軸がS字に反転しています");
     }
     for (const s of data.symbols) {
       const b=data.panels.find(p=>p.pressure_hpa===s.pressure_hpa)?.bounds;

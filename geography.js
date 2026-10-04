@@ -143,6 +143,6 @@ const ChartGeography = (() => {
     if (JSON.stringify(data.styles) !== JSON.stringify([{id:"elevation",row:0},{id:"relief",row:1},{id:"elevation-relief",row:2}])) throw Error("Invalid elevation bands");
     return data;
   }
-  return { patterns, validate, validateElevation, draw, preview };
+  return { patterns, texture:tile, validate, validateElevation, draw, preview };
 })();
 if (typeof module !== "undefined") module.exports = ChartGeography;

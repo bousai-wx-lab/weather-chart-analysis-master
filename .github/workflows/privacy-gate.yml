@@ -50,6 +50,10 @@ jobs:
           node scripts/test_catalog.js
           node --check low-level.js
           node scripts/test_low_level.js
+          node --check dynamics.js
+          node --check geography-atlas.js
+          node scripts/test_dynamics.js
+          node scripts/test_geography_atlas.js
 
   build-pages-artifact:
     needs: verify-public-surface

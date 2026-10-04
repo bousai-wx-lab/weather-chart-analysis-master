@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-04T03:03:27.015424+00:00",
+  "generated_at": "2026-10-04T05:20:55.706066+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
-      "bytes": 3842,
-      "sha256": "4e98b7ca5136300db462318d55ee766215fcf20269160f54f3d5043f7f284838",
+      "bytes": 4006,
+      "sha256": "5e410017102b6b74b361259c0e916a4d1be91dc7846a685b1f276b4b4094e9d4",
       "mime_type": "application/yaml"
     },
     {
       "path": ".gitignore",
-      "bytes": 3437,
-      "sha256": "057e67c3fbfb95694e9ae43f1cbb93a6b852e87c0b7ae95b42159e94f0291b30",
+      "bytes": 4278,
+      "sha256": "9df1bf1308953b661236369442801339d7cc67f16ca42068270ec10d881f3bec",
       "mime_type": "application/octet-stream"
     },
     {
@@ -29,8 +29,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 20185,
-      "sha256": "ea1d03ba7b1ece8bb6c32d988e66b7c129f9244c2962cff50c9d33d7e7566d30",
+      "bytes": 22562,
+      "sha256": "e03fe07d8a531d12bac4def773e1878450883947d18ca8349aabcd5d7eceb14d",
       "mime_type": "text/markdown"
     },
     {
@@ -47,8 +47,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 61904,
-      "sha256": "1eef9cfaae2240fb2388ab1ff222bd61ba638b7cfc95984fe2524fed334ad2d3",
+      "bytes": 70056,
+      "sha256": "65d799b7d2b8d9704fe6e93d9fb8d224bc3f0d972b126991e82904bfee489927",
       "mime_type": "text/javascript"
     },
     {
@@ -430,15 +430,123 @@
       "mime_type": "image/png"
     },
     {
+      "path": "assets/geography/land-0b7f3aebe569.png",
+      "bytes": 34199,
+      "sha256": "e3deadccab4837a3c66dbdf51f3ce0b9aba37faaaede4b4c282394e9313965f9",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-0f193a5a2e8a.png",
+      "bytes": 41765,
+      "sha256": "aaf2b053338f27f81bf7194960d9a729e254b54361f559b8892b8193d95486a0",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-14bd1178267a.png",
+      "bytes": 60806,
+      "sha256": "6e2fffcfa6fdfee70bdb172a5ba329dce8632d163c66df293f042e4d5023cc8c",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-218950834edc.png",
+      "bytes": 63851,
+      "sha256": "a220b9583bb2e20d2b4e41df055ed946a6fc37dba1da70f2feb4f93f65766a26",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-2c40b8dfe27f.png",
+      "bytes": 73678,
+      "sha256": "6af8ce7a25d72ce705c7e9529255832bf37bfe06edb40d94d30312b70d1662b2",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-317af8be3b42.png",
+      "bytes": 57745,
+      "sha256": "168da84959ae0f4172e0a17b6aa6bae83379e8993551846023d99631f3a0f9a6",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-33988e223316.png",
+      "bytes": 52483,
+      "sha256": "951414d617656d22928dd694409a48d97d20effd5590d54d3289e4a723306434",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-36a5c6ae0b7f.png",
+      "bytes": 59956,
+      "sha256": "dcc7ade93724c1bf007b5c4fcee73306198389b8f6573c2c3b93aeeac0df7589",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-4b3a637551a2.png",
+      "bytes": 87520,
+      "sha256": "cd3e010d53476202784c6f4ccdf33d81c6590a06e030c142cbf5a23bdaf25c2d",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-61e44c5c668d.png",
+      "bytes": 80913,
+      "sha256": "c422c4f9c807f20adb925d9c6d3c04e31e2430fb87a2e0dc5662f3a9e749128d",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-64188a869f48.png",
+      "bytes": 43461,
+      "sha256": "f2acb6c7a93dada633998e893ac0f00e30cc7da0be8a6ec6d0f6805c88ed2ee0",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-6ddc30a51fb5.png",
+      "bytes": 67181,
+      "sha256": "931e1698db93f7cf68788a1c2094337dd54993e45cc41a1327d093f1ddd5b434",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-90371f033852.png",
+      "bytes": 65077,
+      "sha256": "c0d7a06e3181ff3e70a7c20bef7220879aab3453dd787340829b83099da70c63",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-bedc0b17c88d.png",
+      "bytes": 51898,
+      "sha256": "3c4a730437f93a4e7bff3f2db37dd325b5d6240c6a45ecbd830f73015872ea41",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-c695df26152c.png",
+      "bytes": 63717,
+      "sha256": "d1359256febd0cdabb4734cb7fbb0d1dec6d3c6a35cb471b4ecd1752aaedabaa",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-df3d315d830d.png",
+      "bytes": 35970,
+      "sha256": "dffe22d0612c6e02810dc795b530ee93c89340f4f7f72155ade8b8ee26ff578b",
+      "mime_type": "image/png"
+    },
+    {
+      "path": "assets/geography/land-f3a86f100925.png",
+      "bytes": 59071,
+      "sha256": "2daf7edec1c7f7b2889d66664e1700c56122f84704335527562daf7e716cc8d0",
+      "mime_type": "image/png"
+    },
+    {
       "path": "aupq78-analysis.json",
-      "bytes": 97108,
-      "sha256": "0224178633976981be06cb38e38a90b4432c8f89cb11d11f9e976c130c1c54b6",
+      "bytes": 97782,
+      "sha256": "6a4d6a408ab86f1108a6afcbcd1fe7b6880d5d3397d8fc46f835f3520fc5026e",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "axfe578-analysis.json",
+      "bytes": 127333,
+      "sha256": "181ea0721aa118d898bfb72df4feeb0f145bcb137316079a31ccaa7096044677",
       "mime_type": "application/json"
     },
     {
       "path": "catalog.js",
-      "bytes": 3347,
-      "sha256": "16658648a095e358880c8790f0fd33ca5f766a79aa528d794f69a39ef2bc5b08",
+      "bytes": 4164,
+      "sha256": "2cdbfad8a54ea70692e004e0c06759c1d40cc830187870f48cf78611ed5fb8c3",
       "mime_type": "text/javascript"
     },
     {
@@ -449,8 +557,8 @@
     },
     {
       "path": "chart-catalog.json",
-      "bytes": 52919,
-      "sha256": "b35a50a149d1008d695eb44e6f16d5fe5675b3de9bd801d328c412d11dbc3f1b",
+      "bytes": 52938,
+      "sha256": "756fd99051ddb9cb12cb6670be1ea4c5aedbf955eef184a84eeb3d9686086178",
       "mime_type": "application/json"
     },
     {
@@ -466,21 +574,45 @@
       "mime_type": "application/json"
     },
     {
+      "path": "dynamics.js",
+      "bytes": 7317,
+      "sha256": "64128d31b94e982f77798e0f23906161de23b3a179e731ee21ec9ea2668628fa",
+      "mime_type": "text/javascript"
+    },
+    {
       "path": "elevation.json",
       "bytes": 4074,
       "sha256": "0d291e6b6fdc094ec093e863c8daeb0ad87ae362cc444fb3936458fa72d7e826",
       "mime_type": "application/json"
     },
     {
+      "path": "feas50-analysis.json",
+      "bytes": 108396,
+      "sha256": "c44fe82bb3d8dcfeb917e583b68f9ed2f6bc2bcc1629ec244a15ee79ea731b32",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "geography-atlas.js",
+      "bytes": 3601,
+      "sha256": "55e4af673b0eba415e47ec502abaaba010429583b028a42c8ccec3477e2de1bb",
+      "mime_type": "text/javascript"
+    },
+    {
+      "path": "geography-catalog.json",
+      "bytes": 52627,
+      "sha256": "18ce3088595dcc5655437d7e8fe45756cdecb9b74f369b8a1b718f5e561ebcc9",
+      "mime_type": "application/json"
+    },
+    {
       "path": "geography.js",
-      "bytes": 9708,
-      "sha256": "acb1baa814de20819ced4be7e1895616c9003b5e6075dca57e53d9a97b5b23d6",
+      "bytes": 9722,
+      "sha256": "14cd8a441522c1e5b25ab5276b3799b21a0a5672a2fce3da9f0182edfda02b86",
       "mime_type": "text/javascript"
     },
     {
       "path": "index.html",
-      "bytes": 24740,
-      "sha256": "8298a50d1603eb72bdad39be98803982e0b37b67a15a824e3f7c9404d35f4bdf",
+      "bytes": 26162,
+      "sha256": "2d74ce6da1a3a8ae5060aac0ca672dfbc89e0b04fde0fcdcf0e5d1b5cd81a3a3",
       "mime_type": "text/html"
     },
     {
@@ -503,14 +635,14 @@
     },
     {
       "path": "low-level.js",
-      "bytes": 7209,
-      "sha256": "d569340c0fa3413a062f73fcaec6cd5659890eb4ffbd85672a60cc00ac45471d",
+      "bytes": 7811,
+      "sha256": "675637aff6d7563d4c0591616abbd15eace1e1c67fc2ea874bc9cc40e94c3d77",
       "mime_type": "text/javascript"
     },
     {
       "path": "release-allowlist.json",
-      "bytes": 23803,
-      "sha256": "fc95b30a6ca4c02fcd85d1f9dbb5d6c95564a1b06ba8f35c8dba0b3ba943b8ff",
+      "bytes": 29818,
+      "sha256": "d46be3e6b0efb61dfd9fd4aad7b6ce925f5a3172bd48a8dc6d20d869a3da81e2",
       "mime_type": "application/json"
     },
     {
@@ -538,9 +670,21 @@
       "mime_type": "text/javascript"
     },
     {
+      "path": "scripts/test_dynamics.js",
+      "bytes": 2019,
+      "sha256": "d2cd86276e967864cf1ed2f55b41d9660df1fbd6d2b5798fa497bebc7bf12913",
+      "mime_type": "text/javascript"
+    },
+    {
+      "path": "scripts/test_geography_atlas.js",
+      "bytes": 1773,
+      "sha256": "a43fb4a6c406b6ef0a62e090e2da9bf345bd3690231efb1d4daae5942dc2467e",
+      "mime_type": "text/javascript"
+    },
+    {
       "path": "scripts/test_low_level.js",
-      "bytes": 3193,
-      "sha256": "c4e40e1072f8ff109b1fb7be3d0d552a0fba1c4b1600cdd5fa7484d58182fd9d",
+      "bytes": 3526,
+      "sha256": "fc0f52159912d97fb9e1ef3f8801f9bbe4df54a23dedbb1b61fc745bbfdf460e",
       "mime_type": "text/javascript"
     },
     {

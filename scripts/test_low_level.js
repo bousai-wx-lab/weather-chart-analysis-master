@@ -19,8 +19,9 @@ assert.equal(data.symbols.length,45);
 // The Japan-relevant branches stay separate and never reverse direction.
 const analysis=require('../analysis.js');
 assert.equal(data.panels[0].troughs.length,4);assert.equal(data.panels[0].ridges.length,2);
-assert.equal(data.panels[1].troughs.length,1);assert.equal(data.panels[1].ridges.length,0);
+assert.equal(data.panels[1].troughs.length,3);assert.equal(data.panels[1].ridges.length,2);
 for (const [i,panel] of data.panels.entries()) for (const axis of [...panel.troughs,...panel.ridges]) {
+ if(i===1) {assert.equal(axis.review,"user-drawn fixed-source branch");continue;}
  assert.ok(axis.height_crossings.length>=2);
  assert.ok(axis.height_crossings.every(c=>![3347,3351,11508,11510].includes(c.height_path)));
  for (const seg of analysis.isothermSegments(axis.points)) for (const dim of [0,1]) {
@@ -33,3 +34,6 @@ for (const [i,panel] of data.panels.entries()) for (const axis of [...panel.trou
 const bent=structuredClone(data);bent.panels[0].troughs[2].points=[[1400,500],[1420,600],[1390,700]];assert.throws(()=>low.validate(bent,selected));
 const remote=structuredClone(data);remote.panels[0].ridges[0].points[0][1]=180;assert.throws(()=>low.validate(remote,selected));
 console.log("LOW_LEVEL_TESTS_OK fixed_time_and_source_bound wet_isotherms_symbols_troughs cold_boundaries_missing_fail_closed");
+
+const invalidS=structuredClone(data);invalidS.panels[1].troughs[2].points=[[1500,1900],[1540,1950],[1500,2000],[1540,2050]];assert.throws(()=>low.validate(invalidS,selected));
+assert.ok(data.panels[1].troughs.every(a=>a.points.every(p=>p[1]<2240)));

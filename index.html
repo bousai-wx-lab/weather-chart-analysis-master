@@ -10,10 +10,12 @@
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
   <link rel="stylesheet" href="styles.css?v=7a72d223fbe81840">
   <script src="analysis.js?v=6e210e2a68561306" defer></script>
-  <script src="geography.js?v=acb1baa814de2081" defer></script>
-  <script src="catalog.js?v=16658648a095e358" defer></script>
-  <script src="low-level.js?v=d569340c0fa3413a" defer></script>
-  <script src="app.js?v=1eef9cfaae2240fb" defer></script>
+  <script src="geography.js?v=14cd8a441522c1e5" defer></script>
+  <script src="catalog.js?v=2cdbfad8a54ea706" defer></script>
+  <script src="low-level.js?v=675637aff6d7563d" defer></script>
+  <script src="geography-atlas.js?v=55e4af673b0eba41" defer></script>
+  <script src="dynamics.js?v=64128d31b94e982f" defer></script>
+  <script src="app.js?v=65d799b7d2b8d970" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -54,7 +56,7 @@
       </div>
       <div class="analysis-list-heading"><h2>この図の解析</h2><button type="button" id="active-only" aria-pressed="false">表示中 <span id="layer-count">0</span></button></div>
       <p class="list-help">項目で表示切替 · 詳細で凡例・設定</p>
-      <div class="layer-group" data-layer-group><h3 id="upper-plane">300 hPa <span>上段</span></h3>
+      <div class="layer-group" data-layer-group><h3 id="upper-plane">300 hPa <span>上段</span></h3><article class="layer-tool" data-layer="vorticity"><div class="layer-row"><button type="button" id="vorticity" class="layer-toggle" aria-pressed="false" disabled>正渦度の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="vorticity" aria-label="正渦度の色塗りの詳細" aria-expanded="false" aria-controls="detail-vorticity">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-vorticity" class="layer-details" hidden><span class="legend">500hPa · ピンク · 濃さ30%</span></div></article>
       <article class="layer-tool" data-layer="temperature">
         <div class="layer-row"><button type="button" id="temperature" class="layer-toggle" aria-pressed="false" disabled>気温線</button><button type="button" class="layer-detail-button" data-layer-detail="temperature" aria-label="気温線の詳細" aria-expanded="false" aria-controls="detail-temperature">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-temperature" class="layer-details" hidden><div id="temperature-legend" class="temperature-legend" aria-label="300hPaの気温線。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−27〜−51℃の全5段階。原図の同じ気温の数字を滑らかにつなぐ補助線です。</p></div>
@@ -70,7 +72,7 @@
         <div class="layer-row"><button type="button" id="jet" class="layer-toggle" aria-pressed="false" disabled>強風軸</button><button type="button" class="layer-detail-button" data-layer-detail="jet" aria-label="強風軸の詳細" aria-expanded="false" aria-controls="detail-jet">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-jet" class="layer-details" hidden><span class="legend jet-key">赤い矢印 · 300hPa</span><p class="gesture-note">各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。</p></div>
       </article>
-      </div><div class="layer-group" data-layer-group><h3 id="lower-plane">500 hPa <span>下段</span></h3>
+      </div><div class="layer-group" data-layer-group><h3 id="lower-plane">500 hPa <span>下段</span></h3><article class="layer-tool" data-layer="ascent"><div class="layer-row"><button type="button" id="ascent" class="layer-toggle" aria-pressed="false" disabled>上昇流の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="ascent" aria-label="上昇流の色塗りの詳細" aria-expanded="false" aria-controls="detail-ascent">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-ascent" class="layer-details" hidden><span class="legend">700hPa · オレンジ · 濃さ30%</span></div></article>
       <article class="layer-tool" data-layer="temperature500">
         <div class="layer-row"><button type="button" id="temperature500" class="layer-toggle" aria-pressed="false" disabled>気温線</button><button type="button" class="layer-detail-button" data-layer-detail="temperature500" aria-label="500hPaの気温線の詳細" aria-expanded="false" aria-controls="detail-temperature500">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-temperature500" class="layer-details" hidden><div id="temperature500-legend" class="temperature-legend" aria-label="500hPaの元の黒い破線に半透明の色を重ねます。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−3〜−30℃の全10段階。元の黒い破線が透けるように、細い半透明の色を重ねます。</p></div>
@@ -94,7 +96,7 @@
         <div id="detail-geography" class="layer-details" hidden><p id="geography-current" class="selected-style"></p>      <div id="geography-patterns" class="geography-patterns" role="group" aria-label="陸海の塗り方"></div>
       <div class="geography-settings"><label for="geography-opacity">濃さ <output id="geography-opacity-value">40%</output></label></div>
       <input id="geography-opacity" type="range" min="0" max="100" step="5" value="40" aria-label="陸海の濃さ" disabled>
-      <p id="geography-note" class="gesture-note">上段・下段に同じ塗り方を重ねます。<br>濃さを変えて線の見やすさを調整できます。</p>
+      <p id="geography-note" class="gesture-note">地図の枠ごとに同じ塗り方を重ねます。<br>濃さを変えて線の見やすさを調整できます。<br>海岸線：<a href="https://www.naturalearthdata.com/downloads/50m-physical-vectors/50m-land/" target="_blank" rel="noopener noreferrer">Natural Earth</a>（Public domain）</p>
       <p id="satellite-note" class="gesture-note" hidden>地表の参考画像：NASA Blue Marble、2004年10月。現在の航空写真ではありません。<br><a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/" target="_blank" rel="noopener noreferrer">NASA Earth Observatory / Reto Stoeckli</a>（投影変換して使用）</p>
       <div id="elevation-note" hidden>
         <h3 class="elevation-heading">地表の標高</h3><div id="elevation-legend" class="elevation-legend" aria-label="地表標高の色分け、単位はメートル"></div>
