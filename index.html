@@ -8,7 +8,7 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=cc564e36643babad">
+  <link rel="stylesheet" href="styles.css?v=b75368f56167c3b7">
   <script src="analysis.js?v=d8552bdf002bf1c2" defer></script>
   <script src="geography.js?v=acb1baa814de2081" defer></script>
   <script src="catalog.js?v=9d1519ba693ab9cf" defer></script>
@@ -45,6 +45,12 @@
     <section id="analysis-panel" aria-label="この図の解析">
       <div data-requires="reviewed-aupq35" id="automatic-tools">
       <button type="button" id="analyze" class="analysis-preset" aria-pressed="false" disabled>すべての解析をON</button>
+      <div id="overlay-toolbar" class="overlay-toolbar" hidden>
+        <label for="overlay-target">重ねる先 <select id="overlay-target" disabled><option value="500">500hPa（下段）</option><option value="300">300hPa（上段）</option></select></label>
+        <button type="button" id="overlay-add" class="primary" disabled>＋ 重ねる</button>
+        <div id="overlay-chips" aria-label="追加した解析"></div>
+        <button type="button" id="overlay-manage" hidden>重ねた解析 0件</button>
+      </div>
       <div class="analysis-list-heading"><h2>この図の解析</h2><button type="button" id="active-only" aria-pressed="false">表示中 <span id="layer-count">0</span></button></div>
       <p class="list-help">項目で表示切替 · 詳細で凡例・設定</p>
       <div class="layer-group" data-layer-group><h3>300 hPa <span>上段</span></h3>
@@ -132,12 +138,7 @@
     <section class="viewer" aria-label="資料の表示">
     <button type="button" id="panel-open" class="panel-open" aria-label="操作パネルを開く" aria-controls="control-panel" aria-expanded="false" hidden>› 操作</button>
     <span id="status" role="status" aria-live="polite">読み込み中</span>
-    <div id="overlay-toolbar" class="overlay-toolbar" hidden>
-      <label for="overlay-target">重ねる先 <select id="overlay-target" disabled><option value="500">500hPa（下段）</option><option value="300">300hPa（上段）</option></select></label>
-      <button type="button" id="overlay-add" class="primary" disabled>＋ 重ねる</button>
-      <div id="overlay-chips" aria-label="追加した解析"></div>
-      <button type="button" id="overlay-manage" hidden>重ねた解析 0件</button>
-    </div>
+
     <div id="viewport" tabindex="0" aria-label="天気図。ホイールで拡大・縮小、移動モードでドラッグして移動できます。">
       <div id="paper" data-ready="false" data-strokes="0" hidden>
         <img id="chart" src="assets/aupq35.png" alt="気象庁AUPQ35。2026年10月2日00UTCの300hPaと500hPaの高度・気温・風の実況図。上段は300hPa、下段は500hPa。" draggable="false">

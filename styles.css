@@ -104,16 +104,16 @@ input[type='color'] { display: block; border: 0; padding: 0; width: 30px; height
 #ink { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: multiply; cursor: crosshair; touch-action: none; z-index: 6; }
 #ink[data-mode='move'] { cursor: grab; } #ink[data-dragging='true'][data-mode='move'] { cursor: grabbing; }
 #overlay-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; mix-blend-mode: multiply; z-index: 5; }
-.overlay-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; flex-shrink: 0; padding: 7px 10px; border-bottom: 1px solid #cbd5df; background: #fff; }
-.overlay-toolbar label { display: flex; align-items: center; gap: 6px; font-size: 11px; }
-.overlay-toolbar select { margin: 0; font-size: 11px; }
+.overlay-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px; margin: 8px 0 12px; padding: 8px 0; border-bottom: 1px solid #dce3eb; }
+.overlay-toolbar label { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 10px; white-space: nowrap; }
+.overlay-toolbar select { flex: 1; min-width: 0; width: 100%; margin: 0; padding: 5px; font-size: 10px; }
 .overlay-toolbar button { font-size: 11px; }
 #overlay-add, #overlay-apply { color: #fff; background: #205880; border-color: #205880; font-weight: 600; }
 #overlay-add:hover, #overlay-apply:hover { background: #164b68; }
 #overlay-chips { display: contents; }
-.overlay-chip { border-radius: 20px; background: #edf5fa; color: #164b68; }
+.overlay-chip { grid-column: 1 / -1; justify-self: start; max-width: 100%; border-radius: 20px; background: #edf5fa; color: #164b68; }
 .overlay-chip[data-enabled='false'] { background: #f5f5f5; color: #68778b; border-style: dashed; }
-#overlay-manage { margin-left: auto; background: transparent; border-color: transparent; color: #315f8a; }
+#overlay-manage { grid-column: 1 / -1; justify-self: end; background: transparent; border-color: transparent; color: #315f8a; }
 #overlay-dialog { width: 480px; max-height: calc(100dvh - 40px); overflow-y: auto; color: #243247; }
 #overlay-dialog div { display: block; }
 #overlay-dialog .overlay-dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
@@ -153,7 +153,6 @@ dialog::backdrop { background: #23334b55; } dialog p { margin: 0 0 14px; } dialo
   button, select { min-height: 40px; } #panel-close { width: 40px; } .panel-heading { height: 48px; }
   #zoom-in, #zoom-out { width: 40px; } #viewport { padding: 8px; }
   #status { bottom: 12px; right: 12px; font-size: 9px; }
-  .overlay-toolbar { padding: 6px 8px; }
   #overlay-dialog { padding: 14px; }
   footer { font-size: 9px; padding: 3px 8px; }
 }
