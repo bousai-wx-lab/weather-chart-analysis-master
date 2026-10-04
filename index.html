@@ -8,11 +8,12 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=b75368f56167c3b7">
-  <script src="analysis.js?v=d8552bdf002bf1c2" defer></script>
+  <link rel="stylesheet" href="styles.css?v=7a72d223fbe81840">
+  <script src="analysis.js?v=6e210e2a68561306" defer></script>
   <script src="geography.js?v=acb1baa814de2081" defer></script>
-  <script src="catalog.js?v=9d1519ba693ab9cf" defer></script>
-  <script src="app.js?v=60b60d3e0c6c891e" defer></script>
+  <script src="catalog.js?v=16658648a095e358" defer></script>
+  <script src="low-level.js?v=6b2e4233c9ae8a57" defer></script>
+  <script src="app.js?v=a7e41f8b69f40fb3" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -53,11 +54,13 @@
       </div>
       <div class="analysis-list-heading"><h2>この図の解析</h2><button type="button" id="active-only" aria-pressed="false">表示中 <span id="layer-count">0</span></button></div>
       <p class="list-help">項目で表示切替 · 詳細で凡例・設定</p>
-      <div class="layer-group" data-layer-group><h3>300 hPa <span>上段</span></h3>
+      <div class="layer-group" data-layer-group><h3 id="upper-plane">300 hPa <span>上段</span></h3>
       <article class="layer-tool" data-layer="temperature">
         <div class="layer-row"><button type="button" id="temperature" class="layer-toggle" aria-pressed="false" disabled>気温線</button><button type="button" class="layer-detail-button" data-layer-detail="temperature" aria-label="気温線の詳細" aria-expanded="false" aria-controls="detail-temperature">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-temperature" class="layer-details" hidden><div id="temperature-legend" class="temperature-legend" aria-label="300hPaの気温線。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−27〜−51℃の全5段階。原図の同じ気温の数字を滑らかにつなぐ補助線です。</p></div>
       </article>
+<article class="layer-tool" data-layer="trough700"><div class="layer-row"><button type="button" id="trough700" class="layer-toggle" aria-pressed="false" disabled>トラフ</button><button type="button" class="layer-detail-button" data-layer-detail="trough700" aria-label="トラフの詳細" aria-expanded="false" aria-controls="detail-trough700">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-trough700" class="layer-details" hidden><span class="legend trough-key">赤い二重線 · 700hPa</span><p class="gesture-note">この原図の等高度線で確認した2枝。固定図での近似で、すべての谷を網羅するものではありません。</p></div></article>
+<article class="layer-tool" data-layer="cold700"><div class="layer-row"><button type="button" id="cold700" class="layer-toggle" aria-pressed="false" disabled>寒気の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="cold700" aria-label="寒気の色塗りの詳細" aria-expanded="false" aria-controls="detail-cold700">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-cold700" class="layer-details" hidden><div id="cold700-legend" class="cold-legend"></div><p class="gesture-note">指定温度以下を薄い水色から濃い紫で表示します。</p></div></article>
       <article class="layer-tool" data-layer="wind">
         <div class="layer-row"><button type="button" id="wind" class="layer-toggle" aria-pressed="false" disabled>風速の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="wind" aria-label="風速の色塗りの詳細" aria-expanded="false" aria-controls="detail-wind">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-wind" class="layer-details" hidden><div id="wind-legend" class="wind-legend" aria-label="風速の色分け、単位はノット"></div><p class="gesture-note">等風速線に沿って20kt刻みで色分け。40kt未満は着色しません。</p></div>
@@ -66,11 +69,12 @@
         <div class="layer-row"><button type="button" id="jet" class="layer-toggle" aria-pressed="false" disabled>強風軸</button><button type="button" class="layer-detail-button" data-layer-detail="jet" aria-label="強風軸の詳細" aria-expanded="false" aria-controls="detail-jet">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-jet" class="layer-details" hidden><span class="legend jet-key">赤い矢印 · 300hPa</span><p class="gesture-note">各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。</p></div>
       </article>
-      </div><div class="layer-group" data-layer-group><h3>500 hPa <span>下段</span></h3>
+      </div><div class="layer-group" data-layer-group><h3 id="lower-plane">500 hPa <span>下段</span></h3>
       <article class="layer-tool" data-layer="temperature500">
         <div class="layer-row"><button type="button" id="temperature500" class="layer-toggle" aria-pressed="false" disabled>気温線</button><button type="button" class="layer-detail-button" data-layer-detail="temperature500" aria-label="500hPaの気温線の詳細" aria-expanded="false" aria-controls="detail-temperature500">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-temperature500" class="layer-details" hidden><div id="temperature500-legend" class="temperature-legend" aria-label="500hPaの元の黒い破線に半透明の色を重ねます。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−3〜−30℃の全10段階。元の黒い破線が透けるように、細い半透明の色を重ねます。</p></div>
       </article>
+<article class="layer-tool" data-layer="cold850"><div class="layer-row"><button type="button" id="cold850" class="layer-toggle" aria-pressed="false" disabled>寒気の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="cold850" aria-label="寒気の色塗りの詳細" aria-expanded="false" aria-controls="detail-cold850">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-cold850" class="layer-details" hidden><div id="cold850-legend" class="cold-legend"></div><label>濃さ <output id="cold-opacity-value">35%</output><input id="cold-opacity" type="range" min="0" max="100" step="5" value="35" aria-label="寒気の濃さ"></label><p class="gesture-note">原図の等温線を境界に、低温ほど濃い色で塗ります。</p></div></article>
       <article class="layer-tool" data-layer="trough">
         <div class="layer-row"><button type="button" id="trough" class="layer-toggle" aria-pressed="false" disabled>トラフ</button><button type="button" class="layer-detail-button" data-layer-detail="trough" aria-label="トラフの詳細" aria-expanded="false" aria-controls="detail-trough">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-trough" class="layer-details" hidden><span class="legend trough-key">赤い二重線 · 500hPa</span><p class="gesture-note">この原図の等高度線の谷を確認した4本。短い波と低気圧の周りも含みます。<br><a href="https://www.jma.go.jp/jma/kishou/know/expert/pdf/kaisetsu_jikkyo.pdf#page=11" target="_blank" rel="noopener noreferrer">解析の見方（気象庁）</a></p></div>
@@ -83,6 +87,7 @@
         <div class="layer-row"><button type="button" id="symbol-color" class="layer-toggle" aria-pressed="false" disabled>L・H・C・Wの文字</button><button type="button" class="layer-detail-button" data-layer-detail="symbols" aria-label="L・H・C・Wの文字の詳細" aria-expanded="false" aria-controls="detail-symbols">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-symbols" class="layer-details" hidden><p class="symbol-legend"><span class="symbol-l">L：赤</span><span class="symbol-h">H：青</span><span class="symbol-c">C：水色</span><span class="symbol-w">W：オレンジ</span></p><p class="gesture-note">元の黒字が透けるように、少し太い半透明の色線を重ねます。</p></div>
       </article>
+<article class="layer-tool" data-layer="wet"><div class="layer-row"><button type="button" id="wet" class="layer-toggle" aria-pressed="false" disabled>湿域の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="wet" aria-label="湿域の色塗りの詳細" aria-expanded="false" aria-controls="detail-wet">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-wet" class="layer-details" hidden><span class="wet-key">青と水色の中間 · 700 / 850hPa</span><p class="gesture-note">原図の湿域（T−Td &lt; 3℃）のドットを含む範囲。元のドットと線が透ける濃さ30%。境界はドット間隔の半分程度の近似です。降水域とは異なります。</p></div></article>
       <article class="layer-tool" data-layer="geography">
         <div class="layer-row"><button type="button" id="geography-toggle" class="layer-toggle" aria-pressed="false" disabled>陸海・地形</button><button type="button" class="layer-detail-button" data-layer-detail="geography" aria-label="陸海・地形の詳細" aria-expanded="false" aria-controls="detail-geography">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-geography" class="layer-details" hidden><p id="geography-current" class="selected-style"></p>      <div id="geography-patterns" class="geography-patterns" role="group" aria-label="陸海の塗り方"></div>

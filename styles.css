@@ -214,3 +214,9 @@ dialog::backdrop { background: #23334b55; } dialog p { margin: 0 0 14px; } dialo
   .layer-row, .layer-detail-button, .layer-toggle { min-height: 32px; }
   .analysis-preset { min-height: 30px; margin-top: 6px; }
 }
+
+.cold-legend { display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:11px; margin:8px 0; }
+.cold-legend span { display:flex; align-items:center; gap:6px; }
+.cold-legend i { width:20px; height:12px; opacity:.35; }
+#cold-opacity { width:100%; accent-color:#7460cb; }
+.wet-key { color:#1681b3; font-size:11px; }

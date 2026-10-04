@@ -5,6 +5,8 @@
 !styles.css
 !app.js
 !analysis.js
+!low-level.js
+!aupq78-analysis.json
 !geography.js
 !land-sea.json
 !elevation.json
@@ -29,6 +31,7 @@
 !scripts/test_privacy_gate.py
 !scripts/test_pages_release.py
 !scripts/test_analysis.js
+!scripts/test_low_level.js
 !.github/workflows/privacy-gate.yml
 !assets/charts/aupa20-00-b6c7610654ad-p1.png
 !assets/charts/aupa20-12-a4ffbcd2aca7-p1.png

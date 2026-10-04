@@ -42,6 +42,10 @@ let symbolError = "";
 const temperatureLayer = byId("temperature-layer");
 const temperatureContext = temperatureLayer.getContext("2d");
 let isotherms = null;
+let lowLevel = null;
+let showWet = true, showCold700 = false, showCold850 = false, showTrough700 = false;
+let coldOpacity = .35;
+const isReviewed = selected => ["reviewed-aupq35","reviewed-aupq78"].includes(selected.variant.features);
 let showTemperature = true;
 let showTemperature500 = true;
 let temperatureError = "";
@@ -73,6 +77,10 @@ let loadController = null;
 const drawingStates = new Map();
 const zoomSteps = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 const analysisTools = [
+  {id:"wet",button:"wet",label:"湿域の色塗り",plane:"700/850hPa",lowLevel:true,setEnabled:on=>{showWet=on;}},
+  {id:"cold700",button:"cold700",label:"寒気の色塗り",plane:"700hPa",lowLevel:true,setEnabled:on=>{showCold700=on;}},
+  {id:"cold850",button:"cold850",label:"寒気の色塗り",plane:"850hPa",lowLevel:true,setEnabled:on=>{showCold850=on;}},
+  {id:"trough700",button:"trough700",label:"トラフ",plane:"700hPa",lowLevel:true,setEnabled:on=>{showTrough700=on;}},
   { id: "temperature", button: "temperature", label: "気温線", plane: "300hPa", setEnabled: on => { showTemperature = on; } },
   { id: "wind", button: "wind", label: "風速の色塗り", plane: "300hPa", setEnabled: on => { showWind = on; } },
   { id: "jet", button: "jet", label: "強風軸", plane: "300hPa", setEnabled: on => { showJet = on; } },
@@ -204,18 +212,19 @@ function updateAnalysisPanel() {
     const enabled = button.getAttribute("aria-pressed") === "true";
     if (enabled) count++;
     const row = document.querySelector(`[data-layer="${tool.id}"]`);
-    row.hidden = activeOnly && !enabled;
+    row.hidden = (tool.lowLevel && !lowLevel) || (lowLevel && ["wind","jet","ridge","geography"].includes(tool.id)) || (activeOnly && !enabled);
+    if (row.hidden && enabled) count--;
     const detailButton = document.querySelector(`[data-layer-detail="${tool.id}"]`);
     detailButton.disabled = button.disabled;
     const open = selectedDetail === tool.id && !row.hidden;
     detailButton.setAttribute("aria-expanded", String(open));
     byId(`detail-${tool.id}`).hidden = !open;
-    button.title = `${tool.label} · ${tool.plane} · ${enabled ? "表示中。クリックで外す" : "クリックで表示"}`;
+    button.title = `${tool.label} · ${lowLevel && !tool.lowLevel ? tool.plane.replace("300","700").replace("500","850") : tool.plane} · ${enabled ? "表示中。クリックで外す" : "クリックで表示"}`;
   }
   byId("layer-count").textContent = String(count);
   byId("active-only").setAttribute("aria-pressed", String(activeOnly));
   byId("no-active-layers").hidden = !activeOnly || count > 0;
-  const available = analysisTools.filter(tool => !byId(tool.button).disabled);
+  const available = analysisTools.filter(tool => !byId(tool.button).disabled && (!tool.lowLevel || lowLevel) && !(lowLevel && ["wind","jet","ridge","geography"].includes(tool.id)));
   const allOn = !featuresLoading && available.length > 0 && available.every(tool => byId(tool.button).getAttribute("aria-pressed") === "true") && validOverlays().every(layer => layer.enabled);
   byId("analyze").disabled = !ready || featuresLoading || !available.length;
   byId("analyze").setAttribute("aria-pressed", String(allOn));
@@ -253,6 +262,7 @@ function controls() {
   byId("clear").disabled = !paintCount;
   byId("save").disabled = !ready || featuresLoading;
   for (const id of ["trough", "ridge", "jet"]) byId(id).disabled = !ready || !candidates;
+  byId("jet").disabled ||= Boolean(lowLevel); byId("ridge").disabled ||= Boolean(lowLevel);
   byId("wind").disabled = !ready || !windBands;
   byId("wind").setAttribute("aria-pressed", String(Boolean(showWind && windBands)));
   byId("wind").textContent = "風速の色塗り";
@@ -264,7 +274,12 @@ function controls() {
   byId("temperature").textContent = "気温線";
   byId("temperature500").disabled = !ready || !isotherms;
   byId("temperature500").setAttribute("aria-pressed", String(Boolean(showTemperature500 && isotherms)));
-  byId("original").disabled = !enabledOverlays().length && !showWind && !showTrough && !showRidge && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
+  for (const [id,on] of [["wet",showWet],["cold700",showCold700],["cold850",showCold850],["trough700",showTrough700]]) {
+    byId(id).disabled = !ready || !lowLevel; byId(id).setAttribute("aria-pressed",String(Boolean(lowLevel && on)));
+  }
+  paper.dataset.wet = String(Boolean(lowLevel && showWet)); paper.dataset.cold850 = String(Boolean(lowLevel && showCold850)); paper.dataset.cold700 = String(Boolean(lowLevel && showCold700)); paper.dataset.trough700 = String(Boolean(lowLevel && showTrough700));
+  byId("cold-opacity-value").textContent = `${Math.round(coldOpacity*100)}%`;
+  byId("original").disabled = !(lowLevel && (showWet || showCold700 || showCold850 || showTrough700)) && !enabledOverlays().length && !showWind && !showTrough && !showRidge && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
   byId("geography-toggle").disabled = byId("geography-opacity").disabled = !ready || !geography;
   byId("geography-toggle").setAttribute("aria-pressed", String(Boolean(showGeography && geography)));
   byId("geography-opacity-value").textContent = `${Math.round(geographyOpacity * 100)}%`;
@@ -326,6 +341,7 @@ function drawAnalysis() {
   if (!candidates) return;
   if (showJet) ChartAnalysis.drawJetAxes(jetContext, candidates.jets, windBands.bounds);
   if (showTrough) ChartAnalysis.drawTroughs(analysisContext, candidates.troughs);
+  if (lowLevel && showTrough700) ChartAnalysis.drawTroughs(analysisContext,lowLevel.panels[0].troughs.map(a=>a.points));
   if (showRidge) ChartAnalysis.drawRidges(analysisContext, candidates.ridges);
   drawOverlays();
 }
@@ -342,7 +358,8 @@ for (const [index, color] of ChartAnalysis.windPalette.entries()) {
 }
 function drawWind() {
   windContext.clearRect(0, 0, windLayer.width, windLayer.height);
-  if (showWind && windBands) ChartAnalysis.drawWindBands(windContext, windBands);
+  if (lowLevel) LowLevelAnalysis.drawFills(windContext,lowLevel,{wet:showWet,cold700:showCold700,cold850:showCold850,opacity:coldOpacity});
+  else if (showWind && windBands) ChartAnalysis.drawWindBands(windContext, windBands);
 }
 byId("wind").addEventListener("click", () => {
   if (!ready || !windBands) return;
@@ -357,15 +374,37 @@ byId("symbol-color").addEventListener("click", () => {
   if (!ready || !symbols) return;
   showSymbols = !showSymbols; drawSymbols(); controls();
 });
-for (const scale of ChartAnalysis.isothermScales) for (const [index, value] of scale.values.entries()) {
-  const entry = document.createElement("span"), swatch = document.createElement("i");
-  swatch.style.borderColor = scale.colors[index]; swatch.setAttribute("aria-hidden", "true");
-  swatch.style.setProperty("--temperature-color", scale.colors[index]); swatch.style.setProperty("--temperature-opacity", scale.opacity);
-  entry.append(swatch, `${value}℃`); byId(scale.pressure_hpa===300 ? "temperature-legend" : "temperature500-legend").append(entry);
+function temperatureLegends() {
+  const scales=lowLevel?LowLevelAnalysis.scales:ChartAnalysis.isothermScales;
+  for (const [plane,scale] of scales.entries()) {
+    const id=plane?"temperature500-legend":"temperature-legend";byId(id).replaceChildren();
+    for (const [index,value] of scale.values.entries()) {
+      const entry=document.createElement("span"),swatch=document.createElement("i");
+      swatch.style.borderColor=scale.colors[index];swatch.style.setProperty("--temperature-color",scale.colors[index]);swatch.style.setProperty("--temperature-opacity",scale.opacity);entry.append(swatch,`${value}℃`);byId(id).append(entry);
+    }
+    const pressure=scale.pressure_hpa;
+    byId(id).setAttribute("aria-label",`${pressure}hPaの気温線`);
+    document.querySelector(`[data-layer-detail="${plane?"temperature500":"temperature"}"]`).setAttribute("aria-label",`${pressure}hPaの気温線の詳細`);
+    byId(plane?"lower-plane":"upper-plane").replaceChildren(`${pressure} hPa `);
+    const position=document.createElement("span");position.textContent=plane?"下段":"上段";byId(plane?"lower-plane":"upper-plane").append(position);
+    byId(plane?"detail-temperature500":"detail-temperature").querySelector("p").textContent=lowLevel?"原図の破線の上に細い半透明の色線を重ね、気温の数字を読める隙間を残します。":plane?"−3〜−30℃の全10段階。元の黒い破線が透けるように、細い半透明の色を重ねます。":"−27〜−51℃の全5段階。原図の同じ気温の数字を滑らかにつなぐ補助線です。";
+  }
+  byId("detail-trough").querySelector(".legend").textContent=`赤い二重線 · ${lowLevel?850:500}hPa`;
+  byId("detail-trough").querySelector("p").firstChild.textContent=lowLevel?"この原図の等高度線で確認した2枝。固定図での近似です。":"この原図の等高度線の谷を確認した4本。短い波と低気圧の周りも含みます。";
+  for (const [id,values] of [["cold700",[-15,-18,-21,-24,-27]],["cold850",[0,-3,-6,-9,-12]]]) {
+    byId(`${id}-legend`).replaceChildren();
+    for (const [i,v] of values.entries()) {const span=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=LowLevelAnalysis.coldColors[i];span.append(swatch,`${v}℃以下`);byId(`${id}-legend`).append(span);}
+  }
 }
+temperatureLegends();
+for (const id of ["wet","cold700","cold850","trough700"]) byId(id).addEventListener("click",()=>{
+  if (!ready || !lowLevel) return;
+  if(id==="wet")showWet=!showWet;if(id==="cold700")showCold700=!showCold700;if(id==="cold850")showCold850=!showCold850;if(id==="trough700")showTrough700=!showTrough700;drawWind();drawAnalysis();controls();
+});
+byId("cold-opacity").addEventListener("input",event=>{coldOpacity=Number(event.target.value)/100;drawWind();controls();});
 function drawTemperature() {
   temperatureContext.clearRect(0, 0, temperatureLayer.width, temperatureLayer.height);
-  if (ready && isotherms) ChartAnalysis.drawIsotherms(temperatureContext, isotherms, [showTemperature?300:null,showTemperature500?500:null]);
+  if (ready && isotherms) ChartAnalysis.drawIsotherms(temperatureContext, isotherms, [showTemperature?(lowLevel?700:300):null,showTemperature500?(lowLevel?850:500):null],lowLevel?LowLevelAnalysis.scales:ChartAnalysis.isothermScales);
 }
 byId("temperature").addEventListener("click", () => {
   if (!ready || !isotherms) return;
@@ -571,11 +610,11 @@ byId("save").addEventListener("click", () => {
   const output = document.createElement("canvas");
   const selectedGeography = ChartGeography.patterns.find(p => p.id === geographyStyle);
   const exportTerrain = Boolean(showGeography && geography && terrainImage && selectedGeography.terrain !== undefined);
-  const exportTemperatures = isotherms ? ChartAnalysis.isothermScales.filter(s=>s.pressure_hpa===300 ? showTemperature : showTemperature500) : [];
+  const exportTemperatures = isotherms ? (lowLevel?LowLevelAnalysis.scales:ChartAnalysis.isothermScales).filter((s,i)=>i?showTemperature500:showTemperature) : [];
   const exportOverlays = enabledOverlays();
   const temperatureFooterHeight = exportTemperatures.length ? exportTemperatures.length*40+56 : 0;
   const overlayFooterHeight = exportOverlays.length ? (exportOverlays.length+1)*44 : 0;
-  const footerHeight = exportTerrain ? 340 : 260;
+  const footerHeight = lowLevel ? 440 : exportTerrain ? 340 : 260;
   output.width = ink.width; output.height = ink.height + footerHeight + temperatureFooterHeight + overlayFooterHeight;
   const ctx = output.getContext("2d");
   ctx.fillStyle = "white"; ctx.fillRect(0, 0, output.width, output.height);
@@ -587,7 +626,7 @@ byId("save").addEventListener("click", () => {
   ctx.globalCompositeOperation = "multiply"; ctx.drawImage(overlayLayer, 0, 0); ctx.drawImage(ink, 0, 0); ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = "#243247"; ctx.font = "24px sans-serif";
   ctx.fillText(`出典：気象庁 ${selected.product.code}（画像化） / ${chartLabel}`, 26, ink.height + 38, output.width - 52);
-  ctx.fillText(`解析案：${showTrough ? "500hPaトラフ " : ""}${showRidge ? "500hPaリッジ " : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
+  ctx.fillText(`解析案：${showTrough700 && lowLevel ? "700hPaトラフ " : ""}${showTrough ? (lowLevel?"850hPaトラフ ":"500hPaトラフ ") : ""}${showRidge ? "500hPaリッジ " : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough700 && !showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
   if (showSymbols && symbols) for (const [index, letter] of ["L", "H", "C", "W"].entries()) {
     ctx.fillStyle = ChartAnalysis.symbolPalette[letter]; ctx.fillText(letter, 1610 + index * 90, ink.height + 76);
   }
@@ -598,10 +637,20 @@ byId("save").addEventListener("click", () => {
     ctx.fillStyle = color; ctx.fillRect(x, ink.height + 95, 32, 24);
     ctx.fillStyle = "#243247"; ctx.fillText(windLabels[index], x + 42, ink.height + 116);
   }
-  ctx.fillText(selected.variant.features === "reviewed-aupq35" ? "赤矢印：等風速線の強い帯の中心（流れの経路はこの1枚で確認）。トラフ：等高度線の曲がりから推定。" : `${selected.product.name}${selected.product.period ? " · " + selected.product.period : ""}`, 26, ink.height + 155, output.width - 52);
+  ctx.fillText(lowLevel ? "トラフ：この原図の等高度線の谷から推定した赤い二重線。汎用の自動検出ではありません。" : selected.variant.features === "reviewed-aupq35" ? "赤矢印：等風速線の強い帯の中心（流れの経路はこの1枚で確認）。トラフ：等高度線の曲がりから推定。" : `${selected.product.name}${selected.product.period ? " · " + selected.product.period : ""}`, 26, ink.height + 155, output.width - 52);
   ctx.fillText("利用者の着色・解析は気象庁の公式の解析ではありません。天気図解析マスター · Weather Chart Analysis Master · Bousai Wx Lab", 26, ink.height + 193, output.width - 52);
   const geoLabel = showGeography && geography ? `${ChartGeography.patterns.find(p => p.id === geographyStyle).label}（濃さ${Math.round(geographyOpacity * 100)}%）` : "表示なし";
   ctx.fillText(selected.variant.features === "reviewed-aupq35" ? `陸海：${geoLabel}${showGeography && geographyStyle === "satellite" ? " / NASA Earth Observatory・Reto Stoeckli / 2004年10月の地表画像（投影変換）" : ""}` : "自動更新なし。解析・予想の日時は原図内を確認してください。", 26, ink.height + 231, output.width - 52);
+  if (lowLevel) {
+    ctx.fillStyle="#243247";
+    ctx.fillText(`湿域：${showWet?"T−Td < 3℃ / 青水色・濃さ30% / 原図ドット格子の近似":"表示なし"}`,26,ink.height+270);
+    for (const [row,panel] of lowLevel.panels.entries()) {
+      const on=panel.pressure_hpa===700?showCold700:showCold850;
+      ctx.fillText(`${panel.pressure_hpa}hPa寒気：${on?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+310+row*44);
+      for(const [i,v] of panel.cold_thresholds.entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+290+row*44,32,24);ctx.restore();ctx.fillStyle="#243247";ctx.fillText(`${v}℃以下`,x+42,ink.height+310+row*44);}
+    }
+    ctx.fillText("寒気の目安：低温ほど濃い紫。",26,ink.height+399,output.width-52);
+  }
   if (exportTerrain) {
     ctx.fillText("地表標高：NOAA ETOPO 2022 / EGM2008基準 / 1分格子（南北約1.9km）/ 投影変換した広域表示", 26, ink.height + 268);
     if (geographyStyle === "relief") ctx.fillText("陰影の明暗は斜面の向き・傾き。北西からの照明で山の凹凸を強調しています。", 26, ink.height + 307);
@@ -661,12 +710,17 @@ function initialize(selected) {
   for (const canvas of [ink, strokeLayer]) {
     canvas.width = chart.naturalWidth; canvas.height = chart.naturalHeight;
   }
-  const reviewed = selected.variant.features === "reviewed-aupq35";
+  const reviewed = isReviewed(selected);
   for (const canvas of [analysisLayer, jetLayer, windLayer, geographyLayer, symbolLayer, temperatureLayer, overlayLayer]) {
     canvas.width = reviewed ? chart.naturalWidth : 1;
     canvas.height = reviewed ? chart.naturalHeight : 1;
     canvas.hidden = !reviewed;
   }
+  const low=selected.variant.features==="reviewed-aupq78";
+  for (const canvas of [jetLayer,geographyLayer,overlayLayer]) canvas.hidden = !reviewed || low;
+  windLayer.setAttribute("aria-label",low?"700・850hPaの湿域と寒気の色塗り":"300hPa等風速線に沿った緑色の塗り分け");
+  analysisLayer.setAttribute("aria-label",low?"700・850hPaのトラフ、赤い二重曲線":"500hPaのトラフは赤い二重曲線、リッジは青いジグザグ線");
+  temperatureLayer.setAttribute("aria-label",low?"700・850hPaの気温線。暖かい薄い青から寒い濃い紫":"300・500hPaの気温線。暖かい薄い青から寒い濃い紫");
   paper.style.aspectRatio = `${ink.width} / ${ink.height}`;
   ready = true; paper.hidden = false; paper.dataset.ready = "true"; paper.dataset.chart = selected.product.id; paper.dataset.source = selected.variant.id;
   selectMode(byId("manual").open ? "paint" : "move"); render(); drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); fit(); controls();
@@ -693,7 +747,7 @@ async function checkedImage(path, expectedHash, width, height, signal, retry = f
 function keepDrawing() {
   if (!ready || !currentSelection) return;
   if (pointer !== null) finish({ pointerId: pointer });
-  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, overlayTarget, overlays: overlayState.map(layer => ({...layer})) });
+  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, showWet, showCold700, showCold850, showTrough700, coldOpacity, overlayTarget, overlays: overlayState.map(layer => ({...layer})) });
 }
 function setOptions(select, records, value) {
   select.replaceChildren();
@@ -726,7 +780,8 @@ async function loadSelection(retry = false) {
   const selected = ChartCatalog.selection(catalog, byId("chart-select").value, byId("source-select").value, Number(byId("page-select").value));
   currentSelection = selected; ready = false; paper.hidden = true; paper.dataset.ready = "false";
   active = pointer = pan = null;
-  geography = satelliteImage = elevationData = terrainImage = symbols = windBands = candidates = isotherms = null;
+  geography = satelliteImage = elevationData = terrainImage = symbols = windBands = candidates = isotherms = lowLevel = null;
+  temperatureLegends();
   panelRegistration = null;
   loadingError = geographyError = terrainError = symbolError = analysisError = temperatureError = overlayError = "";
   history.length = future.length = 0;
@@ -735,6 +790,7 @@ async function loadSelection(retry = false) {
   byId("overlay-dialog").close(); selectedOverlay = null;
   overlayTarget = state?.overlayTarget || 500;
   if (state) { history.push(...state.history); future.push(...state.future); }
+  showWet=state?.showWet ?? true;showCold700=state?.showCold700 ?? false;showCold850=state?.showCold850 ?? false;showTrough700=state?.showTrough700 ?? false;coldOpacity=state?.coldOpacity ?? .35;byId("cold-opacity").value=String(Math.round(coldOpacity*100));
   showWind = state?.showWind || false; showTrough = state?.showTrough || false; showRidge = state?.showRidge || false; showJet = state?.showJet || false;
   showSymbols = state?.showSymbols ?? true; showGeography = state?.showGeography ?? true;
   showTemperature = state?.showTemperature ?? true;
@@ -745,7 +801,7 @@ async function loadSelection(retry = false) {
   if (exportUrl) { URL.revokeObjectURL(exportUrl); exportUrl = null; }
   byId("export-link").hidden = true; byId("export-link").removeAttribute("href");
   byId("chart-retry").hidden = true;
-  const reviewed = selected.variant.features === "reviewed-aupq35";
+  const reviewed = isReviewed(selected);
   featuresLoading = reviewed;
   selectedDetail = null; activeOnly = false;
   byId("manual-only").hidden = reviewed;
@@ -754,7 +810,7 @@ async function loadSelection(retry = false) {
   chartLabel = selected.variant.observation_label || `${selected.variant.label} · ${retrieved} JST取得`;
   byId("chart-name").textContent = `${selected.product.name}${selected.product.period ? " · " + selected.product.period : ""}`;
   byId("chart-info").textContent = chartLabel;
-  byId("chart-note").textContent = reviewed ? "自動更新なし。上段300hPa・下段500hPa。自動の着色・解析も使えます。" : "自動更新なし。この図の自動着色・解析は未対応です。手描きで色を塗れます。解析・予想の日時は原図内を確認してください。";
+  byId("chart-note").textContent = reviewed ? `自動更新なし。${selected.variant.features === "reviewed-aupq78"?"上段700hPa・下段850hPa":"上段300hPa・下段500hPa"}。固定原図の着色・解析も使えます。` : "自動更新なし。この図の自動着色・解析は未対応です。手描きで色を塗れます。解析・予想の日時は原図内を確認してください。";
   byId("source-link").href = selected.variant.source_url;
   byId("source-link").textContent = `気象庁 ${selected.product.code} 原図${selected.variant.source_url.endsWith(".pdf") ? "PDF" : "PNG"}`;
   controls();
@@ -766,13 +822,23 @@ async function loadSelection(retry = false) {
     if (revision !== loadRevision) return;
     chart.alt = `気象庁 ${selected.product.code} · ${selected.product.name} · ${chartLabel}`;
     initialize(selected);
-    if (reviewed) await loadFeatures(selected, revision, signal);
+    if (selected.variant.features === "reviewed-aupq78") await loadLowLevel(selected,revision,signal);
+    else if (reviewed) await loadFeatures(selected, revision, signal);
     if (revision === loadRevision) { featuresLoading = false; controls(); }
   } catch (error) {
     if (revision !== loadRevision || error.name === "AbortError") return;
     loadingError = "図を読み込めませんでした。「図を再読み込み」か別の天気図を選んでください。";
     byId("chart-retry").hidden = false; controls();
   }
+}
+async function loadLowLevel(selected,revision,signal) {
+  try {
+    const checked=LowLevelAnalysis.validate(await fetchJSON("aupq78-analysis.json",signal),selected);
+    if (revision!==loadRevision) return;
+    lowLevel=checked;symbols=checked;isotherms=checked;
+    candidates={troughs:checked.panels[1].troughs.map(a=>a.points),ridges:[],jets:[]};
+    temperatureLegends();drawSymbols();drawTemperature();drawWind();drawAnalysis();controls();
+  } catch(error) { if(revision===loadRevision && error.name!=="AbortError") {analysisError="AUPQ78の解析資料を確認できません。原図の閲覧・手描きは使えます。";controls();} }
 }
 async function loadFeatures(selected, revision, signal) {
   const current = () => revision === loadRevision;

@@ -230,7 +230,7 @@ const ChartAnalysis = (() => {
     }
     return segments;
   }
-  function drawIsotherms(ctx, data, pressures=[300,500]) {
+  function drawIsotherms(ctx, data, pressures=[300,500], scales=isothermScales) {
     for (const panel of data.panels) {
     if (!pressures.includes(panel.pressure_hpa)) continue;
     ctx.save();
@@ -241,7 +241,7 @@ const ChartAnalysis = (() => {
     for (const level of panel.levels) for (const [x0,y0,x1,y1] of level.labels) ctx.rect(x0-2,y0-2,x1-x0+4,y1-y0+4);
     ctx.clip("evenodd");
     ctx.lineWidth = 3.5; ctx.lineCap = ctx.lineJoin = "round";
-    const scale = isothermScales.find(s=>s.pressure_hpa===panel.pressure_hpa);
+    const scale = scales.find(s=>s.pressure_hpa===panel.pressure_hpa);
     ctx.setLineDash(scale.dash); ctx.lineDashOffset = 0;
     ctx.globalAlpha = scale.opacity;
     for (const [index, level] of panel.levels.entries()) for (const line of level.lines) {

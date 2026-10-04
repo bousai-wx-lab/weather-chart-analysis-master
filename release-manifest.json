@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-04T01:39:11.669310+00:00",
+  "generated_at": "2026-10-04T02:34:41.211534+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
-      "bytes": 3765,
-      "sha256": "0a1cd9e01b9fc0049c5fd51b3381e7ba10642602d53740ab967675b54b1f3a22",
+      "bytes": 3842,
+      "sha256": "4e98b7ca5136300db462318d55ee766215fcf20269160f54f3d5043f7f284838",
       "mime_type": "application/yaml"
     },
     {
       "path": ".gitignore",
-      "bytes": 3374,
-      "sha256": "cd24730043625f2ac026bf0a4755ed83dbda6586f4844116f05965f22dfc22a8",
+      "bytes": 3437,
+      "sha256": "057e67c3fbfb95694e9ae43f1cbb93a6b852e87c0b7ae95b42159e94f0291b30",
       "mime_type": "application/octet-stream"
     },
     {
@@ -29,8 +29,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 17069,
-      "sha256": "2124ca0f2c036e0896401610aa6cde13f2651c0e20ea67c992aac925d9b26144",
+      "bytes": 19970,
+      "sha256": "ba66222f19c0c23de1dde141c4d35d78a9e3376b2abacd8e6bbc68c534ca69d6",
       "mime_type": "text/markdown"
     },
     {
@@ -41,14 +41,14 @@
     },
     {
       "path": "analysis.js",
-      "bytes": 27366,
-      "sha256": "d8552bdf002bf1c23e6198abcad4e8cf8fb831d28412603a4eb8128696bba390",
+      "bytes": 27381,
+      "sha256": "6e210e2a685613063fa4293d4abcb824bd430d76abced0cc6de0cd23ddad0e7a",
       "mime_type": "text/javascript"
     },
     {
       "path": "app.js",
-      "bytes": 53903,
-      "sha256": "60b60d3e0c6c891edd32e66670caaa6251662f44590b9dffd7bddd1c8c92e7c3",
+      "bytes": 61308,
+      "sha256": "a7e41f8b69f40fb343ee813259f164747373c9bee9af77147096b0afd561f041",
       "mime_type": "text/javascript"
     },
     {
@@ -430,9 +430,15 @@
       "mime_type": "image/png"
     },
     {
+      "path": "aupq78-analysis.json",
+      "bytes": 96029,
+      "sha256": "205e0bffe3447450869facfaa3e6fda4f6da9355430f861c0949f615966b7bcc",
+      "mime_type": "application/json"
+    },
+    {
       "path": "catalog.js",
-      "bytes": 2943,
-      "sha256": "9d1519ba693ab9cfee499b5c1e0f86f3346f7d6695c2b0f5e181a0a28375b1f5",
+      "bytes": 3347,
+      "sha256": "16658648a095e358880c8790f0fd33ca5f766a79aa528d794f69a39ef2bc5b08",
       "mime_type": "text/javascript"
     },
     {
@@ -443,8 +449,8 @@
     },
     {
       "path": "chart-catalog.json",
-      "bytes": 52828,
-      "sha256": "59ef90ada31e269f01d33d47dc217cfbdf6cf9ab6b9d1d7bcb7040da1ce37a73",
+      "bytes": 52919,
+      "sha256": "b35a50a149d1008d695eb44e6f16d5fe5675b3de9bd801d328c412d11dbc3f1b",
       "mime_type": "application/json"
     },
     {
@@ -473,8 +479,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 21190,
-      "sha256": "0bc0c354dc0a0cbf737d88a991feea00d8e279b0b7831b2ee5d4b31c88243125",
+      "bytes": 24194,
+      "sha256": "ae30d9c0163a5b5176115e3fe9899773e84ecfe44e04ee0da54507543b9d2934",
       "mime_type": "text/html"
     },
     {
@@ -496,9 +502,15 @@
       "mime_type": "application/json"
     },
     {
+      "path": "low-level.js",
+      "bytes": 6406,
+      "sha256": "6b2e4233c9ae8a576beb0b3a6304d7629a23d4cc99fabf5d207babefe14cb9ad",
+      "mime_type": "text/javascript"
+    },
+    {
       "path": "release-allowlist.json",
-      "bytes": 23722,
-      "sha256": "6fc97300fa6de67c4ad0479f131c9afd78f6851e5682229f93b2eb6bb5705523",
+      "bytes": 23803,
+      "sha256": "fc95b30a6ca4c02fcd85d1f9dbb5d6c95564a1b06ba8f35c8dba0b3ba943b8ff",
       "mime_type": "application/json"
     },
     {
@@ -526,6 +538,12 @@
       "mime_type": "text/javascript"
     },
     {
+      "path": "scripts/test_low_level.js",
+      "bytes": 1762,
+      "sha256": "2ad7a3e5820f2a42e4bbea7a2eb1be796af1581aa1eba08ef0aeb9d9d8eeddaa",
+      "mime_type": "text/javascript"
+    },
+    {
       "path": "scripts/test_pages_release.py",
       "bytes": 4958,
       "sha256": "2ba828d3ff6d9d07035a5e62947974d8bd629a912a794d1ef69505c5c8676127",
@@ -539,14 +557,14 @@
     },
     {
       "path": "scripts/update_manifest.py",
-      "bytes": 1532,
-      "sha256": "9d280c493fb913c6ed85be1dc98996e5c554eb968bb0c389de106fd6ba25476f",
+      "bytes": 1548,
+      "sha256": "c6f9efc1d61b4f26301654330fdb13902fe00b22e14e175e9d21e49699583b7a",
       "mime_type": "text/x-python"
     },
     {
       "path": "styles.css",
-      "bytes": 19065,
-      "sha256": "b75368f56167c3b74963dbf5ca4ea420bcfd49d929b27d4206acf1e529d0092a",
+      "bytes": 19385,
+      "sha256": "7a72d223fbe8184039ae64b6224af8a006d1d53112375a03a5957006d1c2956b",
       "mime_type": "text/css"
     },
     {
