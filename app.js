@@ -651,7 +651,7 @@ byId("save").addEventListener("click", () => {
   const output = document.createElement("canvas");
   const selectedGeography = ChartGeography.patterns.find(p => p.id === geographyStyle);
   const exportTerrain = Boolean(showGeography && geography && terrainImage && selectedGeography.terrain !== undefined);
-  const exportTemperatures = isotherms ? temperatureScales().filter((s,i)=>s.values.length && (i?showTemperature500:showTemperature)) : [];
+  const exportTemperatures = isotherms ? temperatureScales().filter((s,i)=>s.values.length && (i?showTemperature500:showTemperature && selected.product.id!=="aupq35")) : [];
   const exportOverlays = enabledOverlays();
   const temperatureFooterHeight = exportTemperatures.length ? exportTemperatures.length*40+56 : 0;
   const overlayFooterHeight = exportOverlays.length ? (exportOverlays.length+1)*44 : 0;
@@ -766,7 +766,7 @@ function initialize(selected) {
   for (const canvas of [jetLayer,overlayLayer]) canvas.hidden = !reviewed || low || dyn;
   windLayer.setAttribute("aria-label",low?"700・850hPaの湿域と寒気の色塗り":dyn?`500hPa正渦度、850hPa寒気${feas?"":"、700hPa上昇流"}の色塗り`:"300hPa等風速線に沿った緑色の塗り分け");
   analysisLayer.setAttribute("aria-label",low?"700・850hPaのトラフ、赤い二重曲線。リッジ、青いジグザグ線":feas?"500hPaと地上気圧のトラフは赤い二重曲線、リッジは青いジグザグ線":"500hPaのトラフは赤い二重曲線、リッジは青いジグザグ線");
-  temperatureLayer.setAttribute("aria-label",low?"700・850hPaの気温線。暖かい薄い青から寒い濃い紫":dyn?"850hPaの気温線。暖かい薄い青から寒い濃い紫":"300・500hPaの気温線。暖かい薄い青から寒い濃い紫");
+  temperatureLayer.setAttribute("aria-label",low?"700・850hPaの気温線。暖かい薄い青から寒い濃い紫":dyn?"850hPaの気温線。暖かい薄い青から寒い濃い紫":selected.product.id==="aupq35"?"500hPaの気温線。暖かい薄い青から寒い濃い紫":"300・500hPaの気温線。暖かい薄い青から寒い濃い紫");
   paper.style.aspectRatio = `${ink.width} / ${ink.height}`;
   ready = true; paper.hidden = false; paper.dataset.ready = "true"; paper.dataset.chart = selected.product.id; paper.dataset.source = selected.variant.id;
   selectMode(byId("manual").open ? "paint" : "move"); render(); drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); fit(); controls();
