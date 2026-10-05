@@ -1019,7 +1019,7 @@
           ],
           "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
           "analysis_path": "assets/analysis/fxfe5782-12-20261005-colors.json",
-          "analysis_sha256": "36856a3801d1ff094e830761aebce84312066eaddc2306696823219060553566"
+          "analysis_sha256": "8c701fbaf106c12211b154080ccc5ea6d41ba1c37f2ce6d05f329ae85cabe84a"
         },
         {
           "id": "fxfe5782-00-20261005",
@@ -1039,7 +1039,7 @@
           ],
           "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
           "analysis_path": "assets/analysis/fxfe5782-00-20261005-colors.json",
-          "analysis_sha256": "2098fa051d1210cf7c42f5286873dcc166b53b17582c8529b22bd52ae88325e4"
+          "analysis_sha256": "37c0ee1044c786a926cccf84d0ad8168cfff0a8fef763ee25a4dbd3c712a426c"
         },
         {
           "id": "fxfe5782-00",
@@ -1058,7 +1058,7 @@
           ],
           "features": "experimental-snapshot",
           "analysis_path": "assets/analysis/fxfe5782-00-colors.json",
-          "analysis_sha256": "0fa11346c0b5bdd2c7dc5f7bb1b472117d0d074b38344d26ec38ff9bf6a1e9af"
+          "analysis_sha256": "a3a638593cba3d5030ea11307231bae4ef16a210379d5c217d6c64785ae3944d"
         },
         {
           "id": "fxfe5782-12",
@@ -1077,7 +1077,7 @@
           ],
           "features": "experimental-snapshot",
           "analysis_path": "assets/analysis/fxfe5782-12-colors.json",
-          "analysis_sha256": "562c0535e65dac9bb87bb86f0bcd88b23193f5649b65169078c3b401a0c43cdd"
+          "analysis_sha256": "99fc30ce72efc1c391f2d8bc74f61d04a5b37c9d842329e188a4f4b7518dfba2"
         }
       ]
     },
@@ -1107,7 +1107,7 @@
           ],
           "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
           "analysis_path": "assets/analysis/fxfe5784-12-20261005-colors.json",
-          "analysis_sha256": "512fd152844ab8c1a94abf5530020093c4f06774347d2d10c175351ace335435"
+          "analysis_sha256": "b8fe6c52179e5176edeba4f2eddd8b5d01a9536381cfd248b8ef44d85f1624ac"
         },
         {
           "id": "fxfe5784-00-20261005",
@@ -1127,7 +1127,7 @@
           ],
           "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
           "analysis_path": "assets/analysis/fxfe5784-00-20261005-colors.json",
-          "analysis_sha256": "3f67d906523ecdf68f79b4720e5a5349a698a7122e0bae8cb72d7812afbd9e90"
+          "analysis_sha256": "0cfa2508d1e33ff17088a22da8180f36762ac53e9e94ae778d6edaff0cbec4e8"
         },
         {
           "id": "fxfe5784-00",
@@ -1146,7 +1146,7 @@
           ],
           "features": "experimental-snapshot",
           "analysis_path": "assets/analysis/fxfe5784-00-colors.json",
-          "analysis_sha256": "e14264af9f734282d143bfffa1567675303d4045fd8942b6d18241f0635f9c97"
+          "analysis_sha256": "f4da8d0c6a67c2d0a06170634c7c01519639cd3ae8c80622217778cf9e77cfc9"
         },
         {
           "id": "fxfe5784-12",
@@ -1165,7 +1165,7 @@
           ],
           "features": "experimental-snapshot",
           "analysis_path": "assets/analysis/fxfe5784-12-colors.json",
-          "analysis_sha256": "298761b537cf2f895a1dc4379063ccffe36549c1b760a03ce3062f04f4512010"
+          "analysis_sha256": "e1fd37e9a335a6870726beff45222a360e60d0f8ed301526ba504d5015181264"
         }
       ]
     },
@@ -1195,7 +1195,7 @@
           ],
           "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
           "analysis_path": "assets/analysis/fxfe577-12-20261005-colors.json",
-          "analysis_sha256": "fa42ca315c6b8246fc22e458f5bfbc3378722d904ccd201cd4b2b75a3a3d4a66"
+          "analysis_sha256": "078d946b9db8066012b4034be2ec179a16900f0f2adc71924855be9dbc14a9d2"
         },
         {
           "id": "fxfe577-00-20261005",
@@ -1215,7 +1215,7 @@
           ],
           "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
           "analysis_path": "assets/analysis/fxfe577-00-20261005-colors.json",
-          "analysis_sha256": "f44c7870bfd685ae9e3b7dfa97a060f9b13e9d128cf71eff5a5345644179e54e"
+          "analysis_sha256": "d557fc0dfb1d754718c9062d346b8fa7643972381e08bffc92499743360e3269"
         },
         {
           "id": "fxfe577-00",
@@ -1234,7 +1234,7 @@
           ],
           "features": "experimental-snapshot",
           "analysis_path": "assets/analysis/fxfe577-00-colors.json",
-          "analysis_sha256": "1d9c5696d69e392199c48e0f1f92358087db8608bae8f15fa88cf1e717746434"
+          "analysis_sha256": "31f2c5a6e92d01e306d44c522663d8b484ba028a32c9fe1b17c8bfc5190e7e64"
         },
         {
           "id": "fxfe577-12",
@@ -1253,7 +1253,7 @@
           ],
           "features": "experimental-snapshot",
           "analysis_path": "assets/analysis/fxfe577-12-colors.json",
-          "analysis_sha256": "cf85e9557469451ed1427e618e077f17e73db1850f62fbd75fb1a4d6a73ded83"
+          "analysis_sha256": "344583f9a1da43747bde3c1703ae530d8c8ce92cd9074131a67952a54aac6db4"
         }
       ]
     },

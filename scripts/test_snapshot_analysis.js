@@ -56,6 +56,23 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
   recent++;
 }
 assert.equal(recent,61);assert.equal(analyses,13);assert.equal(maps,57);
+const lowLevel=require("../low-level.js");
+function inRing(r,[x,y]){
+  let hit=false;
+  for(let i=0,j=r.length-1;i<r.length;j=i++){
+    const a=r[i],b=r[j];
+    if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])hit=!hit;
+  }return hit;
+}
+function checkTemperatureSide(panel,band,warmer){
+  // Source contours one or more intervals from the boundary must fall on
+  // the correct side. This catches a shifted 0 C boundary and warm holes.
+  for(const level of panel.levels.filter(l=>l.temperature_c!==band.threshold))for(const line of level.lines)for(const f of [.25,.5,.75]){
+    const p=line.points[Math.floor((line.points.length-1)*f)];
+    const painted=band.rings.reduce((hit,r)=>hit!==inRing(r,p),false);
+    assert.equal(painted,warmer?level.temperature_c>band.threshold:level.temperature_c<band.threshold,`T${panel.forecast_hour} ${band.threshold} C region disagrees with ${level.temperature_c} C source contour`);
+  }
+}
 let forecasts=0;
 for(const p of catalog.products.filter(p=>["FXFE5782","FXFE5784","FXFE577"].includes(p.code)))for(const v of p.variants){
   const selected=ChartCatalog.selection(catalog,p.id,v.id,1),raw=fs.readFileSync(path.join(root,v.analysis_path));
@@ -74,10 +91,17 @@ for(const p of catalog.products.filter(p=>["FXFE5782","FXFE5784","FXFE577"].incl
     // A single meridian or text stroke cannot become a full-height fill column.
     assert.ok(rects.every(r=>r[3]-r[1]<panel.bounds[3]-panel.bounds[1]));
     if(panel.pressure_hpa===850){
+      assert.equal(panel.temperature_interval_c,3);
+      assert.equal(panel.temperature_label_interval_c,6);
+      assert.ok([3,9,15].every(t=>panel.levels.some(l=>l.temperature_c===t)),"Unnumbered native 3 C contours must be decoded");
       assert.deepEqual(panel.cold_thresholds,[0,-3,-6,-9,-12]);
       assert.ok(panel.cold_bands.length>0);
       assert.ok(panel.cold_bands.every(b=>panel.levels.some(l=>l.temperature_c===b.threshold)));
-      for(const band of require("../low-level.js").warmBands(panel))if(!panel.levels.some(l=>l.temperature_c===band.threshold))assert.equal(band.rings.length,0,"Missing contours must not be fabricated");
+      for(const band of panel.cold_bands)checkTemperatureSide(panel,band,false);
+      for(const band of lowLevel.warmBands(panel)){
+        if(!panel.levels.some(l=>l.temperature_c===band.threshold))assert.equal(band.rings.length,0,"Missing contours must not be fabricated");
+        else {assert.ok(band.rings.length,"Supported warm thresholds must not disappear");checkTemperatureSide(panel,band,true);}
+      }
     }
   }
   for(const change of [x=>delete x.color_only,x=>x.panels.pop(),x=>x.panels[0].forecast_hour=6,
@@ -86,7 +110,9 @@ for(const p of catalog.products.filter(p=>["FXFE5782","FXFE5784","FXFE577"].incl
     x=>x.panels[0].wet_rectangles[0][0]=x.panels[0].bounds[0]-10,
     x=>x.panels[0].positive_vorticity_rectangles=[[200,100,205,105]],
     x=>x.panels[0].troughs=[{points:[[200,100],[210,110]]}],
-    x=>x.panels[0].levels[0].temperature_c=-9]){
+    x=>x.panels[0].levels[0].temperature_c=-9,
+    x=>x.panels.at(-1).temperature_interval_c=6,
+    x=>delete x.panels.at(-1).temperature_label_interval_c]){
     const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));
   }
   forecasts++;

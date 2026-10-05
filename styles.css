@@ -52,7 +52,7 @@ h2 { margin: 0 0 9px; font-size: 12px; color: #164b68; }
 .analysis-note p { margin: 2px 0 0; line-height: 1.6; }
 .legend { display: inline-flex; align-items: center; gap: 6px; }
 .legend::before { content: ''; width: 22px; height: 0; border-top: 3px solid #f02020; }
-#detail-ascent .legend::before { height: 12px; flex-shrink: 0; border: 0; background: rgba(255, 240, 0, .3); }
+#detail-ascent .legend::before { height: 12px; flex-shrink: 0; border: 0; background: rgba(163, 216, 75, .3); }
 .trough-key::before { border-top: 5px double #f02020; }
 .ridge-key::before { display: none; }
 .wind-button { width: 100%; color: #17683e; border-color: #50a97b; font-weight: 600; }

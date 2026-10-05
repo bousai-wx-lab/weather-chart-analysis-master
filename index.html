@@ -8,15 +8,15 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=afc59d852dee60fa">
+  <link rel="stylesheet" href="styles.css?v=da140c7c48d5e83e">
   <script src="analysis.js?v=6e210e2a68561306" defer></script>
   <script src="geography.js?v=14cd8a441522c1e5" defer></script>
   <script src="catalog.js?v=d8b69339d06584c8" defer></script>
   <script src="low-level.js?v=ac9ae36b3af97c14" defer></script>
   <script src="geography-atlas.js?v=b5ebd20dcdfe7728" defer></script>
-  <script src="dynamics.js?v=ca7bdbd21a8f842e" defer></script>
-  <script src="snapshot-analysis.js?v=d6258480c0619387" defer></script>
-  <script src="app.js?v=aa3ea295ee8a2d0b" defer></script>
+  <script src="dynamics.js?v=ed6bf72e7564c059" defer></script>
+  <script src="snapshot-analysis.js?v=3fa6659fb14b5b73" defer></script>
+  <script src="app.js?v=ce1cb653f64f09ab" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -73,7 +73,7 @@
         <div class="layer-row"><button type="button" id="jet" class="layer-toggle" aria-pressed="false" disabled>強風軸</button><button type="button" class="layer-detail-button" data-layer-detail="jet" aria-label="強風軸の詳細" aria-expanded="false" aria-controls="detail-jet">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-jet" class="layer-details" hidden><span class="legend jet-key">赤い矢印 · 300hPa</span><p class="gesture-note">各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。</p></div>
       </article>
-      </div><div class="layer-group" data-layer-group><h3 id="lower-plane">500 hPa <span>下段</span></h3><article class="layer-tool" data-layer="ascent"><div class="layer-row"><button type="button" id="ascent" class="layer-toggle" aria-pressed="false" disabled>上昇流の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="ascent" aria-label="上昇流の色塗りの詳細" aria-expanded="false" aria-controls="detail-ascent">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-ascent" class="layer-details" hidden><span class="legend">700hPa · レモンイエロー · 濃さ30%</span></div></article>
+      </div><div class="layer-group" data-layer-group><h3 id="lower-plane">500 hPa <span>下段</span></h3><article class="layer-tool" data-layer="ascent"><div class="layer-row"><button type="button" id="ascent" class="layer-toggle" aria-pressed="false" disabled>上昇流の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="ascent" aria-label="上昇流の色塗りの詳細" aria-expanded="false" aria-controls="detail-ascent">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-ascent" class="layer-details" hidden><span class="legend">700hPa · 黄緑 · 濃さ30%</span></div></article>
       <article class="layer-tool" data-layer="temperature500">
         <div class="layer-row"><button type="button" id="temperature500" class="layer-toggle" aria-pressed="false" disabled>気温線</button><button type="button" class="layer-detail-button" data-layer-detail="temperature500" aria-label="500hPaの気温線の詳細" aria-expanded="false" aria-controls="detail-temperature500">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-temperature500" class="layer-details" hidden><div id="temperature500-legend" class="temperature-legend" aria-label="500hPaの元の黒い破線に半透明の色を重ねます。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−3〜−30℃の全10段階。元の黒い破線が透けるように、細い半透明の色を重ねます。</p></div>

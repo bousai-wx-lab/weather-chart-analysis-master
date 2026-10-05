@@ -56,7 +56,7 @@ const ChartDynamics = (() => {
     for(const [i,p] of data.panels.entries()) {
       if(i?(!ascent || !p.ascent_rectangles):!vorticity)continue;
       ctx.save();const [x,y,r,b]=p.bounds;ctx.beginPath();ctx.rect(x,y,r-x,b-y);ctx.clip();
-      ctx.fillStyle=i?"#fff000":"#ec72ae";ctx.beginPath();
+      ctx.fillStyle=i?"#a3d84b":"#ec72ae";ctx.beginPath();
       for(const [x0,y0,x1,y1] of i?p.ascent_rectangles:p.positive_vorticity_rectangles)ctx.rect(x0,y0,x1-x0,y1-y0);
       ctx.fill();ctx.restore();
     }

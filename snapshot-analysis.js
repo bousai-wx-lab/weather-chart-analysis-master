@@ -36,8 +36,8 @@ const SnapshotAnalysis = (() => {
       if(p.pressure_hpa!==expected[i] || p.bounds?.length!==4 || !point(p.bounds.slice(0,2)) || !point(p.bounds.slice(2)) || p.bounds[0]>=p.bounds[2] || p.bounds[1]>=p.bounds[3] || !Array.isArray(p.levels) || !Array.isArray(p.troughs) || !Array.isArray(p.ridges))throw Error("Invalid trial panel");
       if(forecastHours) {
         const inPanel=q=>point(q)&&q[0]>=p.bounds[0]-.25&&q[1]>=p.bounds[1]-.25&&q[0]<=p.bounds[2]+.25&&q[1]<=p.bounds[3]+.25;
-        if(p.forecast_hour!==forecastHours[i] || p.temperature_interval_c!==6 || p.troughs.length || p.ridges.length || p.positive_vorticity_rectangles?.length || p.wind_bands?.length || p.jet_guides?.length)throw Error("Invalid forecast color layer");
-        if(p.levels.some(l=>l.temperature_c%6 || l.lines.some(l=>!l.points.every(inPanel))) || p.cold_bands?.some(b=>b.rings.some(r=>!r.every(inPanel))))throw Error("Forecast contour outside panel");
+        if(p.forecast_hour!==forecastHours[i] || p.temperature_interval_c!==(p.pressure_hpa===850?3:6) || p.temperature_label_interval_c!==6 || p.troughs.length || p.ridges.length || p.positive_vorticity_rectangles?.length || p.wind_bands?.length || p.jet_guides?.length)throw Error("Invalid forecast color layer");
+        if(p.levels.some(l=>l.temperature_c%(p.pressure_hpa===850?3:6) || l.lines.some(l=>!l.points.every(inPanel))) || p.cold_bands?.some(b=>b.rings.some(r=>!r.every(inPanel))))throw Error("Forecast contour outside panel");
         if(expected[i]===500 ? (p.wet_pressure_hpa!==700 || !p.wet_rectangles?.length || p.ascent_rectangles?.length || p.cold_bands?.length) : (p.vertical_velocity_pressure_hpa!==700 || !p.ascent_rectangles?.length || p.wet_rectangles?.length))throw Error("Forecast weather layer pressure mismatch");
         for(const key of ["wet_rectangles","ascent_rectangles"])if(p[key]?.some(r=>!inPanel(r.slice(0,2))||!inPanel(r.slice(2))))throw Error("Forecast fill outside panel");
         if(data.panels.slice(0,i).some(q=>Math.min(p.bounds[2],q.bounds[2])>Math.max(p.bounds[0],q.bounds[0])&&Math.min(p.bounds[3],q.bounds[3])>Math.max(p.bounds[1],q.bounds[1])))throw Error("Overlapping forecast panels");
@@ -140,7 +140,7 @@ const SnapshotAnalysis = (() => {
     for(const p of data.panels){ctx.save();const [l,t,r,b]=p.bounds;ctx.beginPath();ctx.rect(l,t,r-l,b-t);ctx.clip();
       if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity);
       if(on.wind && p.pressure_hpa===300)paintBands(p.wind_bands,1);
-      for(const [key,color,active] of [["wet_rectangles","#269ed2",on.wet],["positive_vorticity_rectangles","#ec6ca5",on.vorticity],["ascent_rectangles","#fff000",on.ascent]])if(active){ctx.save();ctx.globalAlpha=.3;ctx.fillStyle=color;for(const [x,y,xx,yy] of p[key]||[])ctx.fillRect(x,y,xx-x,yy-y);ctx.restore();}
+      for(const [key,color,active] of [["wet_rectangles","#269ed2",on.wet],["positive_vorticity_rectangles","#ec6ca5",on.vorticity],["ascent_rectangles","#a3d84b",on.ascent]])if(active){ctx.save();ctx.globalAlpha=.3;ctx.fillStyle=color;for(const [x,y,xx,yy] of p[key]||[])ctx.fillRect(x,y,xx-x,yy-y);ctx.restore();}
       ctx.restore();
     }
   }

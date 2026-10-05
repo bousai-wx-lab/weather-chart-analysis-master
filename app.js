@@ -695,15 +695,15 @@ byId("save").addEventListener("click", () => {
   const geoLabel = showGeography && geography ? `${ChartGeography.patterns.find(p => p.id === geographyStyle).label}（濃さ${Math.round(geographyOpacity * 100)}%）` : "表示なし";
   ctx.fillText(geography ? `陸海：${geoLabel}${showGeography && geographyStyle === "satellite" ? " / NASA Earth Observatory・Reto Stoeckli / 2004年10月の地表画像（投影変換）" : ""}` : "自動更新なし。解析・予想の日時は原図内を確認してください。", 26, ink.height + 231, output.width - 52);
   if(dynamics) {
-    ctx.fillText(`500hPa正渦度：${showVorticity?"ピンク・濃さ30%":"表示なし"}${isFeas()?"":` / 700hPa上昇流：${showAscent?"レモンイエロー・濃さ30%":"表示なし"}`}`,26,ink.height+275);
+    ctx.fillText(`500hPa正渦度：${showVorticity?"ピンク・濃さ30%":"表示なし"}${isFeas()?"":` / 700hPa上昇流：${showAscent?"黄緑・濃さ30%":"表示なし"}`}`,26,ink.height+275);
     ctx.fillText(`850hPa寒気：${showCold850?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+319);
     for(const [i,v] of [0,-3,-6,-9,-12].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+297,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+319);}
   }
   if(trial?.color_only) {
-    ctx.fillText(`700hPa湿域：${showWet?"青水色・濃さ30%":"表示なし"} / 上昇流：${showAscent?"レモンイエロー・濃さ30%":"表示なし"}`,26,ink.height+350,output.width-52);
+    ctx.fillText(`700hPa湿域：${showWet?"青水色・濃さ30%":"表示なし"} / 上昇流：${showAscent?"黄緑・濃さ30%":"表示なし"}`,26,ink.height+350,output.width-52);
     ctx.fillText(`850hPa寒気：${showCold850?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+394);
     for(const [i,v] of [0,-3,-6,-9,-12].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+372,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+394);}
-    ctx.fillText("気温の色塗りは原図にある6℃刻みの等温線で区切ります。",26,ink.height+430,output.width-52);
+    ctx.fillText("850hPaの色塗りは原図の3℃刻みの等温線で区切ります。",26,ink.height+430,output.width-52);
   }
   if (lowLevel) {
     ctx.fillStyle="#243247";
@@ -971,7 +971,7 @@ function trialLegends() {
   if(trial.color_only)byId("upper-plane").parentElement.append(document.querySelector('[data-layer="wet"]'));
   else byId("lower-plane").parentElement.append(document.querySelector('[data-layer="wet"]'));
   byId("detail-wet").querySelector("p").textContent=trial.color_only?"700hPaの湿域（T−Td < 3℃）の縦線範囲を青水色・濃さ30%で表示します。降水域とは異なります。":"原図の湿域（T−Td < 3℃）のドットを含む範囲。元のドットと線が透ける濃さ30%。境界はドット間隔の半分程度の近似です。降水域とは異なります。";
-  if(trial.color_only)byId("detail-temperature500").querySelector("p").textContent="原図にある6℃刻みの等温線を共通の配色で表示します。寒気・暖気の色塗りも、原図にある境界を使います。";
+  if(trial.color_only)byId("detail-temperature500").querySelector("p").textContent="原図の850hPa等温線は3℃間隔、数値の印字は6℃間隔です。寒気・暖気の色塗りも、原図にある3℃ごとの境界を使います。";
   for(const id of ["trough","ridge","trough700","ridge700"]) {
     const upper=["trough","ridge"].includes(id)?["AXFE578","FEAS50"].includes(trial.product):["AUPQ35","AUPQ78"].includes(trial.product);
     byId(upper?"upper-plane":"lower-plane").parentElement.append(document.querySelector(`[data-layer="${id}"]`));
