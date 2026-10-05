@@ -17,7 +17,7 @@
       "variants": [
         {
           "id": "aupa20-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa20_12.pdf",
           "source_sha256": "b5c3063b73aeab4a4bbd20c551ef00af6199b2d9a48d7f0c2d47265a24cf2f42",
           "retrieved_at": "2026-10-04T22:29:55.033370+00:00",
@@ -35,7 +35,7 @@
         },
         {
           "id": "aupa20-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa20_00.pdf",
           "source_sha256": "aa6d4731e0053d94c80e34a0733b3141f6036f773ee77028377afb57ef22e246",
           "retrieved_at": "2026-10-04T22:29:55.033996+00:00",
@@ -53,7 +53,7 @@
         },
         {
           "id": "aupa20-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa20_00.pdf",
           "source_sha256": "b6c7610654ada34a03cee83ca98ca9c689cc0f017afc3380da6011f0bf59d52e",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -70,7 +70,7 @@
         },
         {
           "id": "aupa20-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa20_12.pdf",
           "source_sha256": "a4ffbcd2aca76c24e066386e398f6ed2eb85b5e70b02ad8d8907422c7f59d8b7",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -97,7 +97,7 @@
       "variants": [
         {
           "id": "aupa25-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa25_12.pdf",
           "source_sha256": "6f4dfa344008702f8c3b0833c2c55c7764ea084ed5a443fba46db7e2f08fbdce",
           "retrieved_at": "2026-10-04T22:29:55.034612+00:00",
@@ -115,7 +115,7 @@
         },
         {
           "id": "aupa25-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa25_00.pdf",
           "source_sha256": "f1bda87497f9dbab16e3d36e43f34788ec3f34211ecdea3e676c6365dbc4fe56",
           "retrieved_at": "2026-10-04T22:29:55.032234+00:00",
@@ -133,7 +133,7 @@
         },
         {
           "id": "aupa25-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa25_00.pdf",
           "source_sha256": "7ccde4acfedea9383e48dc22b000ab7e0bebd5f1c1f3108aa126305817c0fe63",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -150,7 +150,7 @@
         },
         {
           "id": "aupa25-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa25_12.pdf",
           "source_sha256": "0a3f3acb7fc96fe9b8e78e04ac63e82e438b67fc58b7b27003821a98e4838035",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -177,7 +177,7 @@
       "variants": [
         {
           "id": "aupn30-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupn30_12.pdf",
           "source_sha256": "e223ec0ef1b3ec72beb4ddd79bf0c5f72b8f7108464883c4c93bd412e55912d7",
           "retrieved_at": "2026-10-04T22:29:55.092234+00:00",
@@ -195,7 +195,7 @@
         },
         {
           "id": "aupn30-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupn30_00.pdf",
           "source_sha256": "a8b4eb2efc909b500c3c40e5c4f5c9856a50fe93cbfbdc759b56327690b1fed3",
           "retrieved_at": "2026-10-04T22:29:55.034543+00:00",
@@ -213,7 +213,7 @@
         },
         {
           "id": "aupn30-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupn30_00.pdf",
           "source_sha256": "af75a28706d2bf8c59203bb55701727e993fd2b38fd8f3231396975f9c6e0588",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -230,7 +230,7 @@
         },
         {
           "id": "aupn30-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupn30_12.pdf",
           "source_sha256": "eec4f87e75d00a210e49639a73722c9b1da9edfb1fa3d91f01e18f152d986dc8",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -257,7 +257,7 @@
       "variants": [
         {
           "id": "aupq35-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録・解析試行）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq35_12.pdf",
           "source_sha256": "c1ee83039e865f076f04ea8eb0145e084e78362099b1a180fd7cd810e81c813d",
           "retrieved_at": "2026-10-04T22:29:55.090755+00:00",
@@ -277,7 +277,7 @@
         },
         {
           "id": "aupq35-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録・解析試行）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq35_00.pdf",
           "source_sha256": "5c9beb297f313c644b36b868b996cb3a20154e5fb2dccef240cf16b172029062",
           "retrieved_at": "2026-10-04T22:29:55.090888+00:00",
@@ -297,7 +297,7 @@
         },
         {
           "id": "aupq35-reviewed",
-          "label": "2026年10月2日 09:00 JST（00UTC）（以前の解析例）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq35_00.pdf",
           "source_sha256": "39db0356cd868469fe5f79dd4494cd2dae67a3f093572175aeb8dbbc1fbd40d4",
           "retrieved_at": "2026-10-02T10:22:46.171286+00:00",
@@ -315,7 +315,7 @@
         },
         {
           "id": "aupq35-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq35_12.pdf",
           "source_sha256": "a06cc29b22dd8fcbc69411d59ee99c9faad81926419b529f371a17f8f77795e7",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -342,7 +342,7 @@
       "variants": [
         {
           "id": "aupq78-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録・解析試行）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq78_12.pdf",
           "source_sha256": "58db0ec9ec617e380c40fb4d0ef278cda49c09284a7911c00efa811207c9c52a",
           "retrieved_at": "2026-10-04T22:29:55.091793+00:00",
@@ -362,7 +362,7 @@
         },
         {
           "id": "aupq78-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録・解析試行）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq78_00.pdf",
           "source_sha256": "13957750be4c95a269338aa67c5c5cf9d2997c3562dd3f80a9e8f3c309ccd601",
           "retrieved_at": "2026-10-04T22:29:55.091700+00:00",
@@ -382,7 +382,7 @@
         },
         {
           "id": "aupq78-00",
-          "label": "2026/10/02 00UTC（09:00 JST） · 700 / 850hPa（以前の解析例）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq78_00.pdf",
           "source_sha256": "58be2c8fd8bcc5b27c87a8fa748869a2145ca7d8403a9ecdc3ce586cfc95f249",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -400,7 +400,7 @@
         },
         {
           "id": "aupq78-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq78_12.pdf",
           "source_sha256": "62018337d6637e7e7fbe5c9d6bcf32f0f34bbe8edcea64b819eb49088b4e3524",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -427,7 +427,7 @@
       "variants": [
         {
           "id": "auxn50-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/auxn50_12.pdf",
           "source_sha256": "2987dd4ca2a3729eb2e5ad1953b3a84adc0145edfc737b400b6620df715aa7c7",
           "retrieved_at": "2026-10-04T22:29:55.169186+00:00",
@@ -445,7 +445,7 @@
         },
         {
           "id": "auxn50-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/auxn50_12.pdf",
           "source_sha256": "a385c5c543970d3d3de08eb534c45637917f446a2d05ddbb3d854071bc029bcb",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -472,7 +472,7 @@
       "variants": [
         {
           "id": "axfe578-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録・解析試行）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axfe578_12.pdf",
           "source_sha256": "4ca634d57d85f991ff40d3683ee83fe130fef10b1c6d24cd9392e19925131392",
           "retrieved_at": "2026-10-04T22:29:55.166553+00:00",
@@ -492,7 +492,7 @@
         },
         {
           "id": "axfe578-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録・解析試行）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axfe578_00.pdf",
           "source_sha256": "2d798d4767ecdac97a984dae43a3625f5485bd7ecf69252f94eea4d0d7ebceff",
           "retrieved_at": "2026-10-04T22:29:55.191265+00:00",
@@ -512,7 +512,7 @@
         },
         {
           "id": "axfe578-00",
-          "label": "00UTC（以前の解析例）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axfe578_00.pdf",
           "source_sha256": "edf5a4b0abb162616c308700160e3715fae1433271a79141e3e86787cc3a7372",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -529,7 +529,7 @@
         },
         {
           "id": "axfe578-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axfe578_12.pdf",
           "source_sha256": "8034b9525f24817c75264fc1c97e483feba90d453301b176450b75aca65b0527",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -556,7 +556,7 @@
       "variants": [
         {
           "id": "feas50-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録・解析試行）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas50_12.pdf",
           "source_sha256": "6dc45f1d59180de670e161fb3ddf30e03dd2021916b8d8cf65e6793371c52eb2",
           "retrieved_at": "2026-10-04T22:29:55.212223+00:00",
@@ -576,7 +576,7 @@
         },
         {
           "id": "feas50-12",
-          "label": "12UTC（以前の解析例）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas50_12.pdf",
           "source_sha256": "dfd41a8166153acb51060740a879f0bc3643e61d0b887aad48f087eaa064f8b9",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -603,7 +603,7 @@
       "variants": [
         {
           "id": "axjp140-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axjp140_12.pdf",
           "source_sha256": "70a20d6fae7cb473be86fa53f334b70a531f3fd15b9bd1ed5ec4ae0307236081",
           "retrieved_at": "2026-10-04T22:29:55.249414+00:00",
@@ -621,7 +621,7 @@
         },
         {
           "id": "axjp140-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axjp140_00.pdf",
           "source_sha256": "6869afa67cbf1a3b38a73a88240359554be0ce6e3a6819d3e4d7c7cdaf9f10a1",
           "retrieved_at": "2026-10-04T22:29:55.216810+00:00",
@@ -639,7 +639,7 @@
         },
         {
           "id": "axjp140-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-03 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axjp140_00.pdf",
           "source_sha256": "32de775b2c3c035ba3839c54b7ba200ec441235012e48d2e29d722c0dcf02651",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -656,7 +656,7 @@
         },
         {
           "id": "axjp140-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/axjp140_12.pdf",
           "source_sha256": "2cdbac570867eb1474d9bb53aba018b589b568f9dcbdce0141a789286d72570a",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -683,7 +683,7 @@
       "variants": [
         {
           "id": "fupa252-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa252_12.pdf",
           "source_sha256": "3b35b10378f6c440866d32e8a07984099e4b507251109163c8ec4969c1129f68",
           "retrieved_at": "2026-10-04T22:29:55.263076+00:00",
@@ -701,7 +701,7 @@
         },
         {
           "id": "fupa252-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa252_00.pdf",
           "source_sha256": "c2588852af942c69fa3caf2b6db3a14909fa333c1a0c3dae21ebe8b4d168e5af",
           "retrieved_at": "2026-10-04T22:29:55.275468+00:00",
@@ -719,7 +719,7 @@
         },
         {
           "id": "fupa252-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa252_00.pdf",
           "source_sha256": "965ecaf2e12f7d11fe2e08d6fbe996ab1387ca200b2b127ad78f335dc0fec15b",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -736,7 +736,7 @@
         },
         {
           "id": "fupa252-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa252_12.pdf",
           "source_sha256": "7cb341c0e376153bfaec7bf848a1ea18efe8754a7ad503c921eee8f982bdce26",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -763,7 +763,7 @@
       "variants": [
         {
           "id": "fupa302-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa302_12.pdf",
           "source_sha256": "236d98498e27acd4bba062640b61b28b4e329228506a45ca59c048c0f46b6810",
           "retrieved_at": "2026-10-04T22:29:55.290107+00:00",
@@ -781,7 +781,7 @@
         },
         {
           "id": "fupa302-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa302_00.pdf",
           "source_sha256": "afadb98b308eff4a3136a7cbaa2b543821392c8ac4bee926da3a77ed648c3d13",
           "retrieved_at": "2026-10-04T22:29:55.331822+00:00",
@@ -799,7 +799,7 @@
         },
         {
           "id": "fupa302-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa302_00.pdf",
           "source_sha256": "252aa8be4946d624865617cd73878fc362db3862036da51494a214ea4147e61b",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -816,7 +816,7 @@
         },
         {
           "id": "fupa302-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa302_12.pdf",
           "source_sha256": "c87a82bcffda5fa5242e4bf518e3ac014adfa78450e7ac15ad8ff449afe98ae2",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -843,7 +843,7 @@
       "variants": [
         {
           "id": "fupa402-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa402_12.pdf",
           "source_sha256": "84c77cbd3a7e7dd71cd54f0f9f1c307b777cd0e9d19829105d0654a67540c8b1",
           "retrieved_at": "2026-10-04T22:29:55.339471+00:00",
@@ -861,7 +861,7 @@
         },
         {
           "id": "fupa402-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa402_00.pdf",
           "source_sha256": "9ea7705f64faf9f56928652c3aec4173d46d163ee66a8031467cc7fb7d20554d",
           "retrieved_at": "2026-10-04T22:29:55.361206+00:00",
@@ -879,7 +879,7 @@
         },
         {
           "id": "fupa402-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa402_00.pdf",
           "source_sha256": "e48dfc623a5bb53d6761ef80c3d6a5fd41b3ed292ebc076685020fe4eb22b0eb",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -896,7 +896,7 @@
         },
         {
           "id": "fupa402-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa402_12.pdf",
           "source_sha256": "238a552f8a5a5b37ca367f4daed81522adca19a7c1b6d1eff28392e64c0b9bfb",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -923,7 +923,7 @@
       "variants": [
         {
           "id": "fupa502-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa502_12.pdf",
           "source_sha256": "40d20bf204a4e06729157d7e2ec51b20cbad8f42b1090276b4460acf2fa08a2a",
           "retrieved_at": "2026-10-04T22:29:55.361328+00:00",
@@ -941,7 +941,7 @@
         },
         {
           "id": "fupa502-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa502_00.pdf",
           "source_sha256": "0e3c0947fa544a50eef216084ab2cf322788bd31da5e45b1e279dddb55a97dd7",
           "retrieved_at": "2026-10-04T22:29:55.382244+00:00",
@@ -959,7 +959,7 @@
         },
         {
           "id": "fupa502-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa502_00.pdf",
           "source_sha256": "9aaeebaffc171b557f63d101eb5cd497186b982235e1884fb46777d4ccdae343",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -976,7 +976,7 @@
         },
         {
           "id": "fupa502-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa502_12.pdf",
           "source_sha256": "80929f7dd875be2f6a8e367797b1eba0043067295520d383afffdeb0f794f856",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1003,7 +1003,7 @@
       "variants": [
         {
           "id": "fxfe5782-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5782_12.pdf",
           "source_sha256": "98e8eaf9bcde16eb42cc819c6ca3bdf92cdfdddea8e82be5679526805ba306e0",
           "retrieved_at": "2026-10-04T22:29:55.427185+00:00",
@@ -1021,7 +1021,7 @@
         },
         {
           "id": "fxfe5782-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5782_00.pdf",
           "source_sha256": "63030e55751551f4d6dd3ae4d500719bd72a922f97d4e66d8067aa7cac4d7765",
           "retrieved_at": "2026-10-04T22:29:55.400979+00:00",
@@ -1039,7 +1039,7 @@
         },
         {
           "id": "fxfe5782-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5782_00.pdf",
           "source_sha256": "c5b6fe7dd1c98251673ccd4a875d7ec829f2c8c8ceb05e7b2e4a77c835c3d654",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1056,7 +1056,7 @@
         },
         {
           "id": "fxfe5782-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5782_12.pdf",
           "source_sha256": "8d389cc4400ad02d55742b56732403c84ad1992be1be66b1d960f19bf127ae16",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1083,7 +1083,7 @@
       "variants": [
         {
           "id": "fxfe5784-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5784_12.pdf",
           "source_sha256": "4d661e1eda89d580ae33ba228fd67e0adecf94eecdd6cd055755024e7085a2c0",
           "retrieved_at": "2026-10-04T22:29:55.444802+00:00",
@@ -1101,7 +1101,7 @@
         },
         {
           "id": "fxfe5784-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5784_00.pdf",
           "source_sha256": "dfd588af6ff200fc4edd61a4cc33c3636762b0319b8299a971c42b3fd687a6a8",
           "retrieved_at": "2026-10-04T22:29:55.505520+00:00",
@@ -1119,7 +1119,7 @@
         },
         {
           "id": "fxfe5784-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5784_00.pdf",
           "source_sha256": "07e7e35a7d4472dd1d78b472bf86f512b964a7595f6ba49e47c6ab02088531a6",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1136,7 +1136,7 @@
         },
         {
           "id": "fxfe5784-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe5784_12.pdf",
           "source_sha256": "7210a5b272944f64b9b032d4e198c2173d0d4904f1310ed7d5f752e630487b39",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1163,7 +1163,7 @@
       "variants": [
         {
           "id": "fxfe577-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe577_12.pdf",
           "source_sha256": "4bd135cd7543609482c40619cd93add01333117dbafebd75165d3711e9ed4730",
           "retrieved_at": "2026-10-04T22:29:55.478473+00:00",
@@ -1181,7 +1181,7 @@
         },
         {
           "id": "fxfe577-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe577_00.pdf",
           "source_sha256": "10b62da1a8e82d3a165febe29842d61f2ccb438eff6659a866a37c0c49ca0d19",
           "retrieved_at": "2026-10-04T22:29:55.494095+00:00",
@@ -1199,7 +1199,7 @@
         },
         {
           "id": "fxfe577-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe577_00.pdf",
           "source_sha256": "fc916a8db7b566f57989558d8d8d3bf644184c29d9b344aaee09852b76e4d27c",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1216,7 +1216,7 @@
         },
         {
           "id": "fxfe577-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe577_12.pdf",
           "source_sha256": "81607007dfb7a5111aaa83e2b0f527b2a0c7fa18d6af0e10663dea404dffc17c",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1243,7 +1243,7 @@
       "variants": [
         {
           "id": "fxfe502-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_12.pdf",
           "source_sha256": "e1bc3282beef88ba8321ee9db45efd4f2c5930ada1b0ae31c9c45dba0e118488",
           "retrieved_at": "2026-10-04T22:29:55.531550+00:00",
@@ -1261,7 +1261,7 @@
         },
         {
           "id": "fxfe502-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_00.pdf",
           "source_sha256": "e606ca79eafc1e8acbf3a7b8500569e8a3039ee4f1c68205eb99c5666393e3af",
           "retrieved_at": "2026-10-04T22:29:55.497425+00:00",
@@ -1279,7 +1279,7 @@
         },
         {
           "id": "fxfe502-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_00.pdf",
           "source_sha256": "1b809e7cd0569faa137a592667c7e39fa3eb59c49e0943f281704078695640e7",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1296,7 +1296,7 @@
         },
         {
           "id": "fxfe502-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_12.pdf",
           "source_sha256": "d43efe561ea0795938261b39d31db36c23f1338030d318c15c110ff9713238ee",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1323,7 +1323,7 @@
       "variants": [
         {
           "id": "fxfe504-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe504_12.pdf",
           "source_sha256": "d192f755a156c199d17559902586b6abfee5b7bfa03a4d48cdd8cf7918a6b3ff",
           "retrieved_at": "2026-10-04T22:29:55.577149+00:00",
@@ -1341,7 +1341,7 @@
         },
         {
           "id": "fxfe504-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe504_00.pdf",
           "source_sha256": "03af4eadc09ec7b1051772dedbf7e3a3bc88b76c8cc0833551644a7f6cb01ec7",
           "retrieved_at": "2026-10-04T22:29:55.636043+00:00",
@@ -1359,7 +1359,7 @@
         },
         {
           "id": "fxfe504-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe504_00.pdf",
           "source_sha256": "8e0cc9f21bcd33215ccd93f68269762ffb6f85f20a29fe490b23295382761da3",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1376,7 +1376,7 @@
         },
         {
           "id": "fxfe504-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe504_12.pdf",
           "source_sha256": "bd511e03702afdfa811ed59c14e88b5791a50dfc53c5ff718062ec65892bfa11",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1403,7 +1403,7 @@
       "variants": [
         {
           "id": "fxfe507-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe507_12.pdf",
           "source_sha256": "99bd54e086e91f075d3c6da7d22ae3f51d23dc49c5e9f8de132a349e691f88da",
           "retrieved_at": "2026-10-04T22:29:55.584155+00:00",
@@ -1421,7 +1421,7 @@
         },
         {
           "id": "fxfe507-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe507_00.pdf",
           "source_sha256": "35066ad4bfa6a406dfc30ca1dc8bde515af4a4bab5ed0cda420c4feadbb4531f",
           "retrieved_at": "2026-10-04T22:29:55.624610+00:00",
@@ -1439,7 +1439,7 @@
         },
         {
           "id": "fxfe507-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe507_00.pdf",
           "source_sha256": "6d11e174ac9ec633c6022e5732dce8497b430f89b19072c157fdc8990c7cf7fe",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1456,7 +1456,7 @@
         },
         {
           "id": "fxfe507-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe507_12.pdf",
           "source_sha256": "bf3544c58c413b4c15457be6ffc22b1135ff8881689868b0cd288c094b50b661",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1483,7 +1483,7 @@
       "variants": [
         {
           "id": "feas502-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas502_12.pdf",
           "source_sha256": "314249846d6d847e435632c8861c545f7f9922111ae1f6e0782337bba32794fc",
           "retrieved_at": "2026-10-04T22:29:55.592646+00:00",
@@ -1501,7 +1501,7 @@
         },
         {
           "id": "feas502-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas502_12.pdf",
           "source_sha256": "5a0026a372d8dbb443e375771a6345839a3699b94cac52bf27dfc79407631368",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1528,7 +1528,7 @@
       "variants": [
         {
           "id": "feas504-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas504_12.pdf",
           "source_sha256": "aac7595a07cdf17200724ce4d3155a055c7d139008c0367515f1ea819009dd08",
           "retrieved_at": "2026-10-04T22:29:55.702528+00:00",
@@ -1546,7 +1546,7 @@
         },
         {
           "id": "feas504-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas504_12.pdf",
           "source_sha256": "32095a1e9c0dc943a320952b490b30b8357589d5fc0f40329785562c895a327d",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1573,7 +1573,7 @@
       "variants": [
         {
           "id": "feas507-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas507_12.pdf",
           "source_sha256": "b8f9d07cb649b4a3cf19909b443dd3ee3d1f2fa3e5c94dec9abb447750330a4d",
           "retrieved_at": "2026-10-04T22:29:55.695237+00:00",
@@ -1591,7 +1591,7 @@
         },
         {
           "id": "feas507-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas507_12.pdf",
           "source_sha256": "b5fc96e2ee9c37e88fa5f6626a730966d3b60c7a3e84d1fac9bacc82456972e2",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1618,7 +1618,7 @@
       "variants": [
         {
           "id": "feas509-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas509_12.pdf",
           "source_sha256": "0a209e0776f6fcb66041c5fc6415563a1968676c191180d4a5e180c5166c7c91",
           "retrieved_at": "2026-10-04T22:29:55.737524+00:00",
@@ -1636,7 +1636,7 @@
         },
         {
           "id": "feas509-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas509_12.pdf",
           "source_sha256": "9abfa269d6ad26cd69b1db8e8f6814e8217413c01a439f0aa79cf9a536732497",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1663,7 +1663,7 @@
       "variants": [
         {
           "id": "feas512-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas512_12.pdf",
           "source_sha256": "dc2b23df7edcfbad7cbe2cf8206ef79a13b546cdd16a3ea677de42393bf6671a",
           "retrieved_at": "2026-10-04T22:29:55.690276+00:00",
@@ -1681,7 +1681,7 @@
         },
         {
           "id": "feas512-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas512_12.pdf",
           "source_sha256": "aa8314823d4c170e06575589c484cba694ee5bff18b2910764504e073406698c",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1708,7 +1708,7 @@
       "variants": [
         {
           "id": "feas514-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas514_12.pdf",
           "source_sha256": "6a8de15b51653ac88ee11f2bc651d8c8d25a0f2fe9eb531fe36143424d179337",
           "retrieved_at": "2026-10-04T22:29:55.706311+00:00",
@@ -1726,7 +1726,7 @@
         },
         {
           "id": "feas514-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas514_12.pdf",
           "source_sha256": "b4ffa5728d602c0fa3424b1f992447c4bccee7158c7edae34eae97d1af83ad3b",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1753,7 +1753,7 @@
       "variants": [
         {
           "id": "feas516-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas516_12.pdf",
           "source_sha256": "4b7bafd482d1f930d3d60b8f563dcbe449e6d22ab979cf2eac6150956b10bf6b",
           "retrieved_at": "2026-10-04T22:29:55.759975+00:00",
@@ -1771,7 +1771,7 @@
         },
         {
           "id": "feas516-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas516_12.pdf",
           "source_sha256": "1dfdd36424d0c59922d0d2f3596e2f6b6c8a079b1ed5558134adabdbb6f089cb",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1798,7 +1798,7 @@
       "variants": [
         {
           "id": "feas519-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas519_12.pdf",
           "source_sha256": "2701d7d774563e5edfdd3233f8a2663c64494695eeece05e4ebad7248a82671f",
           "retrieved_at": "2026-10-04T22:29:55.760111+00:00",
@@ -1816,7 +1816,7 @@
         },
         {
           "id": "feas519-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas519_12.pdf",
           "source_sha256": "7cbb50a2df10da96f34e329548eaa29c4ef1b601f05675d0117f93f036a1a525",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1843,7 +1843,7 @@
       "variants": [
         {
           "id": "feas521-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas521_12.pdf",
           "source_sha256": "5f1dc93ee23ec6154ad04b795c7a99326956ce4536881170c2b44cca252987da",
           "retrieved_at": "2026-10-04T22:29:55.828645+00:00",
@@ -1861,7 +1861,7 @@
         },
         {
           "id": "feas521-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas521_12.pdf",
           "source_sha256": "319577312b277df38e27012018ea67e95c9b28133816c4a3f807e6cc6f696f0b",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1888,7 +1888,7 @@
       "variants": [
         {
           "id": "feas524-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas524_12.pdf",
           "source_sha256": "ec2d4c36f7df703547ec72e8cffb4f23a8c010198e5e85f65eb00f62e78e43ad",
           "retrieved_at": "2026-10-04T22:29:55.847390+00:00",
@@ -1906,7 +1906,7 @@
         },
         {
           "id": "feas524-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas524_12.pdf",
           "source_sha256": "87305018ed0a448d53ed7f38c29171c4e187de023b5a0fa69426132e87c1de81",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1933,7 +1933,7 @@
       "variants": [
         {
           "id": "feas526-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas526_12.pdf",
           "source_sha256": "2692e3acc144c5251773ff94032b9cf8a70339be7299368c6558f44277e7bd33",
           "retrieved_at": "2026-10-04T22:29:55.848292+00:00",
@@ -1951,7 +1951,7 @@
         },
         {
           "id": "feas526-12",
-          "label": "PDF（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/feas526_12.pdf",
           "source_sha256": "58c0d784bc239712853296ca7ff975b8948cfb0441eb6d2bdedb9cd7d247cd3c",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -1978,7 +1978,7 @@
       "variants": [
         {
           "id": "fxjp854-12-20261005",
-          "label": "2026-10-04 12:00 UTC（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxjp854_12.pdf",
           "source_sha256": "e4664b0c5f82d43b57ce000dee82e8f8a97783a7c4d89aec365c66d4725a3f27",
           "retrieved_at": "2026-10-04T22:29:55.850144+00:00",
@@ -1996,7 +1996,7 @@
         },
         {
           "id": "fxjp854-00-20261005",
-          "label": "2026-10-04 00:00 UTC（10/5収録）",
+          "label": "2026-10-04 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxjp854_00.pdf",
           "source_sha256": "f09a7a4c3803a1bf8103f9ea21aecea4789f5a743b03807a0cb2eea06fa878d1",
           "retrieved_at": "2026-10-04T22:29:55.832384+00:00",
@@ -2014,7 +2014,7 @@
         },
         {
           "id": "fxjp854-00",
-          "label": "00UTC（以前の収録）",
+          "label": "2026-10-02 00:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxjp854_00.pdf",
           "source_sha256": "7178f7d0f25a35ad9e869307c0c58f17a0ba8c7b6255803ade547174d3dcfefb",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2031,7 +2031,7 @@
         },
         {
           "id": "fxjp854-12",
-          "label": "12UTC（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxjp854_12.pdf",
           "source_sha256": "601171e126fe9dff623a7d79bff0236151e616644214a4b221ceb05a7fed32b0",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2058,7 +2058,7 @@
       "variants": [
         {
           "id": "fefe19-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-10-03 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fefe19.png",
           "source_sha256": "243c593c4c06ec90b5e18e4556661b872a84115841a994a781d50433182f9088",
           "retrieved_at": "2026-10-04T22:29:55.913226+00:00",
@@ -2076,7 +2076,7 @@
         },
         {
           "id": "fefe19",
-          "label": "PNG（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fefe19.png",
           "source_sha256": "e50a0014127d68aee7574fc987010d203e351ce8cbc71e94330ebab60ea913d9",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2103,7 +2103,7 @@
       "variants": [
         {
           "id": "fzcx50-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fzcx50.png",
           "source_sha256": "f6a0b2f426a853f7108e187a2e03f63a75a03c4a865f0b84fe51d16b526c38b7",
           "retrieved_at": "2026-10-04T22:29:55.912290+00:00",
@@ -2121,7 +2121,7 @@
         },
         {
           "id": "fzcx50",
-          "label": "PNG（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fzcx50.png",
           "source_sha256": "1e6cecda26e292cdbe83bfbfcb7b099c70acf20825502c1e7872c110ba8758d6",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2148,7 +2148,7 @@
       "variants": [
         {
           "id": "fxxn519-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxxn519.png",
           "source_sha256": "7121e1dc151d0217e4ef01b4f94364a6ac9fb87cdd1b21b9c90ac7b1f5448cd6",
           "retrieved_at": "2026-10-04T22:29:55.960713+00:00",
@@ -2166,7 +2166,7 @@
         },
         {
           "id": "fxxn519",
-          "label": "PNG（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxxn519.png",
           "source_sha256": "4a4f5f2ba50293a0802147ad0adbf3af9fdcb24e78247981ba560bbbfca79fe1",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2193,7 +2193,7 @@
       "variants": [
         {
           "id": "fcvx21-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx21_12.png",
           "source_sha256": "136554a4343c74982baac4746b6d7b73145c951b74f6df39c045ab078b397e41",
           "retrieved_at": "2026-10-04T22:29:55.930045+00:00",
@@ -2211,7 +2211,7 @@
         },
         {
           "id": "fcvx21-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx21_12.png",
           "source_sha256": "affdf7d40f452af5cfc6d1ae9a35520980af91b7bfe7384f347e7a3410155432",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2238,7 +2238,7 @@
       "variants": [
         {
           "id": "fcvx22-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx22_12.png",
           "source_sha256": "2bbc1e6b1358d415ad7e3428c151cd0f682cc66a1e85f188901835a81366f4da",
           "retrieved_at": "2026-10-04T22:29:55.928119+00:00",
@@ -2256,7 +2256,7 @@
         },
         {
           "id": "fcvx22-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx22_12.png",
           "source_sha256": "ed86bc62f3d486e255e35eccdf908f316ef978bf0195551ba3520bece5790516",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2283,7 +2283,7 @@
       "variants": [
         {
           "id": "fcvx23-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx23_12.png",
           "source_sha256": "1a9aaf5b49cf84565aed935881f06ed40a8352871506ff7cdcf77ffa5d5139c0",
           "retrieved_at": "2026-10-04T22:29:55.980725+00:00",
@@ -2301,7 +2301,7 @@
         },
         {
           "id": "fcvx23-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx23_12.png",
           "source_sha256": "fdfd274a30bdccdec8cd54651247990807fc24eb3b3dbd3b5f086e2a04e10135",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2328,7 +2328,7 @@
       "variants": [
         {
           "id": "fcvx24-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-10-04 12:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx24_12.png",
           "source_sha256": "a60d00a8a964871f6aa2b26ce49679c2fc4dec85c16b9a086c436550ab750280",
           "retrieved_at": "2026-10-04T22:29:55.966041+00:00",
@@ -2346,7 +2346,7 @@
         },
         {
           "id": "fcvx24-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-10-02 12:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx24_12.png",
           "source_sha256": "1d9020ae365b89a30df7ceaf6306f2e385bf176d24cc9e0511d9e6c92414762b",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2373,7 +2373,7 @@
       "variants": [
         {
           "id": "fcvx11-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx11_12.png",
           "source_sha256": "ccbc45bf9a60fd33b8addfb82128c7d58631900f4b0fd5690035b02d3d6da439",
           "retrieved_at": "2026-10-04T22:29:55.989508+00:00",
@@ -2391,7 +2391,7 @@
         },
         {
           "id": "fcvx11-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx11_12.png",
           "source_sha256": "ccbc45bf9a60fd33b8addfb82128c7d58631900f4b0fd5690035b02d3d6da439",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2418,7 +2418,7 @@
       "variants": [
         {
           "id": "fcvx12-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx12_12.png",
           "source_sha256": "824e5c932684c0bf58f9e7001e15c2aef396885537e8aeaa30d08feb073e2315",
           "retrieved_at": "2026-10-04T22:29:55.991033+00:00",
@@ -2436,7 +2436,7 @@
         },
         {
           "id": "fcvx12-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx12_12.png",
           "source_sha256": "824e5c932684c0bf58f9e7001e15c2aef396885537e8aeaa30d08feb073e2315",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2463,7 +2463,7 @@
       "variants": [
         {
           "id": "fcvx13-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx13_12.png",
           "source_sha256": "e71a3755e89ede25965084a3e49da2dcc85ee435bcffffb86bcbce22b77bdaf8",
           "retrieved_at": "2026-10-04T22:29:56.017794+00:00",
@@ -2481,7 +2481,7 @@
         },
         {
           "id": "fcvx13-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx13_12.png",
           "source_sha256": "e71a3755e89ede25965084a3e49da2dcc85ee435bcffffb86bcbce22b77bdaf8",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2508,7 +2508,7 @@
       "variants": [
         {
           "id": "fcvx14-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx14_12.png",
           "source_sha256": "9f550800ab2601b09f85228df1c32804a98d5a05dc2d6028f5fb01bd37067325",
           "retrieved_at": "2026-10-04T22:29:56.019685+00:00",
@@ -2526,7 +2526,7 @@
         },
         {
           "id": "fcvx14-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx14_12.png",
           "source_sha256": "9f550800ab2601b09f85228df1c32804a98d5a05dc2d6028f5fb01bd37067325",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
@@ -2553,7 +2553,7 @@
       "variants": [
         {
           "id": "fcvx15-12-20261005",
-          "label": "PNG（10/5収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx15_12.png",
           "source_sha256": "c5a4537ee78afcf39cbc65e3677a65a5eac6d448b747e3f42639f6f33e8bc4b8",
           "retrieved_at": "2026-10-04T22:29:56.043688+00:00",
@@ -2571,7 +2571,7 @@
         },
         {
           "id": "fcvx15-12",
-          "label": "PNG（以前の収録）",
+          "label": "2026-09-30 00:00 UTC",
           "source_url": "https://www.data.jma.go.jp/cpd/data/longfcst/fax/fcvx15_12.png",
           "source_sha256": "c5a4537ee78afcf39cbc65e3677a65a5eac6d448b747e3f42639f6f33e8bc4b8",
           "retrieved_at": "2026-10-03T01:57:50.917482+00:00",
