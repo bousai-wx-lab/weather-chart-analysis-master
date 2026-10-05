@@ -55,7 +55,43 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
   }
   recent++;
 }
-assert.equal(recent,61);assert.equal(analyses,7);assert.equal(maps,57);
+assert.equal(recent,61);assert.equal(analyses,13);assert.equal(maps,57);
+let forecasts=0;
+for(const p of catalog.products.filter(p=>["FXFE5782","FXFE5784","FXFE577"].includes(p.code)))for(const v of p.variants){
+  const selected=ChartCatalog.selection(catalog,p.id,v.id,1),raw=fs.readFileSync(path.join(root,v.analysis_path));
+  assert.equal(crypto.createHash("sha256").update(raw).digest("hex"),v.analysis_sha256);
+  assert.ok(allow.allowed_files.includes(v.analysis_path));
+  const data=snapshot.validate(JSON.parse(raw),selected,"bousai-wx-lab.github.io");
+  assert.equal(data.color_only,true);
+  const four=p.code!=="FXFE577",hours=p.code==="FXFE5782"?[12,24,12,24]:p.code==="FXFE5784"?[36,48,36,48]:[72,72];
+  assert.deepEqual(data.panels.map(p=>p.forecast_hour),hours);
+  assert.deepEqual(snapshot.displayScales(data).map(s=>s.pressure_hpa),[500,850]);
+  assert.deepEqual(snapshot.temperatureEnabled(data,[true,false]),four?[true,true,false,false]:[true,false]);
+  assert.deepEqual(snapshot.temperatureEnabled(data,[false,true]),four?[false,false,true,true]:[false,true]);
+  for(const panel of data.panels){
+    const rects=panel.pressure_hpa===500?panel.wet_rectangles:panel.ascent_rectangles;
+    assert.ok(rects.length>100,"Source hatches must produce a filled area");
+    // A single meridian or text stroke cannot become a full-height fill column.
+    assert.ok(rects.every(r=>r[3]-r[1]<panel.bounds[3]-panel.bounds[1]));
+    if(panel.pressure_hpa===850){
+      assert.deepEqual(panel.cold_thresholds,[0,-3,-6,-9,-12]);
+      assert.ok(panel.cold_bands.length>0);
+      assert.ok(panel.cold_bands.every(b=>panel.levels.some(l=>l.temperature_c===b.threshold)));
+      for(const band of require("../low-level.js").warmBands(panel))if(!panel.levels.some(l=>l.temperature_c===band.threshold))assert.equal(band.rings.length,0,"Missing contours must not be fabricated");
+    }
+  }
+  for(const change of [x=>delete x.color_only,x=>x.panels.pop(),x=>x.panels[0].forecast_hour=6,
+    x=>x.panels[0].pressure_hpa=850,x=>x.panels[0].wet_pressure_hpa=850,
+    x=>x.panels.at(-1).vertical_velocity_pressure_hpa=850,
+    x=>x.panels[0].wet_rectangles[0][0]=x.panels[0].bounds[0]-10,
+    x=>x.panels[0].positive_vorticity_rectangles=[[200,100,205,105]],
+    x=>x.panels[0].troughs=[{points:[[200,100],[210,110]]}],
+    x=>x.panels[0].levels[0].temperature_c=-9]){
+    const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));
+  }
+  forecasts++;
+}
+assert.equal(forecasts,12);
 const a=catalog.products.find(p=>p.id==="aupq35");assert.match(a.variants[0].label,/2026-10-04 12:00 UTC/);assert.match(a.variants[1].label,/2026-10-04 00:00 UTC/);assert.equal(a.variants[2].id,"aupq35-reviewed");
 const bad=structuredClone(catalog);bad.products.find(p=>p.id==="aupq35").variants[0].analysis_path="../private/trial.json";assert.throws(()=>ChartCatalog.validate(bad));
-console.log(`SNAPSHOT_TESTS_OK latest_pages=${recent} trial_sources=${analyses} maps=${maps} public_source_binding_checked local_trial_not_public approved_status_not_fabricated`);
+console.log(`SNAPSHOT_TESTS_OK latest_pages=${recent} trial_sources=${analyses} forecast_color_sources=${forecasts} maps=${maps} public_source_binding_checked local_trial_not_public approved_status_not_fabricated`);

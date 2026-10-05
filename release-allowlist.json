@@ -191,7 +191,19 @@
     "scripts/update_manifest.py",
     "snapshot-analysis.js",
     "styles.css",
-    "wind-bands.json"
+    "wind-bands.json",
+    "assets/analysis/fxfe5782-12-20261005-colors.json",
+    "assets/analysis/fxfe5782-00-20261005-colors.json",
+    "assets/analysis/fxfe5782-00-colors.json",
+    "assets/analysis/fxfe5782-12-colors.json",
+    "assets/analysis/fxfe5784-12-20261005-colors.json",
+    "assets/analysis/fxfe5784-00-20261005-colors.json",
+    "assets/analysis/fxfe5784-00-colors.json",
+    "assets/analysis/fxfe5784-12-colors.json",
+    "assets/analysis/fxfe577-12-20261005-colors.json",
+    "assets/analysis/fxfe577-00-20261005-colors.json",
+    "assets/analysis/fxfe577-00-colors.json",
+    "assets/analysis/fxfe577-12-colors.json"
   ],
   "allowed_external_hosts": [
     "assets.science.nasa.gov",
@@ -1640,6 +1652,18 @@
     "assets/analysis/axfe578-12-20261005.json": 262530,
     "assets/analysis/axfe578-00-20261005.json": 283057,
     "assets/analysis/feas50-12-20261005.json": 259594,
-    "geography-catalog.json": 249462
+    "geography-catalog.json": 249462,
+    "assets/analysis/fxfe5784-00-20261005-colors.json": 414965,
+    "assets/analysis/fxfe577-00-colors.json": 203375,
+    "assets/analysis/fxfe5784-12-20261005-colors.json": 430815,
+    "assets/analysis/fxfe5784-00-colors.json": 383626,
+    "assets/analysis/fxfe5782-00-colors.json": 424561,
+    "assets/analysis/fxfe5782-12-colors.json": 394538,
+    "assets/analysis/fxfe577-12-20261005-colors.json": 243824,
+    "assets/analysis/fxfe577-00-20261005-colors.json": 235397,
+    "assets/analysis/fxfe5784-12-colors.json": 412401,
+    "assets/analysis/fxfe5782-12-20261005-colors.json": 411774,
+    "assets/analysis/fxfe5782-00-20261005-colors.json": 389639,
+    "assets/analysis/fxfe577-12-colors.json": 192080
   }
 }

@@ -25,14 +25,23 @@ const SnapshotAnalysis = (() => {
        data.operationally_approved!==false || data.reference_axes_used!==false ||
        data.product!==selected.product.code.replace("FEAS/", "") || data.variant!==selected.variant.id ||
        data.source_sha256!==selected.variant.source_sha256 || data.image_sha256!==selected.page.image_sha256 ||
-       data.width!==selected.page.width || data.height!==selected.page.height || data.panels?.length!==2 ||
+       data.width!==selected.page.width || data.height!==selected.page.height || !Array.isArray(data.panels) ||
        !Array.isArray(data.symbols))throw Error("Trial analysis source mismatch");
-    const expected={AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
-    if(!expected)throw Error("Unsupported trial product");
+    const forecastHours={FXFE5782:[12,24,12,24],FXFE5784:[36,48,36,48],FXFE577:[72,72]}[data.product];
+    const expected=forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
+    if(!expected || data.panels.length!==expected.length || (forecastHours && data.color_only!==true))throw Error("Unsupported trial product");
     const point=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&p[0]>=-5&&p[1]>=-5&&p[0]<=data.width+5&&p[1]<=data.height+5;
     const line=p=>Array.isArray(p)&&p.length>=2&&p.length<=10000&&p.every(point);
     for(const [i,p] of data.panels.entries()) {
       if(p.pressure_hpa!==expected[i] || p.bounds?.length!==4 || !point(p.bounds.slice(0,2)) || !point(p.bounds.slice(2)) || p.bounds[0]>=p.bounds[2] || p.bounds[1]>=p.bounds[3] || !Array.isArray(p.levels) || !Array.isArray(p.troughs) || !Array.isArray(p.ridges))throw Error("Invalid trial panel");
+      if(forecastHours) {
+        const inPanel=q=>point(q)&&q[0]>=p.bounds[0]-.25&&q[1]>=p.bounds[1]-.25&&q[0]<=p.bounds[2]+.25&&q[1]<=p.bounds[3]+.25;
+        if(p.forecast_hour!==forecastHours[i] || p.temperature_interval_c!==6 || p.troughs.length || p.ridges.length || p.positive_vorticity_rectangles?.length || p.wind_bands?.length || p.jet_guides?.length)throw Error("Invalid forecast color layer");
+        if(p.levels.some(l=>l.temperature_c%6 || l.lines.some(l=>!l.points.every(inPanel))) || p.cold_bands?.some(b=>b.rings.some(r=>!r.every(inPanel))))throw Error("Forecast contour outside panel");
+        if(expected[i]===500 ? (p.wet_pressure_hpa!==700 || !p.wet_rectangles?.length || p.ascent_rectangles?.length || p.cold_bands?.length) : (p.vertical_velocity_pressure_hpa!==700 || !p.ascent_rectangles?.length || p.wet_rectangles?.length))throw Error("Forecast weather layer pressure mismatch");
+        for(const key of ["wet_rectangles","ascent_rectangles"])if(p[key]?.some(r=>!inPanel(r.slice(0,2))||!inPanel(r.slice(2))))throw Error("Forecast fill outside panel");
+        if(data.panels.slice(0,i).some(q=>Math.min(p.bounds[2],q.bounds[2])>Math.max(p.bounds[0],q.bounds[0])&&Math.min(p.bounds[3],q.bounds[3])>Math.max(p.bounds[1],q.bounds[1])))throw Error("Overlapping forecast panels");
+      }
       for(const l of p.levels)if(!Number.isFinite(l.temperature_c)||!Array.isArray(l.labels)||!Array.isArray(l.lines)||l.lines.some(l=>!line(l.points)))throw Error("Invalid trial isotherm");
       for(const key of ["troughs","ridges"])if(p[key].some(a=>!line(a.points)))throw Error("Invalid trial axis");
       for(const a of p.troughs)for(const b of p.ridges)if(crosses(a.points,b.points))throw Error("Same-pressure trough/ridge crossing");
@@ -61,6 +70,20 @@ const SnapshotAnalysis = (() => {
         if(p.pressure_hpa===300)return ChartAnalysis.isothermScales[0].colors[Math.max(0,Math.min(4,Math.round((-v-27)/6)))];
         if(p.pressure_hpa===500)return ChartAnalysis.isothermScales[1].colors[Math.max(0,Math.min(9,Math.round((-v-3)/3)))];
         return low.temperatureColor(p.pressure_hpa,v);}),dash:[],opacity:.5}));
+  }
+  // Both forecast hours share a toggle and legend for their pressure level.
+  // Drawing still uses each panel's own coordinates and colors.
+  function displayScales(data) {
+    const all=scales(data);
+    if(!data.color_only)return all;
+    return [500,850].map(pressure=>{
+      const entries=all.filter(s=>s.pressure_hpa===pressure),colors=new Map(entries.flatMap(s=>s.values.map((v,i)=>[v,s.colors[i]])));
+      const values=[...colors.keys()].sort((a,b)=>a-b);
+      return {pressure_hpa:pressure,values,colors:values.map(v=>colors.get(v)),dash:[],opacity:.5};
+    });
+  }
+  function temperatureEnabled(data, enabled) {
+    return data.color_only ? data.panels.map(p=>enabled[p.pressure_hpa===500?0:1]) : enabled;
   }
   function jetAxes(data) {
     const p=data.panels.find(p=>p.pressure_hpa===300);
@@ -121,6 +144,6 @@ const SnapshotAnalysis = (() => {
       ctx.restore();
     }
   }
-  return {localHost,merge,validate,scales,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills};
+  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills};
 })();
 if(typeof module!=="undefined")module.exports=SnapshotAnalysis;

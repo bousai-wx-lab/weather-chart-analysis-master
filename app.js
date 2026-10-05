@@ -45,7 +45,7 @@ let isotherms = null;
 let lowLevel = null, dynamics = null, trial = null, localCollection = null;
 let showVorticity = true, showAscent = true;
 const isFeas = () => dynamics?.product === "FEAS50";
-const temperatureScales = () => trial ? SnapshotAnalysis.scales(trial) : dynamics ? ChartDynamics.scalesFor(dynamics) : lowLevel ? LowLevelAnalysis.scales : ChartAnalysis.isothermScales;
+const temperatureScales = () => trial ? SnapshotAnalysis.displayScales(trial) : dynamics ? ChartDynamics.scalesFor(dynamics) : lowLevel ? LowLevelAnalysis.scales : ChartAnalysis.isothermScales;
 let showWet = true, showCold700 = false, showCold850 = false, showTrough700 = false, showRidge700 = false;
 let coldOpacity = .35, warmOpacity = .35;
 let showWarm850 = false;
@@ -325,6 +325,10 @@ function controls() {
   paper.dataset.geography = showGeography && geography ? geographyStyle : "off";
   if(trial) {
     for(const tool of analysisTools){const available=trialAvailable(tool.id),button=byId(tool.button);button.disabled=!ready||!available;button.setAttribute("aria-pressed",String(available && trialEnabled(tool.id)));}
+    if(trial.color_only){
+      byId("original").disabled=!analysisTools.some(tool=>trialAvailable(tool.id)&&trialEnabled(tool.id))&&!enabledOverlays().length;
+      for(const id of ["wet","ascent","cold850","warm850"])paper.dataset[id]=String(trialAvailable(id)&&trialEnabled(id));
+    }
     paper.dataset.trial="EXPERIMENTAL_UNVERIFIED";
   } else delete paper.dataset.trial;
   if(currentSelection?.product.id==="aupq35") {
@@ -451,7 +455,7 @@ byId("cold-opacity").addEventListener("input",event=>{coldOpacity=Number(event.t
 function drawTemperature() {
   temperatureContext.clearRect(0, 0, temperatureLayer.width, temperatureLayer.height);
   const upper=showTemperature && currentSelection?.product.id!=="aupq35";
-  if(ready && trial){SnapshotAnalysis.drawTemperature(temperatureContext,trial,[upper,showTemperature500]);return;}
+  if(ready && trial){SnapshotAnalysis.drawTemperature(temperatureContext,trial,SnapshotAnalysis.temperatureEnabled(trial,[upper,showTemperature500]));return;}
   if (ready && isotherms) ChartAnalysis.drawIsotherms(temperatureContext, isotherms, [upper?(lowLevel?700:300):null,showTemperature500?((lowLevel||dynamics)?850:500):null],temperatureScales());
 }
 byId("temperature").addEventListener("click", () => {
@@ -663,7 +667,7 @@ byId("save").addEventListener("click", () => {
   const temperatureFooterHeight = exportTemperatures.length ? exportTemperatures.length*40+56 : 0;
   const overlayFooterHeight = exportOverlays.length ? (exportOverlays.length+1)*44 : 0;
   const exportWarm=showWarm850 && Boolean((trial || lowLevel || dynamics)?.panels.some(p=>p.pressure_hpa===850));
-  const footerHeight = ((lowLevel || dynamics) ? 440 : exportTerrain ? 340 : 260) + (exportWarm ? 56 : 0);
+  const footerHeight = ((lowLevel || dynamics || trial?.color_only) ? 440 : exportTerrain ? 340 : 260) + (exportWarm ? 56 : 0);
   output.width = ink.width; output.height = ink.height + footerHeight + temperatureFooterHeight + overlayFooterHeight;
   const ctx = output.getContext("2d");
   ctx.fillStyle = "white"; ctx.fillRect(0, 0, output.width, output.height);
@@ -686,7 +690,7 @@ byId("save").addEventListener("click", () => {
     ctx.fillStyle = color; ctx.fillRect(x, ink.height + 95, 32, 24);
     ctx.fillStyle = "#243247"; ctx.fillText(windLabels[index], x + 42, ink.height + 116);
   }
-  ctx.fillText(trial ? "解析試行：気象学的な精度は未検証。" : lowLevel ? "トラフ：この原図の等高度線の谷から推定した赤い二重線。汎用の自動検出ではありません。" : selected.variant.features === "reviewed-aupq35" ? "赤矢印：等風速線の強い帯の中心（流れの経路はこの1枚で確認）。トラフ：等高度線の曲がりから推定。" : `${selected.product.name}${selected.product.period ? " · " + selected.product.period : ""}`, 26, ink.height + 155, output.width - 52);
+  ctx.fillText(trial?.color_only ? "原図の等温線と縦線範囲を着色。予報の有効時刻は各枠の印字を確認してください。" : trial ? "解析試行：気象学的な精度は未検証。" : lowLevel ? "トラフ：この原図の等高度線の谷から推定した赤い二重線。汎用の自動検出ではありません。" : selected.variant.features === "reviewed-aupq35" ? "赤矢印：等風速線の強い帯の中心（流れの経路はこの1枚で確認）。トラフ：等高度線の曲がりから推定。" : `${selected.product.name}${selected.product.period ? " · " + selected.product.period : ""}`, 26, ink.height + 155, output.width - 52);
   ctx.fillText("利用者の着色・解析は気象庁の公式の解析ではありません。天気図解析マスター · Weather Chart Analysis Master · Bousai Wx Lab", 26, ink.height + 193, output.width - 52);
   const geoLabel = showGeography && geography ? `${ChartGeography.patterns.find(p => p.id === geographyStyle).label}（濃さ${Math.round(geographyOpacity * 100)}%）` : "表示なし";
   ctx.fillText(geography ? `陸海：${geoLabel}${showGeography && geographyStyle === "satellite" ? " / NASA Earth Observatory・Reto Stoeckli / 2004年10月の地表画像（投影変換）" : ""}` : "自動更新なし。解析・予想の日時は原図内を確認してください。", 26, ink.height + 231, output.width - 52);
@@ -694,6 +698,12 @@ byId("save").addEventListener("click", () => {
     ctx.fillText(`500hPa正渦度：${showVorticity?"ピンク・濃さ30%":"表示なし"}${isFeas()?"":` / 700hPa上昇流：${showAscent?"レモンイエロー・濃さ30%":"表示なし"}`}`,26,ink.height+275);
     ctx.fillText(`850hPa寒気：${showCold850?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+319);
     for(const [i,v] of [0,-3,-6,-9,-12].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+297,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+319);}
+  }
+  if(trial?.color_only) {
+    ctx.fillText(`700hPa湿域：${showWet?"青水色・濃さ30%":"表示なし"} / 上昇流：${showAscent?"レモンイエロー・濃さ30%":"表示なし"}`,26,ink.height+350,output.width-52);
+    ctx.fillText(`850hPa寒気：${showCold850?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+394);
+    for(const [i,v] of [0,-3,-6,-9,-12].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+372,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+394);}
+    ctx.fillText("気温の色塗りは原図にある6℃刻みの等温線で区切ります。",26,ink.height+430,output.width-52);
   }
   if (lowLevel) {
     ctx.fillStyle="#243247";
@@ -737,7 +747,7 @@ byId("save").addEventListener("click", () => {
     }
     ctx.restore();
     }
-    ctx.fillText("原図の気温表示・破線をもとに滑らかにつなぐ補助線。気温の格子データから算出した線ではありません。", 26, ink.height+footerHeight+exportTemperatures.length*40+28, output.width-52);
+    ctx.fillText(trial?.color_only?"原図の等温線に半透明の色を重ねた表示です。":"原図の気温表示・破線をもとに滑らかにつなぐ補助線。気温の格子データから算出した線ではありません。", 26, ink.height+footerHeight+exportTemperatures.length*40+28, output.width-52);
   }
   if (exportOverlays.length) {
     const y = ink.height+footerHeight+temperatureFooterHeight+30;
@@ -776,9 +786,9 @@ function initialize(selected) {
   }
   const low=selected.variant.features==="reviewed-aupq78",dyn=["reviewed-axfe578","reviewed-feas50"].includes(selected.variant.features),feas=isFeasSelection(selected);
   for (const canvas of [jetLayer,overlayLayer]) canvas.hidden = !reviewed || low || dyn;
-  windLayer.setAttribute("aria-label",["aupq78","axfe578","feas-feas50"].includes(selected.product.id)?"湿域・寒気・暖気・正渦度・上昇流の色塗り":"300hPa等風速線に沿った緑色の塗り分け");
+  windLayer.setAttribute("aria-label",["fxfe5782","fxfe5784","fxfe577"].includes(selected.product.id)?"700hPaの湿域・上昇流と850hPaの寒気・暖気の色塗り":["aupq78","axfe578","feas-feas50"].includes(selected.product.id)?"湿域・寒気・暖気・正渦度・上昇流の色塗り":"300hPa等風速線に沿った緑色の塗り分け");
   analysisLayer.setAttribute("aria-label",low?"700・850hPaのトラフ、赤い二重曲線。リッジ、青いジグザグ線":feas?"500hPaと地上気圧のトラフは赤い二重曲線、リッジは青いジグザグ線":"500hPaのトラフは赤い二重曲線、リッジは青いジグザグ線");
-  temperatureLayer.setAttribute("aria-label",["aupq78","axfe578","feas-feas50"].includes(selected.product.id)?"700・850hPaの等温線。0℃を境に暖色と寒色、両端は紫":selected.product.id==="aupq35"?"500hPaの気温線。暖かい薄い青から寒い濃い紫":"300・500hPaの気温線。暖かい薄い青から寒い濃い紫");
+  temperatureLayer.setAttribute("aria-label",["fxfe5782","fxfe5784","fxfe577"].includes(selected.product.id)?"上段500hPaと下段850hPaの等温線。対応する実況図と同じ配色":["aupq78","axfe578","feas-feas50"].includes(selected.product.id)?"700・850hPaの等温線。0℃を境に暖色と寒色、両端は紫":selected.product.id==="aupq35"?"500hPaの気温線。暖かい薄い青から寒い濃い紫":"300・500hPaの気温線。暖かい薄い青から寒い濃い紫");
   paper.style.aspectRatio = `${ink.width} / ${ink.height}`;
   ready = true; paper.hidden = false; paper.dataset.ready = "true"; paper.dataset.chart = selected.product.id; paper.dataset.source = selected.variant.id;
   selectMode(byId("manual").open ? "paint" : "move"); render(); drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); fit(); controls();
@@ -924,8 +934,9 @@ const trialOther = () => trial.panels[trial.product === "AUPQ35" || trial.produc
 function trialPlane(id) {
   if(["trough","ridge"].includes(id))return `${trialMain().pressure_hpa}hPa`;
   if(["trough700","ridge700"].includes(id))return trialOther().axis_pressure_hpa===0?"地上気圧":`${trialOther().pressure_hpa}hPa`;
-  if(id==="temperature")return `${trial.panels[0].pressure_hpa}hPa`;
-  if(id==="temperature500")return `${trial.panels[1].pressure_hpa}hPa`;
+  if(id==="temperature")return `${temperatureScales()[0].pressure_hpa}hPa`;
+  if(id==="temperature500")return `${temperatureScales()[1].pressure_hpa}hPa`;
+  if(id==="wet" && trial.color_only)return "700hPa";
   return analysisTools.find(t=>t.id===id)?.plane || "図の各地図面";
 }
 function trialEnabled(id) {
@@ -940,23 +951,27 @@ function trialAvailable(id) {
     cold850:trial.panels.some(p=>p.pressure_hpa===850&&p.cold_thresholds),
     warm850:trial.panels.some(p=>p.pressure_hpa===850&&p.levels.some(l=>LowLevelAnalysis.warmThresholds.includes(l.temperature_c))),
     trough700:trialOther().pressure_hpa!==300&&trialOther().troughs.length>0,ridge700:trialOther().pressure_hpa!==300&&trialOther().ridges.length>0,
-    temperature:trial.panels[0].pressure_hpa!==300&&trial.panels[0].levels.length>0,temperature500:trial.panels[1].levels.length>0,
+    temperature:temperatureScales()[0].pressure_hpa!==300&&temperatureScales()[0].values.length>0,temperature500:temperatureScales()[1].values.length>0,
     wind:some("wind_bands"),jet:Boolean(candidates?.jets.length),trough:trialMain().troughs.length>0,ridge:trialMain().ridges.length>0,
     symbols:trial.symbols.length>0,geography:Boolean(geography)}[id];
 }
 function trialLegends() {
-  for(const [i,scale] of SnapshotAnalysis.scales(trial).entries()) {
+  for(const [i,scale] of temperatureScales().entries()) {
     const id=i?"temperature500":"temperature",legend=byId(`${id}-legend`);legend.replaceChildren();
     for(const [j,value] of scale.values.entries()) {
       const entry=document.createElement("span"),swatch=document.createElement("i");
       swatch.style.borderColor=scale.colors[j];swatch.style.setProperty("--temperature-color",scale.colors[j]);swatch.style.setProperty("--temperature-opacity",scale.opacity);entry.append(swatch,`${value}℃`);legend.append(entry);
     }
     const heading=byId(i?"lower-plane":"upper-plane"),pos=document.createElement("span");pos.textContent=i?"下段":"上段";
-    heading.replaceChildren(trial.product==="FEAS50"&&i?"地上 / 850 hPa ":trial.product==="AXFE578"&&i?"850 / 700 hPa ":`${scale.pressure_hpa} hPa `,pos);
+    heading.replaceChildren(trial.color_only?(i?"850 / 700 hPa ":"500 / 700 hPa "):trial.product==="FEAS50"&&i?"地上 / 850 hPa ":trial.product==="AXFE578"&&i?"850 / 700 hPa ":`${scale.pressure_hpa} hPa `,pos);
     legend.setAttribute("aria-label",`${scale.pressure_hpa}hPaの気温線`);
     byId(`detail-${id}`).querySelector("p").textContent="原図の等温線を半透明の色線で表示します。";
     document.querySelector(`[data-layer-detail="${id}"]`).setAttribute("aria-label",`${scale.pressure_hpa}hPaの気温線の詳細`);
   }
+  if(trial.color_only)byId("upper-plane").parentElement.append(document.querySelector('[data-layer="wet"]'));
+  else byId("lower-plane").parentElement.append(document.querySelector('[data-layer="wet"]'));
+  byId("detail-wet").querySelector("p").textContent=trial.color_only?"700hPaの湿域（T−Td < 3℃）の縦線範囲を青水色・濃さ30%で表示します。降水域とは異なります。":"原図の湿域（T−Td < 3℃）のドットを含む範囲。元のドットと線が透ける濃さ30%。境界はドット間隔の半分程度の近似です。降水域とは異なります。";
+  if(trial.color_only)byId("detail-temperature500").querySelector("p").textContent="原図にある6℃刻みの等温線を共通の配色で表示します。寒気・暖気の色塗りも、原図にある境界を使います。";
   for(const id of ["trough","ridge","trough700","ridge700"]) {
     const upper=["trough","ridge"].includes(id)?["AXFE578","FEAS50"].includes(trial.product):["AUPQ35","AUPQ78"].includes(trial.product);
     byId(upper?"upper-plane":"lower-plane").parentElement.append(document.querySelector(`[data-layer="${id}"]`));
@@ -979,6 +994,10 @@ async function loadTrial(selected,revision,signal) {
     const data=SnapshotAnalysis.validate(JSON.parse(new TextDecoder().decode(bytes)),selected,location.hostname);
     if(revision!==loadRevision)return;
     trial=data;symbols=isotherms=data;
+    if(data.color_only){
+      showTrough=showRidge=showTrough700=showRidge700=false;
+      byId("chart-note").textContent="上段500hPa気温・700hPa湿域、下段850hPa気温・700hPa上昇流。固定原図の着色を使えます。";
+    }
     if(data.product==="AUPQ78")lowLevel=data;
     if(["AXFE578","FEAS50"].includes(data.product))dynamics=data;
     candidates={troughs:trialMain().troughs.map(a=>a.points),ridges:trialMain().ridges.map(a=>a.points),jets:SnapshotAnalysis.jetAxes(data)};
