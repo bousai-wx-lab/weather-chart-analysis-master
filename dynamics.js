@@ -1,12 +1,13 @@
 "use strict";
 const ChartDynamics = (() => {
+  const low=typeof LowLevelAnalysis!=="undefined"?LowLevelAnalysis:require("./low-level.js");
   const sourceHash="edf5a4b0abb162616c308700160e3715fae1433271a79141e3e86787cc3a7372";
   const imageHash="716824b7789fbeebcf47ee750531c91644c7698f2e634f6e58e54b2176e2506f";
   const values=Array.from({length:12},(_,i)=>-12+i*3);
-  const scales=[{pressure_hpa:500,values:[],colors:[],dash:[],opacity:.5},{pressure_hpa:850,values,colors:values.map((v,i)=>["#4c1d95","#5932a4","#6847b3","#6d5dc4","#6071ce","#5485d7","#5799df","#6aafe8","#85c5f1","#a0d8fa"][Math.round((v+12)*9/39)]),dash:[],opacity:.5}];
+  const scales=[{pressure_hpa:500,values:[],colors:[],dash:[],opacity:.5},{pressure_hpa:850,values,colors:values.map((v,i)=>low.temperatureColor(850,v)),dash:[],opacity:.5}];
   function scalesFor(data) {
     const values=data.panels[1].levels.map(l=>l.temperature_c);
-    return [{pressure_hpa:500,values:[],colors:[],dash:[],opacity:.5},{...scales[1],values,colors:values.map((v,i)=>["#4c1d95","#5932a4","#6847b3","#6d5dc4","#6071ce","#5485d7","#5799df","#6aafe8","#85c5f1","#a0d8fa"][Math.round((v+12)*9/39)])}];
+    return [{pressure_hpa:500,values:[],colors:[],dash:[],opacity:.5},{...scales[1],values,colors:values.map((v,i)=>low.temperatureColor(850,v))}];
   }
   function validateFeas(data,selected) {
     if(data?.trough_analysis && data.trough_analysis.operationally_approved!==true)throw Error("500hPaトラフは検証中のため表示できません");
@@ -48,8 +49,9 @@ const ChartDynamics = (() => {
     }
     return data;
   }
-  function drawFills(ctx,data,{vorticity=true,ascent=true,cold=false,opacity=.35}={}) {
-    if(cold)LowLevelAnalysis.drawFills(ctx,{...data,panels:[data.panels[1]]},{cold850:true,opacity});
+  function drawFills(ctx,data,{vorticity=true,ascent=true,cold=false,warm=false,opacity=.35,warmOpacity=.35}={}) {
+    if(warm)low.drawWarmFills(ctx,data,warmOpacity);
+    if(cold)low.drawFills(ctx,{...data,panels:[data.panels[1]]},{cold850:true,opacity});
     ctx.save();ctx.globalAlpha=.3;
     for(const [i,p] of data.panels.entries()) {
       if(i?(!ascent || !p.ascent_rectangles):!vorticity)continue;

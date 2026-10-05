@@ -1,13 +1,80 @@
 "use strict";
 const LowLevelAnalysis = (() => {
   const coldColors = ["#a0d8fa", "#74b9ef", "#558ee0", "#7460cb", "#4c1d95"];
+  const warmThresholds = [9,12,15,18,21,24];
+  const warmColors = ["#fff3a6","#ffd166","#ff914d","#ef4444","#cc2878","#8b3fc7"];
+  const warmCache = new WeakMap();
+  function temperatureColor(pressure, value) {
+    const warm=value>0,limit=warm?(pressure===850?24:15):(pressure===850?24:36);
+    const stops=warm?["#b8b8b8","#f4d35e","#f89c3c","#e63946","#8b3fc7"]:["#b8b8b8","#7acbef","#3485d4","#5753ba","#6f2da8"];
+    const step=Math.min(4,Math.abs(value)/limit*4),i=Math.min(3,Math.floor(step)),mix=step-i;
+    const a=stops[i].slice(1).match(/../g).map(v=>parseInt(v,16)),b=stops[i+1].slice(1).match(/../g).map(v=>parseInt(v,16));
+    return "#"+a.map((v,j)=>Math.round(v+(b[j]-v)*mix).toString(16).padStart(2,"0")).join("");
+  }
+  function warmRings(panel, threshold) {
+    if (panel.pressure_hpa!==850 || !warmThresholds.includes(threshold)) return [];
+    const level=panel.levels.find(l=>l.temperature_c===threshold);
+    if (!level?.lines.length) return [];
+    const [l,t,r,b]=panel.bounds,w=r-l,h=b-t,total=2*(w+h);
+    const frame=[[l,t],[r,t],[r,b],[l,b]];
+    const contains=(ring,[x,y])=>{
+      let hit=false;
+      for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+        const a=ring[i],c=ring[j];
+        if((a[1]>y)!==(c[1]>y) && x<(c[0]-a[0])*(y-a[1])/(c[1]-a[1])+a[0])hit=!hit;
+      }return hit;
+    };
+    const edge=([x,y])=>{
+      const choices=[[Math.abs(y-t),Math.max(0,Math.min(w,x-l))],[Math.abs(x-r),w+Math.max(0,Math.min(h,y-t))],[Math.abs(y-b),w+h+Math.max(0,Math.min(w,r-x))],[Math.abs(x-l),2*w+h+Math.max(0,Math.min(h,b-y))]].sort((a,b)=>a[0]-b[0]);
+      return choices[0][0]<12?choices[0][1]:null;
+    };
+    const at=s=>{s=((s%total)+total)%total;return s<=w?[l+s,t]:s<=w+h?[r,t+s-w]:s<=2*w+h?[r-(s-w-h),b]:[l,b-(s-2*w-h)];};
+    const refs=panel.levels.filter(v=>v.temperature_c!==threshold).flatMap(v=>v.lines.flatMap(line=>[.25,.5,.75].map(f=>({value:v.temperature_c,point:line.points[Math.floor((line.points.length-1)*f)]}))));
+    if (!refs.length) return [];
+    const rings=[];let incomplete=false;
+    for(const line of level.lines){
+      if(line.closed){rings.push(line.points);continue;}
+      const start=edge(line.points.at(-1)),end0=edge(line.points[0]);
+      if(start===null || end0===null){incomplete=true;continue;}
+      const end=end0<=start?end0+total:end0;
+      const corners=[0,w,w+h,2*w+h].flatMap(s=>[s,s+total]).filter(s=>s>start&&s<end).sort((a,b)=>a-b);
+      rings.push([...line.points,at(start),...corners.map(at),at(end)]);
+    }
+    if(!rings.length)return [];
+    if(incomplete){
+      // An unfinished contour cannot define a chart-wide warm side. Keep only
+      // closed warm islands supported by adjacent, independently valued lines.
+      return level.lines.filter(line=>line.closed).map(line=>line.points).filter(ring=>{
+        const inside=refs.filter(ref=>contains(ring,ref.point));
+        if(inside.length)return inside.every(ref=>ref.value>threshold);
+        const distance=ref=>Math.min(...ring.filter((_,i)=>i%8===0).map(p=>Math.hypot(p[0]-ref.point[0],p[1]-ref.point[1])));
+        return [...refs].sort((a,b)=>distance(a)-distance(b)).slice(0,3).every(ref=>ref.value<threshold);
+      });
+    }
+    // Across each complete isotherm the warm/cold side alternates. Infer the
+    // parity from other printed contour values, preserving separate islands
+    // and cold holes without stacking overlapping half-chart polygons.
+    const votes=refs.map(ref=>({same:rings.reduce((hit,ring)=>hit!==contains(ring,ref.point),false)===(ref.value>threshold)}));
+    const same=votes.filter(v=>v.same).length;
+    if(Math.max(same,votes.length-same)/votes.length<.9)return [];
+    return same>=votes.length/2?rings:[frame,...rings];
+  }
+  function warmBands(panel) {
+    if(!warmCache.has(panel))warmCache.set(panel,warmThresholds.map((threshold,i)=>({threshold,color:warmColors[i],rings:warmRings(panel,threshold)})));
+    return warmCache.get(panel);
+  }
+  function drawWarmFills(ctx,data,opacity=.35) {
+    for(const panel of data.panels.filter(p=>p.pressure_hpa===850)){
+      const canvas=ctx.canvas.ownerDocument.createElement("canvas");canvas.width=data.width;canvas.height=data.height;
+      const sc=canvas.getContext("2d");
+      for(const band of warmBands(panel)){sc.fillStyle=band.color;sc.beginPath();for(const ring of band.rings){sc.moveTo(...ring[0]);for(const p of ring.slice(1))sc.lineTo(...p);sc.closePath();}sc.fill("evenodd");}
+      const [l,t,r,b]=panel.bounds;ctx.save();ctx.beginPath();ctx.rect(l,t,r-l,b-t);ctx.clip();ctx.globalAlpha=opacity;ctx.drawImage(canvas,0,0);ctx.restore();
+    }
+  }
   const scales = [
     {pressure_hpa:700,values:[-12,-6,0,6,12]},
     {pressure_hpa:850,values:[-6,-3,0,3,6,9,12,15,18,21]}
-  ].map(s => ({...s,colors:s.values.map((v,i) => {
-    const colors=["#4c1d95","#5932a4","#6847b3","#6d5dc4","#6071ce","#5485d7","#5799df","#6aafe8","#85c5f1","#a0d8fa"];
-    return colors[s.pressure_hpa===850?Math.round((v+12)*9/39):Math.round(i*(colors.length-1)/(s.values.length-1))];
-  }),dash:[],opacity:.5}));
+  ].map(s => ({...s,colors:s.values.map(v=>temperatureColor(s.pressure_hpa,v)),dash:[],opacity:.5}));
   const sourceHash = "58be2c8fd8bcc5b27c87a8fa748869a2145ca7d8403a9ecdc3ce586cfc95f249";
   const imageHash = "a45b011b2c5329b4f3c2dabd035ef7daac90669fb08d848974cf95852321382c";
   function validate(data, selected) {
@@ -56,7 +123,8 @@ const LowLevelAnalysis = (() => {
       return [...line.points,[last[0],top],[first[0],top]];
     });
   }
-  function drawFills(ctx,data,{wet=false,cold700=false,cold850=false,opacity=.35}={}) {
+  function drawFills(ctx,data,{wet=false,cold700=false,cold850=false,warm850=false,warmOpacity=.35,opacity=.35}={}) {
+    if(warm850)drawWarmFills(ctx,data,warmOpacity);
     ctx.save();
     for (const panel of data.panels) {
       ctx.save();const [l,t,r,b]=panel.bounds;ctx.beginPath();ctx.rect(l,t,r-l,b-t);ctx.clip();
@@ -77,6 +145,6 @@ const LowLevelAnalysis = (() => {
     }
     ctx.restore();
   }
-  return {validate,scales,coldColors,coldRings,drawFills};
+  return {validate,scales,temperatureColor,coldColors,coldRings,warmThresholds,warmColors,warmRings,warmBands,drawWarmFills,drawFills};
 })();
 if (typeof module!=="undefined") module.exports=LowLevelAnalysis;

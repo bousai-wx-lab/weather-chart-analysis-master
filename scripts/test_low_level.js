@@ -37,3 +37,25 @@ console.log("LOW_LEVEL_TESTS_OK fixed_time_and_source_bound wet_isotherms_symbol
 
 const invalidS=structuredClone(data);invalidS.panels[1].troughs[2].points=[[1500,1900],[1540,1950],[1500,2000],[1540,2050]];assert.throws(()=>low.validate(invalidS,selected));
 assert.ok(data.panels[1].troughs.every(a=>a.points.every(p=>p[1]<2240)));
+
+// Independent geometric cases: a warm strip, separated sides, and a cold hole.
+const bandContains=(rings,[x,y])=>rings.reduce((odd,ring)=>ring.reduce((hit,a,i)=>{
+ const b=ring[(i+1)%ring.length];return (a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]?!hit:hit;
+},odd),false);
+const contour=(points,closed=false)=>({points,closed});
+const lev=(temperature_c,...lines)=>({temperature_c,lines});
+const thermal=levels=>({pressure_hpa:850,bounds:[0,0,400,400],levels});
+const stripe=thermal([lev(12,contour([[100,0],[100,400]]),contour([[300,0],[300,400]])),lev(9,contour([[30,30],[30,370]]),contour([[370,30],[370,370]])),lev(15,contour([[200,30],[200,370]]))]);
+const stripRings=low.warmRings(stripe,12);
+assert.equal(bandContains(stripRings,[200,200]),true);assert.equal(bandContains(stripRings,[50,200]),false);assert.equal(bandContains(stripRings,[350,200]),false);
+const square=(a,b)=>contour([[a,a],[b,a],[b,b],[a,b]],true);
+const island=thermal([lev(12,square(100,300),square(160,240)),lev(15,contour([[120,120],[140,140]])),lev(9,contour([[30,30],[50,50]]),contour([[190,190],[210,210]]))]);
+const islands=low.warmRings(island,12);
+assert.equal(bandContains(islands,[130,130]),true);assert.equal(bandContains(islands,[200,200]),false);assert.equal(bandContains(islands,[50,50]),false);
+assert.deepEqual(low.warmRings(stripe,24),[]);
+assert.deepEqual(low.warmRings(thermal([lev(12,contour([[100,100],[100,300]])),lev(15,contour([[200,50],[200,350]]))]),12),[]);
+assert.equal(low.temperatureColor(850,24),"#8b3fc7");assert.equal(low.temperatureColor(700,15),"#8b3fc7");
+assert.equal(low.temperatureColor(850,-24),"#6f2da8");assert.equal(low.temperatureColor(700,-36),"#6f2da8");
+assert.equal(low.temperatureColor(850,0),low.temperatureColor(700,0));
+assert.deepEqual(low.warmThresholds,[9,12,15,18,21,24]);
+console.log("WARM_GRADIENT_TESTS_OK warm_side_cold_hole_missing_incomplete_boundaries_plane_endpoints");

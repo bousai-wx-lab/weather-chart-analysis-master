@@ -1,5 +1,6 @@
 "use strict";
 const SnapshotAnalysis = (() => {
+  const low=typeof LowLevelAnalysis!=="undefined"?LowLevelAnalysis:require("./low-level.js");
   const localHost = hostname => ["127.0.0.1", "localhost", "[::1]", "::1"].includes(hostname);
   const hash = /^[a-f0-9]{64}$/;
   const analysisPath = /^(local-collection|assets)\/analysis\/[a-z0-9-]+\.json$/;
@@ -55,12 +56,11 @@ const SnapshotAnalysis = (() => {
     return data;
   }
   function scales(data) {
-    const cool=["#4c1d95","#5932a4","#6847b3","#6d5dc4","#6071ce","#5485d7","#5799df","#6aafe8","#85c5f1","#a0d8fa"];
     return data.panels.map(p=>({pressure_hpa:p.pressure_hpa,values:p.levels.map(l=>l.temperature_c),
       colors:p.levels.map(l=>{const v=l.temperature_c;
         if(p.pressure_hpa===300)return ChartAnalysis.isothermScales[0].colors[Math.max(0,Math.min(4,Math.round((-v-27)/6)))];
         if(p.pressure_hpa===500)return ChartAnalysis.isothermScales[1].colors[Math.max(0,Math.min(9,Math.round((-v-3)/3)))];
-        return cool[Math.max(0,Math.min(9,Math.round((v+12)*9/39)))];}),dash:[],opacity:.5}));
+        return low.temperatureColor(p.pressure_hpa,v);}),dash:[],opacity:.5}));
   }
   function jetAxes(data) {
     const p=data.panels.find(p=>p.pressure_hpa===300);
@@ -107,6 +107,7 @@ const SnapshotAnalysis = (() => {
     ctx.restore();
   }
   function drawFills(ctx,data,on) {
+    if(on.warm850)low.drawWarmFills(ctx,data,on.warmOpacity);
     const paintBands=(bands,opacity)=>{
       const canvas=ctx.canvas.ownerDocument.createElement("canvas");canvas.width=data.width;canvas.height=data.height;
       const sc=canvas.getContext("2d");

@@ -8,15 +8,15 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=2b795d40e36e1fe0">
+  <link rel="stylesheet" href="styles.css?v=afc59d852dee60fa">
   <script src="analysis.js?v=6e210e2a68561306" defer></script>
   <script src="geography.js?v=14cd8a441522c1e5" defer></script>
   <script src="catalog.js?v=b09a9a60d21a8e7f" defer></script>
-  <script src="low-level.js?v=675637aff6d7563d" defer></script>
+  <script src="low-level.js?v=ac9ae36b3af97c14" defer></script>
   <script src="geography-atlas.js?v=b5ebd20dcdfe7728" defer></script>
-  <script src="dynamics.js?v=3a50eea6088edac9" defer></script>
-  <script src="snapshot-analysis.js?v=791334d721855f24" defer></script>
-  <script src="app.js?v=9a5fedc324f55fd2" defer></script>
+  <script src="dynamics.js?v=ca7bdbd21a8f842e" defer></script>
+  <script src="snapshot-analysis.js?v=442f1fcf6b71f308" defer></script>
+  <script src="app.js?v=b805ac411ab5e467" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -79,6 +79,7 @@
         <div id="detail-temperature500" class="layer-details" hidden><div id="temperature500-legend" class="temperature-legend" aria-label="500hPaの元の黒い破線に半透明の色を重ねます。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−3〜−30℃の全10段階。元の黒い破線が透けるように、細い半透明の色を重ねます。</p></div>
       </article>
 <article class="layer-tool" data-layer="cold850"><div class="layer-row"><button type="button" id="cold850" class="layer-toggle" aria-pressed="false" disabled>寒気の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="cold850" aria-label="寒気の色塗りの詳細" aria-expanded="false" aria-controls="detail-cold850">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-cold850" class="layer-details" hidden><div id="cold850-legend" class="cold-legend"></div><label>濃さ <output id="cold-opacity-value">35%</output><input id="cold-opacity" type="range" min="0" max="100" step="5" value="35" aria-label="寒気の濃さ"></label><p class="gesture-note">原図の等温線を境界に、低温ほど濃い色で塗ります。</p></div></article>
+<article class="layer-tool" data-layer="warm850"><div class="layer-row"><button type="button" id="warm850" class="layer-toggle" aria-pressed="false" disabled>暖気の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="warm850" aria-label="暖気の色塗りの詳細" aria-expanded="false" aria-controls="detail-warm850">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-warm850" class="layer-details" hidden><div id="warm850-legend" class="cold-legend"></div><label>濃さ <output id="warm-opacity-value">35%</output><input id="warm-opacity" type="range" min="0" max="100" step="5" value="35" aria-label="暖気の濃さ"></label><p class="gesture-note">850hPaの9・12・15・18・21・24℃以上を、薄い黄色から赤を経て紫で塗ります。</p></div></article>
       <article class="layer-tool" data-layer="trough">
         <div class="layer-row"><button type="button" id="trough" class="layer-toggle" aria-pressed="false" disabled>トラフ</button><button type="button" class="layer-detail-button" data-layer-detail="trough" aria-label="トラフの詳細" aria-expanded="false" aria-controls="detail-trough">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-trough" class="layer-details" hidden><span class="legend trough-key">赤い二重線 · 500hPa</span><p class="gesture-note">この原図の等高度線の谷を確認した4本。短い波と低気圧の周りも含みます。<br><a href="https://www.jma.go.jp/jma/kishou/know/expert/pdf/kaisetsu_jikkyo.pdf#page=11" target="_blank" rel="noopener noreferrer">解析の見方（気象庁）</a></p></div>
@@ -152,7 +153,7 @@
       <div id="paper" data-ready="false" data-strokes="0" hidden>
         <img id="chart" src="assets/aupq35.png" alt="気象庁AUPQ35。2026年10月2日00UTCの300hPaと500hPaの高度・気温・風の実況図。上段は300hPa、下段は500hPa。" draggable="false">
         <canvas id="geography-layer" aria-label="陸海の模様・標高・地形の陰影・参考衛星画像"></canvas>
-        <canvas id="wind-layer" aria-label="300hPa等風速線に沿った緑色の塗り分け"></canvas>
+        <canvas id="wind-layer" aria-label="風速・寒気・暖気・湿域・正渦度・上昇流の色塗り"></canvas>
         <canvas id="analysis-layer" aria-label="500hPaのトラフは赤い二重曲線、リッジは青いジグザグ線"></canvas>
         <canvas id="jet-layer" aria-label="300hPaの強風帯の中心を流れに沿ってたどる赤い矢印"></canvas>
         <canvas id="temperature-layer" aria-label="300hPaの−27から−51℃、500hPaの−3から−30℃の気温線。暖かい薄い青から寒い濃い紫"></canvas>
