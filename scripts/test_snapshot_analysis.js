@@ -5,6 +5,12 @@ global.ChartCatalog=require("../catalog.js");
 const snapshot=require("../snapshot-analysis.js"),atlas=require("../geography-atlas.js");
 const catalog=ChartCatalog.validate(read("chart-catalog.json")),geo=read("geography-catalog.json"),allow=read("release-allowlist.json");
 assert.equal(snapshot.localHost("bousai-wx-lab.github.io"),false);
+const straight=[[10,10],[110,10]],double=snapshot.axisSymbol(straight,false),zigzag=snapshot.axisSymbol(straight,true)[0];
+assert.equal(double.length,2);assert.deepEqual(double.map(s=>s.map(p=>p[1])),[[5,5],[15,15]]);
+assert.equal(zigzag[0][1],10);assert.equal(zigzag.at(-1)[1],10);
+assert.ok(zigzag.slice(1,-1).every((p,i)=>p[1]===(i%2?4:16)));
+assert.ok(snapshot.crosses([[10,10],[30,30]],[[10,30],[30,10]]));
+assert.equal(snapshot.crosses([[10,10],[30,10]],[[10,30],[30,30]]),false);
 let recent=0,analyses=0,maps=0;
 for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-20261005"))for(const page of v.pages){
   const selected=ChartCatalog.selection(catalog,p.id,v.id,page.number);

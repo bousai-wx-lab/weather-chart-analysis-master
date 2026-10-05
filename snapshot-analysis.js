@@ -34,6 +34,7 @@ const SnapshotAnalysis = (() => {
       if(p.pressure_hpa!==expected[i] || p.bounds?.length!==4 || !point(p.bounds.slice(0,2)) || !point(p.bounds.slice(2)) || p.bounds[0]>=p.bounds[2] || p.bounds[1]>=p.bounds[3] || !Array.isArray(p.levels) || !Array.isArray(p.troughs) || !Array.isArray(p.ridges))throw Error("Invalid trial panel");
       for(const l of p.levels)if(!Number.isFinite(l.temperature_c)||!Array.isArray(l.labels)||!Array.isArray(l.lines)||l.lines.some(l=>!line(l.points)))throw Error("Invalid trial isotherm");
       for(const key of ["troughs","ridges"])if(p[key].some(a=>!line(a.points)))throw Error("Invalid trial axis");
+      for(const a of p.troughs)for(const b of p.ridges)if(crosses(a.points,b.points))throw Error("Same-pressure trough/ridge crossing");
       for(const key of ["wet_rectangles","positive_vorticity_rectangles","ascent_rectangles"])if(p[key]?.some(r=>r.length!==4||!point(r.slice(0,2))||!point(r.slice(2))||r[0]>=r[2]||r[1]>=r[3]))throw Error("Invalid trial fill");
       for(const key of ["cold_bands","wind_bands"])if(p[key]?.some(b=>!Number.isFinite(b.threshold)||!/^#[a-f0-9]{6}$/i.test(b.color)||!Array.isArray(b.rings)||b.rings.some(r=>!line(r))))throw Error("Invalid trial band");
       if(p.ascent_rectangles && p.vertical_velocity_pressure_hpa!==700)throw Error("Ascent must be 700hPa");
@@ -51,12 +52,30 @@ const SnapshotAnalysis = (() => {
         if(p.pressure_hpa===500)return ChartAnalysis.isothermScales[1].colors[Math.max(0,Math.min(9,Math.round((-v-3)/3)))];
         return cool[Math.max(0,Math.min(9,Math.round((v+12)*9/39)))];}),dash:[],opacity:.5}));
   }
+  function crosses(a,b) {
+    for(let i=1;i<a.length;i++)for(let j=1;j<b.length;j++){
+      const p=a[i-1],q=b[j-1],u=a[i].map((v,k)=>v-p[k]),v=b[j].map((z,k)=>z-q[k]),w=q.map((z,k)=>z-p[k]);
+      const den=u[0]*v[1]-u[1]*v[0];if(Math.abs(den)<1e-9)continue;
+      const t=(w[0]*v[1]-w[1]*v[0])/den,s=(w[0]*u[1]-w[1]*u[0])/den;
+      if(t>=0&&t<=1&&s>=0&&s<=1)return true;
+    }return false;
+  }
   // Preserve the already selected trial positions: never re-fit or smooth here.
   function drawAxes(ctx, axes, ridge) {
     ctx.save();ctx.lineCap=ctx.lineJoin="round";ctx.strokeStyle=ridge?"#2563eb":"#ef2323";
-    ctx.lineWidth=ridge?5:6;
-    for(const a of axes){ctx.beginPath();ctx.moveTo(...a.points[0]);for(const p of a.points.slice(1))ctx.lineTo(...p);ctx.stroke();}
+    ctx.lineWidth=4;
+    for(const a of axes)for(const stroke of axisSymbol(a.points,ridge)){
+      ctx.beginPath();ctx.moveTo(...stroke[0]);for(const p of stroke.slice(1))ctx.lineTo(...p);ctx.stroke();
+    }
     ctx.restore();
+  }
+  function axisSymbol(points,ridge) {
+    const normal=(p,i)=>{const a=p[Math.max(0,i-1)],b=p[Math.min(p.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1;return [-dy/d,dx/d];};
+    if(!ridge)return [-5,5].map(offset=>points.map((p,i)=>{const n=normal(points,i);return [p[0]+offset*n[0],p[1]+offset*n[1]];}));
+    const lengths=[0];for(let i=1;i<points.length;i++)lengths.push(lengths.at(-1)+Math.hypot(points[i][0]-points[i-1][0],points[i][1]-points[i-1][1]));
+    const total=lengths.at(-1),count=Math.max(4,Math.ceil(total/14)),q=[];let j=1;
+    for(let i=0;i<=count;i++){const at=total*i/count;while(j<points.length-1 && lengths[j]<at)j++;const t=(at-lengths[j-1])/(lengths[j]-lengths[j-1]||1);q.push(points[j].map((v,k)=>points[j-1][k]+t*(v-points[j-1][k])));}
+    return [q.map((p,i)=>{const n=normal(q,i),offset=i===0||i===q.length-1?0:i%2?6:-6;return [p[0]+offset*n[0],p[1]+offset*n[1]];})];
   }
   function drawTemperature(ctx,data,enabled) {
     for(const [i,p] of data.panels.entries()) {
@@ -87,6 +106,6 @@ const SnapshotAnalysis = (() => {
       ctx.restore();
     }
   }
-  return {localHost,merge,validate,scales,drawAxes,drawTemperature,drawSymbols,drawFills};
+  return {localHost,merge,validate,scales,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills};
 })();
 if(typeof module!=="undefined")module.exports=SnapshotAnalysis;
