@@ -37,6 +37,16 @@ const SnapshotAnalysis = (() => {
       for(const a of p.troughs)for(const b of p.ridges)if(crosses(a.points,b.points))throw Error("Same-pressure trough/ridge crossing");
       for(const key of ["wet_rectangles","positive_vorticity_rectangles","ascent_rectangles"])if(p[key]?.some(r=>r.length!==4||!point(r.slice(0,2))||!point(r.slice(2))||r[0]>=r[2]||r[1]>=r[3]))throw Error("Invalid trial fill");
       for(const key of ["cold_bands","wind_bands"])if(p[key]?.some(b=>!Number.isFinite(b.threshold)||!/^#[a-f0-9]{6}$/i.test(b.color)||!Array.isArray(b.rings)||b.rings.some(r=>!line(r))))throw Error("Invalid trial band");
+      if(p.wind_bands?.length) {
+        if(p.pressure_hpa!==300 || p.wind_bands.length!==5 || p.wind_bands.some((b,j)=>b.threshold!==40+j*20 || b.color!==ChartAnalysis.windPalette[j]))throw Error("Invalid 300hPa wind intervals");
+      }
+      if(data.product==="AUPQ35" && i===0) {
+        if(p.troughs.length || p.ridges.length)throw Error("300hPa uses wind and jet axes");
+        const wind={...data,pressure_hpa:300,unit:"kt",bounds:p.bounds,bands:(p.wind_bands||[]).map(b=>({min_kt:b.threshold,rings:b.rings}))};
+        // The parent source/image binding also binds the wind and branch guides.
+        ChartAnalysis.validateWindBands(wind,data);
+        ChartAnalysis.validateJetGuides({...data,pressure_hpa:300,axes:p.jet_guides},data,wind);
+      } else if(p.jet_guides?.length)throw Error("Jet axes must use 300hPa wind");
       if(p.ascent_rectangles && p.vertical_velocity_pressure_hpa!==700)throw Error("Ascent must be 700hPa");
       if(data.product==="FEAS50" && i===1 && p.axis_pressure_hpa!==0)throw Error("FEAS axes must use surface pressure");
       if(p.cold_thresholds?.length && JSON.stringify(p.cold_thresholds)!==JSON.stringify(p.pressure_hpa===700?[-15,-18,-21,-24,-27]:[0,-3,-6,-9,-12]))throw Error("Cold threshold mismatch");
@@ -51,6 +61,10 @@ const SnapshotAnalysis = (() => {
         if(p.pressure_hpa===300)return ChartAnalysis.isothermScales[0].colors[Math.max(0,Math.min(4,Math.round((-v-27)/6)))];
         if(p.pressure_hpa===500)return ChartAnalysis.isothermScales[1].colors[Math.max(0,Math.min(9,Math.round((-v-3)/3)))];
         return cool[Math.max(0,Math.min(9,Math.round((v+12)*9/39)))];}),dash:[],opacity:.5}));
+  }
+  function jetAxes(data) {
+    const p=data.panels.find(p=>p.pressure_hpa===300);
+    return p?.jet_guides?.length ? ChartAnalysis.jets({bounds:p.bounds,bands:p.wind_bands.map(b=>({min_kt:b.threshold,rings:b.rings}))},{axes:p.jet_guides}) : [];
   }
   function crosses(a,b) {
     for(let i=1;i<a.length;i++)for(let j=1;j<b.length;j++){
@@ -101,11 +115,11 @@ const SnapshotAnalysis = (() => {
     };
     for(const p of data.panels){ctx.save();const [l,t,r,b]=p.bounds;ctx.beginPath();ctx.rect(l,t,r-l,b-t);ctx.clip();
       if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity);
-      if(on.wind)paintBands(p.wind_bands,.3);
+      if(on.wind && p.pressure_hpa===300)paintBands(p.wind_bands,1);
       for(const [key,color,active] of [["wet_rectangles","#269ed2",on.wet],["positive_vorticity_rectangles","#ec6ca5",on.vorticity],["ascent_rectangles","#f6a24b",on.ascent]])if(active){ctx.save();ctx.globalAlpha=.3;ctx.fillStyle=color;for(const [x,y,xx,yy] of p[key]||[])ctx.fillRect(x,y,xx-x,yy-y);ctx.restore();}
       ctx.restore();
     }
   }
-  return {localHost,merge,validate,scales,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills};
+  return {localHost,merge,validate,scales,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills};
 })();
 if(typeof module!=="undefined")module.exports=SnapshotAnalysis;

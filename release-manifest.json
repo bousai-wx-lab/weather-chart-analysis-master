@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-05T09:19:50.581231+00:00",
+  "generated_at": "2026-10-05T09:49:40.971605+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -47,20 +47,20 @@
     },
     {
       "path": "app.js",
-      "bytes": 78156,
-      "sha256": "82648b9bdd2cc4e5c0491264c8d8bf888616007f05900e0fd1868436c90ce9a5",
+      "bytes": 78777,
+      "sha256": "73fe491a76187154bb98782c172e8a8d663e3b31bd610586130814f9bf361ded",
       "mime_type": "text/javascript"
     },
     {
       "path": "assets/analysis/aupq35-00-20261005.json",
-      "bytes": 251582,
-      "sha256": "4a0a65ea71527993ac871c7c73593b4c6a1ebdc536ccb69f7173167c2a5d3cf7",
+      "bytes": 249978,
+      "sha256": "4d3717de9dc1e434e5e24c19a4946eb26674e0ce5f8c2fb15af08df41f0c7ace",
       "mime_type": "application/json"
     },
     {
       "path": "assets/analysis/aupq35-12-20261005.json",
-      "bytes": 255541,
-      "sha256": "7435e8ecbb294ecf45c0f42943a17c8d20415607fd9ed270e8fc0cc60bc5d4f3",
+      "bytes": 250539,
+      "sha256": "772b35b69fc3c83cf9e7cd82b8b7dc523a368d5642fbddd9e0d0df83d2f417aa",
       "mime_type": "application/json"
     },
     {
@@ -966,7 +966,7 @@
     {
       "path": "chart-catalog.json",
       "bytes": 103584,
-      "sha256": "20949519a6374eda2fe68ce076f6c8ee87a7cd3246c16aae32532e00c25e6c55",
+      "sha256": "52e23e6f8eda8ba75019c6d95919c6229319c72bfb84e236d4ba118ad47d9ebe",
       "mime_type": "application/json"
     },
     {
@@ -1020,7 +1020,7 @@
     {
       "path": "index.html",
       "bytes": 26234,
-      "sha256": "7a022fbac48f7c776c741e231257e2c597e6c28fbcfab63b0411a42ef765522f",
+      "sha256": "5cf4e63322b38dba9417050e10c450247a11443c223c57301ef40c3226c68884",
       "mime_type": "text/html"
     },
     {
@@ -1109,8 +1109,8 @@
     },
     {
       "path": "scripts/test_snapshot_analysis.js",
-      "bytes": 3248,
-      "sha256": "68300c746c768c978ad32f74056f86b8e61049a877491ddcc782269c19f3b41d",
+      "bytes": 4911,
+      "sha256": "74f55314b9f0a06687166249c78d1f3b0654f128300bc3bee5806b34e0795fda",
       "mime_type": "text/javascript"
     },
     {
@@ -1121,8 +1121,8 @@
     },
     {
       "path": "snapshot-analysis.js",
-      "bytes": 9325,
-      "sha256": "78d5a4ffefa1cf6a8db166f0ea4bc829059e42e38def20dbddb2f58cfefbf578",
+      "bytes": 10439,
+      "sha256": "942846552bd7b4481c23453cc2203cee7d8f0ff0bb884756715567cb3057f9ce",
       "mime_type": "text/javascript"
     },
     {

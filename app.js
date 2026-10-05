@@ -322,6 +322,11 @@ function controls() {
     for(const tool of analysisTools){const available=trialAvailable(tool.id),button=byId(tool.button);button.disabled=!ready||!available;button.setAttribute("aria-pressed",String(available && trialEnabled(tool.id)));}
     paper.dataset.trial="EXPERIMENTAL_UNVERIFIED";
   } else delete paper.dataset.trial;
+  if(currentSelection?.product.id==="aupq35") {
+    byId("temperature").disabled=true;
+    byId("temperature").setAttribute("aria-pressed","false");
+    paper.dataset.temperature="false";
+  }
   const layerCount = updateAnalysisPanel();
   const overlayCount = updateOverlayPanel();
   const layers = [layerCount ? `解析${layerCount}項目` : "原図", overlayCount ? `重ね合わせ${overlayCount}項目` : "", paintCount ? `手描き${paintCount}筆` : ""].filter(Boolean);
@@ -356,8 +361,9 @@ function drawAnalysis() {
     const main=trial.panels[trial.product==="AUPQ78"||trial.product==="AUPQ35"?1:0],other=trial.panels[trial.product==="AUPQ78"||trial.product==="AUPQ35"?0:1];
     if(showTrough)SnapshotAnalysis.drawAxes(analysisContext,main.troughs,false);
     if(showRidge)SnapshotAnalysis.drawAxes(analysisContext,main.ridges,true);
-    if(showTrough700)SnapshotAnalysis.drawAxes(analysisContext,other.troughs,false);
-    if(showRidge700)SnapshotAnalysis.drawAxes(analysisContext,other.ridges,true);
+    if(showTrough700 && other.pressure_hpa!==300)SnapshotAnalysis.drawAxes(analysisContext,other.troughs,false);
+    if(showRidge700 && other.pressure_hpa!==300)SnapshotAnalysis.drawAxes(analysisContext,other.ridges,true);
+    if(showJet && candidates?.jets.length)ChartAnalysis.drawJetAxes(jetContext,candidates.jets,trial.panels[0].bounds);
     return;
   }
   if (!candidates) return;
@@ -437,8 +443,9 @@ for (const id of ["wet","cold700","cold850","trough700","ridge700"]) byId(id).ad
 byId("cold-opacity").addEventListener("input",event=>{coldOpacity=Number(event.target.value)/100;drawWind();controls();});
 function drawTemperature() {
   temperatureContext.clearRect(0, 0, temperatureLayer.width, temperatureLayer.height);
-  if(ready && trial){SnapshotAnalysis.drawTemperature(temperatureContext,trial,[showTemperature,showTemperature500]);return;}
-  if (ready && isotherms) ChartAnalysis.drawIsotherms(temperatureContext, isotherms, [showTemperature?(lowLevel?700:300):null,showTemperature500?((lowLevel||dynamics)?850:500):null],temperatureScales());
+  const upper=showTemperature && currentSelection?.product.id!=="aupq35";
+  if(ready && trial){SnapshotAnalysis.drawTemperature(temperatureContext,trial,[upper,showTemperature500]);return;}
+  if (ready && isotherms) ChartAnalysis.drawIsotherms(temperatureContext, isotherms, [upper?(lowLevel?700:300):null,showTemperature500?((lowLevel||dynamics)?850:500):null],temperatureScales());
 }
 byId("temperature").addEventListener("click", () => {
   if (!ready || !isotherms) return;
@@ -912,16 +919,16 @@ function trialPlane(id) {
 function trialEnabled(id) {
   return {vorticity:showVorticity,ascent:showAscent,wet:showWet,cold700:showCold700,cold850:showCold850,
     trough700:showTrough700,ridge700:showRidge700,temperature:showTemperature,temperature500:showTemperature500,
-    wind:showWind,jet:false,trough:showTrough,ridge:showRidge,symbols:showSymbols,geography:showGeography}[id];
+    wind:showWind,jet:showJet,trough:showTrough,ridge:showRidge,symbols:showSymbols,geography:showGeography}[id];
 }
 function trialAvailable(id) {
   const some=key=>trial.panels.some(p=>p[key]?.length);
   return {vorticity:some("positive_vorticity_rectangles"),ascent:some("ascent_rectangles"),wet:some("wet_rectangles"),
     cold700:trial.panels.some(p=>p.pressure_hpa===700&&p.cold_thresholds),
     cold850:trial.panels.some(p=>p.pressure_hpa===850&&p.cold_thresholds),
-    trough700:trialOther().troughs.length>0,ridge700:trialOther().ridges.length>0,
-    temperature:trial.panels[0].levels.length>0,temperature500:trial.panels[1].levels.length>0,
-    wind:some("wind_bands"),jet:false,trough:trialMain().troughs.length>0,ridge:trialMain().ridges.length>0,
+    trough700:trialOther().pressure_hpa!==300&&trialOther().troughs.length>0,ridge700:trialOther().pressure_hpa!==300&&trialOther().ridges.length>0,
+    temperature:trial.panels[0].pressure_hpa!==300&&trial.panels[0].levels.length>0,temperature500:trial.panels[1].levels.length>0,
+    wind:some("wind_bands"),jet:Boolean(candidates?.jets.length),trough:trialMain().troughs.length>0,ridge:trialMain().ridges.length>0,
     symbols:trial.symbols.length>0,geography:Boolean(geography)}[id];
 }
 function trialLegends() {
@@ -961,9 +968,9 @@ async function loadTrial(selected,revision,signal) {
     trial=data;symbols=isotherms=data;
     if(data.product==="AUPQ78")lowLevel=data;
     if(["AXFE578","FEAS50"].includes(data.product))dynamics=data;
-    candidates={troughs:trialMain().troughs.map(a=>a.points),ridges:trialMain().ridges.map(a=>a.points),jets:[]};
+    candidates={troughs:trialMain().troughs.map(a=>a.points),ridges:trialMain().ridges.map(a=>a.points),jets:SnapshotAnalysis.jetAxes(data)};
     if(data.panels.some(p=>p.wind_bands?.length))windBands={bounds:data.panels[0].bounds};
-    if(!drawingStates.has(selected.key)){showTrough700=true;showRidge700=true;showWind=Boolean(windBands);showCold700=true;showCold850=true;}
+    if(!drawingStates.has(selected.key)){showTrough700=true;showRidge700=true;showWind=Boolean(windBands);showJet=Boolean(candidates.jets.length);showCold700=true;showCold850=true;}
     temperatureLegends();drawSymbols();drawTemperature();drawWind();drawAnalysis();controls();
   }catch(error){if(revision===loadRevision&&error.name!=="AbortError"){analysisError="今回の原図と解析試行の対応を確認できません。";controls();}}
 }

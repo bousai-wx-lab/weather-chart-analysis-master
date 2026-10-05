@@ -2,6 +2,7 @@
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),crypto=require("node:crypto");
 const root=path.resolve(__dirname,".."),read=f=>JSON.parse(fs.readFileSync(path.join(root,f)));
 global.ChartCatalog=require("../catalog.js");
+global.ChartAnalysis=require("../analysis.js");
 const snapshot=require("../snapshot-analysis.js"),atlas=require("../geography-atlas.js");
 const catalog=ChartCatalog.validate(read("chart-catalog.json")),geo=read("geography-catalog.json"),allow=read("release-allowlist.json");
 assert.equal(snapshot.localHost("bousai-wx-lab.github.io"),false);
@@ -25,6 +26,31 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
     for(const change of [x=>x.source_sha256="0".repeat(64),x=>x.image_sha256="0".repeat(64),x=>x.operationally_approved=true,x=>x.reference_axes_used=true]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));}
     const local=structuredClone(selected);local.variant.features="experimental-local";local.variant.analysis_path="local-collection/analysis/trial.json";assert.throws(()=>snapshot.validate(data,local,"bousai-wx-lab.github.io"));
     if(data.product==="AXFE578"){const bad=structuredClone(data);bad.panels[1].vertical_velocity_pressure_hpa=850;assert.throws(()=>snapshot.validate(bad,selected,"localhost"));}
+    if(data.product==="AUPQ35") {
+      const upper=data.panels[0],jets=snapshot.jetAxes(data);
+      assert.equal(upper.troughs.length+upper.ridges.length,0);
+      assert.equal(jets.length,upper.jet_guides.length);
+      assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)&&j.segments.length>=2));
+      assert.deepEqual(upper.wind_bands.map(b=>b.threshold),[40,60,80,100,120]);
+      const contains=([x,y],rings)=>rings.reduce((odd,ring)=>ring.reduce((hit,a,i)=>{
+        const b=ring[(i+1)%ring.length];
+        return (a[1]>y)!==(b[1]>y) && x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0] ? !hit : hit;
+      },odd),false);
+      const windAt=p=>upper.wind_bands.filter(b=>contains(p,b.rings)).at(-1)?.threshold||0;
+      assert.equal(windAt([300,300]),0,"northwest weak wind must remain uncolored");
+      assert.equal(windAt([1100,520]),0,"central weak-wind hole must remain uncolored");
+      assert.ok(windAt([1000,700])>=80,"southern strong-wind band must remain filled");
+      assert.equal(windAt([1800,900]),0,"south of 40kt contour must remain uncolored");
+      for(const change of [
+        x=>x.panels[0].troughs.push({points:[[100,200],[200,300]]}),
+        x=>x.panels[0].ridges.push({points:[[100,200],[200,300]]}),
+        x=>x.panels[0].wind_bands[0].threshold=20,
+        x=>x.panels[0].wind_bands[0].color="#ffffff",
+        x=>x.panels[1].wind_bands=x.panels[0].wind_bands,
+        x=>x.panels[0].jet_guides[0].points[0]=[0,0],
+        x=>delete x.panels[0].jet_guides
+      ]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"localhost"));}
+    }
     analyses++;
   }
   recent++;
