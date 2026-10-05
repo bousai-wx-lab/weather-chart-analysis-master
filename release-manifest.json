@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-05T14:22:26.445149+00:00",
+  "generated_at": "2026-10-05T23:48:06.267359+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -89,8 +89,8 @@
     },
     {
       "path": "assets/analysis/feas50-12-20261005.json",
-      "bytes": 259226,
-      "sha256": "86cb13760c85a5f7707b5ef54ba9a95993241754e537a224ab85441ccf211e77",
+      "bytes": 278261,
+      "sha256": "d3194aa50fcf16263af5ef9efb113be013a12db1f7285c6204c1cd5cd68d4ce9",
       "mime_type": "application/json"
     },
     {
@@ -1038,7 +1038,7 @@
     {
       "path": "chart-catalog.json",
       "bytes": 105818,
-      "sha256": "02513a5c1c63db3641eb9f20e63465c29c4c8d502a6e64161a495ab3fd90a9b7",
+      "sha256": "4357635fdf04229e8f266ac4a394b8351dfbc410dff50cf621f169828e177864",
       "mime_type": "application/json"
     },
     {
@@ -1092,7 +1092,7 @@
     {
       "path": "index.html",
       "bytes": 27082,
-      "sha256": "87bf5198d52948c967fc43c4ebedecad1137237e87bbb42d9cdbfe6f1c7147f3",
+      "sha256": "39a74a4b361ad12388249cc145b885fd1a033ee095feca4ee82c13a2489b1fb9",
       "mime_type": "text/html"
     },
     {
@@ -1122,7 +1122,7 @@
     {
       "path": "release-allowlist.json",
       "bytes": 54615,
-      "sha256": "5f3b574e2630dfde53b46d083955401e35d6d61b0d52a2f39bd375ab6f8a6260",
+      "sha256": "b65b7e2675a1876d3ad94a2137b3dc9a7bc6ae2b2ba04ff669ed89c698e32a13",
       "mime_type": "application/json"
     },
     {
@@ -1181,8 +1181,8 @@
     },
     {
       "path": "scripts/test_snapshot_analysis.js",
-      "bytes": 8909,
-      "sha256": "af8da6eebdf89eabddf7580c473370dd47ebb5d3bf9049fe3f1c2f91a8e8ff82",
+      "bytes": 9858,
+      "sha256": "c86a570d3c988e52613b0614080df4e827b74139de268bf886041597ab5c0572",
       "mime_type": "text/javascript"
     },
     {
@@ -1193,8 +1193,8 @@
     },
     {
       "path": "snapshot-analysis.js",
-      "bytes": 12885,
-      "sha256": "3fa6659fb14b5b73b440d4ab5413077583460c205d6ad4827fd9029445d4e8d4",
+      "bytes": 14299,
+      "sha256": "9cf371d4ecec537b7dc48fb18847b8412640ec6b13ce09a8c676721bbbe05b2d",
       "mime_type": "text/javascript"
     },
     {

@@ -26,6 +26,19 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
     for(const change of [x=>x.source_sha256="0".repeat(64),x=>x.image_sha256="0".repeat(64),x=>x.operationally_approved=true,x=>x.reference_axes_used=true]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));}
     const local=structuredClone(selected);local.variant.features="experimental-local";local.variant.analysis_path="local-collection/analysis/trial.json";assert.throws(()=>snapshot.validate(data,local,"bousai-wx-lab.github.io"));
     if(data.product==="AXFE578"){const bad=structuredClone(data);bad.panels[1].vertical_velocity_pressure_hpa=850;assert.throws(()=>snapshot.validate(bad,selected,"localhost"));}
+    if(data.product==="FEAS50" && data.variant==="feas50-12-20261005"){
+      const panel=data.panels[1];
+      assert.deepEqual(panel.levels.map(l=>l.temperature_c),Array.from({length:16},(_,i)=>-15+i*3),"All native 3 C contours, including -9 C, must remain recognized");
+      assert.deepEqual(panel.cold_bands.map(b=>b.threshold),[0,-3,-6,-9,-12]);
+      assert.equal(panel.temperature_trace.method,"native_regular_dash_connectivity");
+      assert.equal(panel.temperature_trace.labels_read,32);
+      for(const change of [
+        x=>x.panels[1].levels[0].lines[0].points.splice(1,0,[200,2300]),
+        x=>x.panels[1].levels[0].lines[0].closed=true,
+        x=>x.panels[1].levels[0].lines[0].source_paths.push(x.panels[1].levels[0].lines[0].source_paths[0]),
+        x=>x.panels[1].temperature_trace.unassigned_groups=1
+      ]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"localhost"));}
+    }
     if(data.product==="AUPQ35") {
       const upper=data.panels[0],jets=snapshot.jetAxes(data);
       assert.equal(upper.troughs.length+upper.ridges.length,0);

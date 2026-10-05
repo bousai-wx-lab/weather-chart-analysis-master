@@ -43,6 +43,18 @@ const SnapshotAnalysis = (() => {
         if(data.panels.slice(0,i).some(q=>Math.min(p.bounds[2],q.bounds[2])>Math.max(p.bounds[0],q.bounds[0])&&Math.min(p.bounds[3],q.bounds[3])>Math.max(p.bounds[1],q.bounds[1])))throw Error("Overlapping forecast panels");
       }
       for(const l of p.levels)if(!Number.isFinite(l.temperature_c)||!Array.isArray(l.labels)||!Array.isArray(l.lines)||l.lines.some(l=>!line(l.points)))throw Error("Invalid trial isotherm");
+      if(data.product==="FEAS50" && i===1 && p.temperature_trace){
+        const trace=p.temperature_trace,seen=new Set();
+        if(trace.method!=="native_regular_dash_connectivity" || p.temperature_interval_c!==3 || trace.unassigned_groups!==0 ||
+           !Number.isFinite(trace.dash_length_px) || trace.dash_length_px<=0 || !Number.isFinite(trace.numeric_label_font_px) || trace.numeric_label_font_px<=0)throw Error("Invalid source dash trace");
+        for(const level of p.levels)for(const ln of level.lines){
+          if(level.temperature_c%3 || !Array.isArray(ln.source_paths) || ln.source_paths.length<3 || !Array.isArray(ln.source_bridges))throw Error("Missing native isotherm strokes");
+          for(const id of ln.source_paths){if(!Number.isInteger(id)||id<0||seen.has(id))throw Error("Repeated native isotherm stroke");seen.add(id);}
+          for(let j=1;j<ln.points.length;j++)if(Math.hypot(...ln.points[j].map((v,k)=>v-ln.points[j-1][k]))>trace.numeric_label_font_px*3.5+.1)throw Error("Unsupported isotherm connector");
+          if(ln.closed && Math.hypot(...ln.points[0].map((v,k)=>v-ln.points.at(-1)[k]))>trace.dash_length_px*1.12+.05)throw Error("Unsupported closed isotherm");
+          if(ln.source_bridges.some(b=>b.kind!=="numeric_stamp" || b.value!==level.temperature_c || b.points?.length!==2 || !b.points.every(point)))throw Error("Invalid numeric isotherm gap");
+        }
+      }
       for(const key of ["troughs","ridges"])if(p[key].some(a=>!line(a.points)))throw Error("Invalid trial axis");
       for(const a of p.troughs)for(const b of p.ridges)if(crosses(a.points,b.points))throw Error("Same-pressure trough/ridge crossing");
       for(const key of ["wet_rectangles","positive_vorticity_rectangles","ascent_rectangles"])if(p[key]?.some(r=>r.length!==4||!point(r.slice(0,2))||!point(r.slice(2))||r[0]>=r[2]||r[1]>=r[3]))throw Error("Invalid trial fill");
