@@ -238,3 +238,30 @@ assert.equal(feasForecasts,22);
 const a=catalog.products.find(p=>p.id==="aupq35");assert.match(a.variants[0].label,/2026-10-04 12:00 UTC/);assert.match(a.variants[1].label,/2026-10-04 00:00 UTC/);assert.equal(a.variants[2].id,"aupq35-reviewed");
 const bad=structuredClone(catalog);bad.products.find(p=>p.id==="aupq35").variants[0].analysis_path="../private/trial.json";assert.throws(()=>ChartCatalog.validate(bad));
 console.log(`SNAPSHOT_TESTS_OK latest_pages=${recent} trial_sources=${analyses} forecast_color_sources=${forecasts} feas_forecast_sources=${feasForecasts} maps=${maps} public_source_binding_checked local_trial_not_public approved_status_not_fabricated`);
+
+// Identical values must render alike across fixed and forecast input paths.
+const low=require("../low-level.js"),dynamics=require("../dynamics.js");
+for(const [pressure,value,color]of [[300,-39,"#558ee0"],[500,-15,"#5485d7"],[700,0,"#b8b8b8"],[850,0,"#b8b8b8"],[700,-36,"#173f8a"],[850,-24,"#173f8a"],[700,15,"#991b1b"],[850,24,"#991b1b"]]){
+  assert.equal(ChartAnalysis.temperatureColor(pressure,value),color);
+  const scale=snapshot.scales({panels:[{pressure_hpa:pressure,levels:[{temperature_c:value}]}]})[0];
+  assert.deepEqual(scale.colors,[color]);assert.equal(scale.opacity,.5);
+  if(pressure>=700)assert.equal(low.temperatureColor(pressure,value),color);
+}
+assert.ok(ChartAnalysis.isothermScales.every(s=>s.opacity===.5));
+assert.ok(low.scales.every(s=>s.opacity===.5));
+assert.equal(dynamics.scalesFor({panels:[{}, {levels:[{temperature_c:0}]}]})[1].colors[0],"#b8b8b8");
+assert.equal(ChartAnalysis.coldColor(850,-12),"#173f8a");
+assert.equal(ChartAnalysis.coldColor(850,3),undefined);
+assert.equal(ChartAnalysis.coldColor(700,-27),"#173f8a");
+assert.throws(()=>ChartAnalysis.temperatureColor(925,0));
+const rectangles=[[10,10,60,60],[40,40,90,90]],rectPanel=pressure_hpa=>({pressure_hpa,bounds:[0,0,100,100],levels:[],wet_rectangles:pressure_hpa===700?rectangles:undefined,positive_vorticity_rectangles:pressure_hpa===500?rectangles:undefined,ascent_rectangles:pressure_hpa===850?rectangles:undefined});
+const rectangleContext=()=>({fills:[],rectangles:[],save(){},restore(){},clip(){},beginPath(){this.rectangles=[];},rect(...r){this.rectangles.push(r);},fill(){this.fills.push({color:this.fillStyle,opacity:this.globalAlpha,rectangles:[...this.rectangles]});},fillRect(){throw Error("Overlapping fill cells must be composed together before applying transparency");}});
+const fixedCtx=rectangleContext(),forecastCtx=rectangleContext(),wetCtx=rectangleContext();
+const rectData={panels:[rectPanel(500),rectPanel(850)]};
+dynamics.drawFills(fixedCtx,rectData);snapshot.drawFills(forecastCtx,rectData,{vorticity:true,ascent:true});
+assert.deepEqual(fixedCtx.fills,forecastCtx.fills);
+assert.deepEqual(fixedCtx.fills.map(f=>[f.color,f.opacity]),[["#ec6ca5",.3],["#a3d84b",.3]]);
+const wetData={panels:[rectPanel(700)]};low.drawFills(wetCtx,wetData,{wet:true});
+const forecastWetCtx=rectangleContext();snapshot.drawFills(forecastWetCtx,wetData,{wet:true});
+assert.deepEqual(wetCtx.fills,forecastWetCtx.fills);assert.deepEqual(wetCtx.fills.map(f=>[f.color,f.opacity]),[["#269ed2",.3]]);
+console.log("COMMON_COLOR_RULES_OK fixed_and_forecast temperatures_axes_cold_hatches shared_opacity_and_single_fill");

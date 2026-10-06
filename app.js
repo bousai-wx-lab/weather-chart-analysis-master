@@ -1,4 +1,10 @@
 "use strict";
+const coloringRules=ChartAnalysis.coloringRules;
+for(const element of ["vorticity","ascent"]){
+  document.documentElement.style.setProperty(`--${element}-color`,coloringRules[element].color);
+  document.documentElement.style.setProperty(`--${element}-opacity`,coloringRules[element].opacity);
+}
+document.documentElement.style.setProperty("--trough-color",coloringRules.axes.trough);
 const byId = (id) => document.getElementById(id);
 const chart = byId("chart");
 const ink = byId("ink");
@@ -45,11 +51,11 @@ let isotherms = null;
 let lowLevel = null, dynamics = null, trial = null, localCollection = null;
 let showVorticity = true, showAscent = true;
 let showPrecipitation = true;
-let showEquivalent=true,equivalentOpacity=.45;
+let showEquivalent=true,equivalentOpacity=coloringRules.equivalentOpacity;
 const isFeas = () => dynamics?.product === "FEAS50";
 const temperatureScales = () => trial ? SnapshotAnalysis.displayScales(trial) : dynamics ? ChartDynamics.scalesFor(dynamics) : lowLevel ? LowLevelAnalysis.scales : ChartAnalysis.isothermScales;
 let showWet = true, showCold700 = true, showCold850 = true, showTrough700 = true, showRidge700 = true;
-let coldOpacity = .35, warmOpacity = .35;
+let coldOpacity = coloringRules.coldOpacity, warmOpacity = coloringRules.warmOpacity;
 let showWarm850 = true;
 const isTrialSelection = selected => ["experimental-local","experimental-snapshot"].includes(selected.variant.features);
 const isReviewed = selected => ["reviewed-aupq35","reviewed-aupq78","reviewed-axfe578", "reviewed-feas50"].includes(selected.variant.features);
@@ -393,7 +399,7 @@ function drawAnalysis() {
     return;
   }
   if (!candidates) return;
-  if (showJet) ChartAnalysis.drawJetAxes(jetContext, candidates.jets, windBands.bounds);
+  if (showJet && windBands && candidates.jets.length) ChartAnalysis.drawJetAxes(jetContext, candidates.jets, windBands.bounds);
   if (showTrough) ChartAnalysis.drawTroughs(analysisContext, candidates.troughs);
   if ((lowLevel || isFeas()) && showTrough700) ChartAnalysis.drawTroughs(analysisContext,(lowLevel ? lowLevel.panels[0] : dynamics.panels[1]).troughs.map(a=>a.points));
   if ((lowLevel || isFeas()) && showRidge700) ChartAnalysis.drawRidges(analysisContext,(lowLevel ? lowLevel.panels[0] : dynamics.panels[1]).ridges.map(a=>a.points));
@@ -456,7 +462,7 @@ function temperatureLegends() {
   }
   byId("detail-trough").querySelector(".legend").textContent=`赤い二重線 · ${lowLevel?850:500}hPa`;
   byId("detail-trough").querySelector("p").firstChild.textContent=dynamics?`${dynamics.panels[0].troughs.length}本の500hPaトラフ。日本周辺の曲がりを見た解析案です。`:""+ (lowLevel?"参照解析に合わせた3本。同じ谷としてつながる範囲を分けて表示します。":"この原図の等高度線の谷を確認した4本。短い波と低気圧の周りも含みます。");
-  for (const [id,values] of [["cold700",[-15,-18,-21,-24,-27]],["cold850",[0,-3,-6,-9,-12]]]) {
+  for (const [id,values] of [["cold700",coloringRules.coldThresholds[700]],["cold850",coloringRules.coldThresholds[850]]]) {
     byId(`${id}-legend`).replaceChildren();
     for (const [i,v] of values.entries()) {const span=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=LowLevelAnalysis.coldColors[i];span.append(swatch,`${v}℃以下`);byId(`${id}-legend`).append(span);}
   }
@@ -702,7 +708,7 @@ byId("save").addEventListener("click", () => {
   }
   ctx.fillStyle = "#243247";
   ctx.font = "22px sans-serif"; ctx.fillText(trial?.surface_forecast ? "上段：500hPa高度・渦度 / 下段：地上気圧・風・降水量" : showWind ? "風速（300hPa）" : "風速の色塗り：表示なし", 26, ink.height + 116);
-  if (showWind) for (const [index, color] of ChartAnalysis.windPalette.entries()) {
+  if (showWind && windBands) for (const [index, color] of ChartAnalysis.windPalette.entries()) {
     const x = 230 + index * 260;
     ctx.fillStyle = color; ctx.fillRect(x, ink.height + 95, 32, 24);
     ctx.fillStyle = "#243247"; ctx.fillText(windLabels[index], x + 42, ink.height + 116);
@@ -714,7 +720,7 @@ byId("save").addEventListener("click", () => {
   if(dynamics || trial?.feas_forecast) {
     ctx.fillText(`500hPa正渦度：${showVorticity?"ピンク・濃さ30%":"表示なし"}${isFeas()||trial?.feas_forecast?"":` / 700hPa上昇流：${showAscent?"黄緑・濃さ30%":"表示なし"}`}`,26,ink.height+275);
     ctx.fillText(`850hPa寒気：${showCold850?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+319);
-    for(const [i,v] of [0,-3,-6,-9,-12].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+297,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+319);}
+    for(const [i,v] of coloringRules.coldThresholds[850].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+297,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+319);}
   }
   if(trial?.equivalent_temperature){
     ctx.fillText(`850hPa相当温位：${showEquivalent?`濃さ${Math.round(equivalentOpacity*100)}%`:"表示なし"} / 260〜370 K / 原図の3 Kごとの境界`,26,ink.height+280,output.width-52);
@@ -727,14 +733,14 @@ byId("save").addEventListener("click", () => {
     ctx.fillText(`500hPa正渦度：${showVorticity?"ピンク・濃さ30%":"表示なし"}`,26,ink.height+275);
     ctx.fillText(`地上の降水量：${showPrecipitation?"水色〜青・濃さ45%":"表示なし"}（各予報時刻までの前${trialOther().accumulation_hours}時間の積算）`,26,ink.height+315,output.width-52);
     for(const [i,label] of SnapshotAnalysis.precipitationLabels.entries()){
-      const x=26+i*(output.width-52)/6;ctx.save();ctx.globalAlpha=.45;ctx.fillStyle=SnapshotAnalysis.precipitationColors[i];ctx.fillRect(x,ink.height+339,32,24);ctx.restore();ctx.fillText(label,x+40,ink.height+361);
+      const x=26+i*(output.width-52)/6;ctx.save();ctx.globalAlpha=coloringRules.precipitationOpacity;ctx.fillStyle=SnapshotAnalysis.precipitationColors[i];ctx.fillRect(x,ink.height+339,32,24);ctx.restore();ctx.fillText(label,x+40,ink.height+361);
     }
     ctx.fillText("原図の0・10・20・30・40・50mmの等降水量線で区切ります。降水のない範囲は塗りません。",26,ink.height+404,output.width-52);
   }
   if(trial?.color_only) {
     ctx.fillText(`700hPa湿域：${showWet?"青水色・濃さ30%":"表示なし"} / 上昇流：${showAscent?"黄緑・濃さ30%":"表示なし"}`,26,ink.height+350,output.width-52);
     ctx.fillText(`850hPa寒気：${showCold850?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+394);
-    for(const [i,v] of [0,-3,-6,-9,-12].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+372,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+394);}
+    for(const [i,v] of coloringRules.coldThresholds[850].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+372,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+394);}
     ctx.fillText("850hPaの色塗りは原図の3℃刻みの等温線で区切ります。",26,ink.height+430,output.width-52);
   }
   if (lowLevel) {
@@ -893,8 +899,8 @@ async function loadSelection(retry = false) {
   if (state) { history.push(...state.history); future.push(...state.future); }
   showVorticity=state?.showVorticity ?? true;showAscent=state?.showAscent ?? true;
   showPrecipitation=state?.showPrecipitation ?? true;
-  showEquivalent=state?.showEquivalent ?? true;equivalentOpacity=state?.equivalentOpacity ?? .45;byId("equivalent-opacity").value=String(Math.round(equivalentOpacity*100));
-  showWet=state?.showWet ?? true;showCold700=state?.showCold700 ?? true;showCold850=state?.showCold850 ?? true;showWarm850=state?.showWarm850 ?? true;warmOpacity=state?.warmOpacity ?? .35;byId("warm-opacity").value=String(Math.round(warmOpacity*100));showTrough700=state?.showTrough700 ?? true;showRidge700=state?.showRidge700 ?? true;coldOpacity=state?.coldOpacity ?? .35;byId("cold-opacity").value=String(Math.round(coldOpacity*100));
+  showEquivalent=state?.showEquivalent ?? true;equivalentOpacity=state?.equivalentOpacity ?? coloringRules.equivalentOpacity;byId("equivalent-opacity").value=String(Math.round(equivalentOpacity*100));
+  showWet=state?.showWet ?? true;showCold700=state?.showCold700 ?? true;showCold850=state?.showCold850 ?? true;showWarm850=state?.showWarm850 ?? true;warmOpacity=state?.warmOpacity ?? coloringRules.warmOpacity;byId("warm-opacity").value=String(Math.round(warmOpacity*100));showTrough700=state?.showTrough700 ?? true;showRidge700=state?.showRidge700 ?? true;coldOpacity=state?.coldOpacity ?? coloringRules.coldOpacity;byId("cold-opacity").value=String(Math.round(coldOpacity*100));
   showWind = state?.showWind ?? true; showTrough = state?.showTrough ?? true; showRidge = state?.showRidge ?? true; showJet = state?.showJet ?? true;
   showSymbols = state?.showSymbols ?? true; showGeography = state?.showGeography ?? true;
   showTemperature = state?.showTemperature ?? true;
@@ -1000,7 +1006,7 @@ function trialLegends() {
   byId("precipitation-legend").replaceChildren();
   if(trial.surface_forecast)byId("precipitation-note").textContent=`各枠の予報時刻までの前${trialOther().accumulation_hours}時間の積算降水量。原図の点線に沿って、水色から青へ10mm刻み・濃さ45%で色分けします。降水のない範囲は塗りません。50mm以上は同じ濃い青です。`;
   for(const [i,label] of SnapshotAnalysis.precipitationLabels.entries()){
-    const entry=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=SnapshotAnalysis.precipitationColors[i];swatch.style.opacity=".45";entry.append(swatch,label);byId("precipitation-legend").append(entry);
+    const entry=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=SnapshotAnalysis.precipitationColors[i];swatch.style.opacity=String(coloringRules.precipitationOpacity);entry.append(swatch,label);byId("precipitation-legend").append(entry);
   }
   for(const [i,scale] of temperatureScales().entries()) {
     const id=i?"temperature500":"temperature",legend=byId(`${id}-legend`);legend.replaceChildren();
@@ -1027,7 +1033,7 @@ function trialLegends() {
     const count=trial.surface_forecast&&upper?trial.panels.filter(p=>p.pressure_hpa===500).reduce((n,p)=>n+p[ridge?"ridges":"troughs"].length,0):panel[ridge?"ridges":"troughs"].length;
     byId(`detail-${id}`).querySelector("p").firstChild.textContent=`${count}本の解析試行。精度は未検証です。`;
   }
-  for(const [id,values] of [["cold700",[-15,-18,-21,-24,-27]],["cold850",[0,-3,-6,-9,-12]]]) {
+  for(const [id,values] of [["cold700",coloringRules.coldThresholds[700]],["cold850",coloringRules.coldThresholds[850]]]) {
     byId(`${id}-legend`).replaceChildren();
     for(const [i,v] of values.entries()){const span=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=LowLevelAnalysis.coldColors[i];span.append(swatch,`${v}℃以下`);byId(`${id}-legend`).append(span);}
   }

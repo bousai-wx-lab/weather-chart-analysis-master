@@ -32,7 +32,7 @@ for (const pressure of [300,500]) {
  const panel=temperatures.panels.find(p=>p.pressure_hpa===pressure),scale=analysis.isothermScales.find(s=>s.pressure_hpa===pressure);
  assert.deepEqual(strokes,panel.levels.flatMap((l,i)=>Array(l.lines.length).fill(scale.colors[i])));
  assert.ok(dashes.every(d=>d.length===0),"do not introduce a second dash pattern over the original chart");
- assert.ok(alphas.every(a=>a===(pressure===500?0.5:1)),"500hPa reveals original black dashes; 300hPa stays opaque");
+ assert.ok(alphas.every(a=>a===0.5),"Temperature overlays use the same 50% opacity on every source");
  assert.ok(widths.every(w=>w===3.5),"both temperature guides use the requested thinner stroke");
  assert.deepEqual(clips,["evenodd"],"protect printed stamps in each independently clipped panel");
  assert.deepEqual(rects[0],[panel.bounds[0],panel.bounds[1],panel.bounds[2]-panel.bounds[0],panel.bounds[3]-panel.bounds[1]]);
@@ -113,7 +113,7 @@ for (const points of [...result.troughs, [[100,100],[100,200],[200,200]], [[100,
   analysis.drawTroughs(ctx,[points]);
   assert.deepEqual(points,input,"display smoothing must not change analysis anchors");
   assert.equal(paths.length,2); assert.equal(ctx.globalAlpha,1);
-  assert.ok(paths.every(p=>p.color==="#f02020" && p.width===4 && p.alpha===0.85));
+  assert.ok(paths.every(p=>p.color==="#ef2323" && p.width===4 && p.alpha===1));
   assert.equal(paths[0].segments.length,paths[1].segments.length);
   const vertices=paths.map(p=>[p.start,...p.segments.map(s=>s.end)]);
   const centers=vertices[0].map((p,i)=>p.map((v,k)=>(v+vertices[1][i][k])/2));
@@ -133,7 +133,7 @@ for (const points of [...result.ridges,[[100,100],[212,100]]]) {
  const ctx={globalAlpha:1,save(){saved=this.globalAlpha;},restore(){this.globalAlpha=saved;},beginPath(){current=[];},moveTo(x,y){current.push([x,y]);},lineTo(x,y){current.push([x,y]);},stroke(){paths.push({points:current,color:this.strokeStyle,width:this.lineWidth,alpha:this.globalAlpha});}};
  analysis.drawRidges(ctx,[points]);
  assert.equal(paths.length,1);assert.equal(ctx.globalAlpha,1);
- const path=paths[0];assert.equal(path.color,"#2563eb");assert.equal(path.width,4);assert.equal(path.alpha,0.85);
+ const path=paths[0];assert.equal(path.color,"#2563eb");assert.equal(path.width,4);assert.equal(path.alpha,1);
  assert.deepEqual(path.points[0],points[0]);assert.deepEqual(path.points.at(-1),points.at(-1));
  assert.ok(path.points.flat().every(Number.isFinite));assert.ok(path.points.length>4);
  if (points[0][0]===100) for (const [i,p] of path.points.slice(1,-1).entries()) {

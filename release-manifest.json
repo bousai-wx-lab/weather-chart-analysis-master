@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-06T04:55:27.104108+00:00",
+  "generated_at": "2026-10-06T05:42:02.502352+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -29,8 +29,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 28670,
-      "sha256": "250960294f022aeb2174aa2ab44cee80bb47aa5b64c6877bd610f19c9eb49f5d",
+      "bytes": 41717,
+      "sha256": "192aba67e3ebecb37ce6d7be246234138e2e02b93b3fdadc7e1c5c5a92be650e",
       "mime_type": "text/markdown"
     },
     {
@@ -41,14 +41,14 @@
     },
     {
       "path": "analysis.js",
-      "bytes": 27381,
-      "sha256": "6e210e2a685613063fa4293d4abcb824bd430d76abced0cc6de0cd23ddad0e7a",
+      "bytes": 30410,
+      "sha256": "c29e1167372baa266e5e64a47d93e44398789daf836306173b090542446f6f63",
       "mime_type": "text/javascript"
     },
     {
       "path": "app.js",
-      "bytes": 90548,
-      "sha256": "b7708b36140914872507654a01473b9d7cda4aec6a8347bce36811eaac364c7d",
+      "bytes": 91287,
+      "sha256": "d46e014def733c3d143590ba6e95ddb8c6571d9fac924c98eba1b75f3323e00d",
       "mime_type": "text/javascript"
     },
     {
@@ -1265,8 +1265,8 @@
     },
     {
       "path": "dynamics.js",
-      "bytes": 7534,
-      "sha256": "ed6bf72e7564c0595464c04c556af4a602cd26fe493dab35437524ae1f692a60",
+      "bytes": 7452,
+      "sha256": "e6b3307d3f75d0366fdbfc7ef1829a102734988de15af121f13691c3202a61a9",
       "mime_type": "text/javascript"
     },
     {
@@ -1302,7 +1302,7 @@
     {
       "path": "index.html",
       "bytes": 29038,
-      "sha256": "d4886b07431ef858f51575e61d888b695071b1024aebb1d1a5702e695c883480",
+      "sha256": "4d1f356998bd30577ad0bed3e779b8d62bfca73ba64b95feed2050ebaaeabb8d",
       "mime_type": "text/html"
     },
     {
@@ -1325,8 +1325,8 @@
     },
     {
       "path": "low-level.js",
-      "bytes": 14013,
-      "sha256": "3808b1e4be5c1b02ce5bba072191c85f2f06e4fa8f11ebeb489730307f18402c",
+      "bytes": 13365,
+      "sha256": "feb5549d1fb886c60ae57df915e1045cd262db9552ef3469ba8fee8a0f860c0e",
       "mime_type": "text/javascript"
     },
     {
@@ -1349,8 +1349,8 @@
     },
     {
       "path": "scripts/test_analysis.js",
-      "bytes": 27425,
-      "sha256": "3ab622ec7cbebdf97c2f9e5bfe394dab17e5dbb250e6c2ac79f84f50d08d37b2",
+      "bytes": 27404,
+      "sha256": "dfd740f3c4bad7d1fdd51b10c1bf4b0915d656b19673e344d9b168e5bbbafed4",
       "mime_type": "text/javascript"
     },
     {
@@ -1391,8 +1391,8 @@
     },
     {
       "path": "scripts/test_snapshot_analysis.js",
-      "bytes": 18450,
-      "sha256": "da51fe1edcb14a7f0f0058dfeb5fa68210d95397aa9f776a572afba46b0b9a64",
+      "bytes": 21062,
+      "sha256": "bc0f150a80cc857c8106738f54eaaf4a08cca4736eeff24476f3ee2d5417f87c",
       "mime_type": "text/javascript"
     },
     {
@@ -1403,14 +1403,14 @@
     },
     {
       "path": "snapshot-analysis.js",
-      "bytes": 22639,
-      "sha256": "c0eea6b5909119c95e92b0ad15129ff74ebc608d3b777e972b1b35bba133b8bc",
+      "bytes": 22191,
+      "sha256": "a4822d85e6972d257e3f859e4142f9de38c40cdd342c2aa07d1d3e382d717cc5",
       "mime_type": "text/javascript"
     },
     {
       "path": "styles.css",
-      "bytes": 19687,
-      "sha256": "bb596d58c7d270fa54c8acf055b49a55dda01553fb6af5e2cf9314ec753e21cd",
+      "bytes": 19878,
+      "sha256": "9398cfa67eff539f861bf44a9c0b95693dc3620df93118665daf5085e417bb44",
       "mime_type": "text/css"
     },
     {

@@ -1,19 +1,19 @@
 "use strict";
 const SnapshotAnalysis = (() => {
   const low=typeof LowLevelAnalysis!=="undefined"?LowLevelAnalysis:require("./low-level.js");
+  const chart=typeof ChartAnalysis!=="undefined"?ChartAnalysis:require("./analysis.js"),rules=chart.coloringRules;
   const localHost = hostname => ["127.0.0.1", "localhost", "[::1]", "::1"].includes(hostname);
   const hash = /^[a-f0-9]{64}$/;
   const analysisPath = /^(local-collection|assets)\/analysis\/[a-z0-9-]+\.json$/;
-  const precipitationColors=["#bceefa","#91dbf4","#60c2eb","#329fdc","#147fc0","#0861a8"];
+  const precipitationColors=rules.precipitationColors;
   const precipitationLabels=["0–10 mm","10–20 mm","20–30 mm","30–40 mm","40–50 mm","50 mm以上"];
   const feasHours={FEAS502:24,FEAS504:48,FEAS507:72,FEAS509:96,FEAS512:120,FEAS514:144,FEAS516:168,FEAS519:192,FEAS521:216,FEAS524:240,FEAS526:264};
-  const equivalentStops=[[260,"#173f8a"],[280,"#3485d4"],[300,"#7acbef"],[315,"#eef4d3"],[330,"#ffd166"],[350,"#ef7046"],[370,"#991b1b"]];
+  const equivalentStops=rules.equivalentStops;
   function equivalentColor(value) {
     const v=Math.max(260,Math.min(370,value));
     const i=Math.min(equivalentStops.length-2,equivalentStops.findIndex((s,j)=>j<equivalentStops.length-1&&v<=equivalentStops[j+1][0]));
     const [a,ca]=equivalentStops[i],[b,cb]=equivalentStops[i+1],f=(v-a)/(b-a);
-    const rgb=c=>c.slice(1).match(/../g).map(s=>parseInt(s,16));
-    return "#"+rgb(ca).map((c,j)=>Math.round(c+(rgb(cb)[j]-c)*f).toString(16).padStart(2,"0")).join("");
+    return chart.mixColor(ca,cb,f);
   }
   function merge(base, snapshot, hostname) {
     if (!localHost(hostname)) throw Error("Local collection unavailable on this host");
@@ -124,28 +124,24 @@ const SnapshotAnalysis = (() => {
       } else if(p.jet_guides?.length)throw Error("Jet axes must use 300hPa wind");
       if(p.ascent_rectangles && p.vertical_velocity_pressure_hpa!==700)throw Error("Ascent must be 700hPa");
       if(data.product==="FEAS50" && i===1 && p.axis_pressure_hpa!==0)throw Error("FEAS axes must use surface pressure");
-      if(p.cold_thresholds?.length && JSON.stringify(p.cold_thresholds)!==JSON.stringify(p.pressure_hpa===700?[-15,-18,-21,-24,-27]:[0,-3,-6,-9,-12]))throw Error("Cold threshold mismatch");
+      if(p.cold_thresholds?.length && JSON.stringify(p.cold_thresholds)!==JSON.stringify(rules.coldThresholds[p.pressure_hpa]))throw Error("Cold threshold mismatch");
     }
     for(const s of data.symbols)if(!["L","H","C","W","D"].includes(s.letter)||!Array.isArray(s.strokes)||s.strokes.some(st=>!line(st.points)||!Number.isFinite(st.width_px)||st.width_px<=0))throw Error("Invalid trial symbol");
     return data;
   }
   function scales(data) {
-    return data.panels.map(p=>({pressure_hpa:p.pressure_hpa,values:p.levels.map(l=>l.temperature_c),
-      colors:p.levels.map(l=>{const v=l.temperature_c;
-        if(p.pressure_hpa===300)return ChartAnalysis.isothermScales[0].colors[Math.max(0,Math.min(4,Math.round((-v-27)/6)))];
-        if(p.pressure_hpa===500)return ChartAnalysis.isothermScales[1].colors[Math.max(0,Math.min(9,Math.round((-v-3)/3)))];
-        return low.temperatureColor(p.pressure_hpa,v);}),dash:[],opacity:.5}));
+    return data.panels.map(p=>chart.temperatureScale(p.pressure_hpa,p.levels.map(l=>l.temperature_c)));
   }
   // Both forecast hours share a toggle and legend for their pressure level.
   // Drawing still uses each panel's own coordinates and colors.
   function displayScales(data) {
-    if(data.equivalent_temperature)return [0,1].map(()=>({pressure_hpa:850,values:[],colors:[],dash:[],opacity:.5}));
+    if(data.equivalent_temperature)return [0,1].map(()=>chart.temperatureScale(850,[]));
     const all=scales(data);
     if(!data.color_only&&!data.surface_forecast)return all;
     return [500,data.surface_forecast?0:850].map(pressure=>{
       const entries=all.filter(s=>s.pressure_hpa===pressure),colors=new Map(entries.flatMap(s=>s.values.map((v,i)=>[v,s.colors[i]])));
       const values=[...colors.keys()].sort((a,b)=>a-b);
-      return {pressure_hpa:pressure,values,colors:values.map(v=>colors.get(v)),dash:[],opacity:.5};
+      return {pressure_hpa:pressure,values,colors:values.map(v=>colors.get(v)),dash:[],opacity:rules.temperatureOpacity};
     });
   }
   function temperatureEnabled(data, enabled) {
@@ -165,8 +161,8 @@ const SnapshotAnalysis = (() => {
   }
   // Preserve the already selected trial positions: never re-fit or smooth here.
   function drawAxes(ctx, axes, ridge) {
-    ctx.save();ctx.lineCap=ctx.lineJoin="round";ctx.strokeStyle=ridge?"#2563eb":"#ef2323";
-    ctx.lineWidth=4;
+    ctx.save();ctx.lineCap=ctx.lineJoin="round";ctx.strokeStyle=ridge?rules.axes.ridge:rules.axes.trough;
+    ctx.lineWidth=rules.axes.width;ctx.globalAlpha=rules.axes.opacity;
     for(const a of axes)for(const stroke of axisSymbol(a.points,ridge)){
       ctx.beginPath();ctx.moveTo(...stroke[0]);for(const p of stroke.slice(1))ctx.lineTo(...p);ctx.stroke();
     }
@@ -183,7 +179,7 @@ const SnapshotAnalysis = (() => {
   function drawTemperature(ctx,data,enabled) {
     for(const [i,p] of data.panels.entries()) {
       if(!enabled[i])continue;
-      const scale=scales(data)[i];ctx.save();ctx.globalAlpha=.5;ctx.lineWidth=3.5;ctx.lineCap=ctx.lineJoin="round";
+      const scale=scales(data)[i];ctx.save();ctx.globalAlpha=scale.opacity;ctx.lineWidth=3.5;ctx.lineCap=ctx.lineJoin="round";
       ctx.beginPath();const [l,t,r,b]=p.bounds;ctx.rect(l,t,r-l,b-t);
       for(const level of p.levels)for(const [x,y,xx,yy] of level.labels)ctx.rect(x-2,y-2,xx-x+4,yy-y+4);ctx.clip("evenodd");
       for(const [j,level] of p.levels.entries())for(const ln of level.lines){ctx.strokeStyle=scale.colors[j];ctx.beginPath();ctx.moveTo(...ln.points[0]);for(const q of ln.points.slice(1))ctx.lineTo(...q);if(ln.closed)ctx.closePath();ctx.stroke();}
@@ -191,7 +187,7 @@ const SnapshotAnalysis = (() => {
     }
   }
   function drawSymbols(ctx,data) {
-    ctx.save();ctx.globalAlpha=.5;ctx.lineJoin="miter";
+    ctx.save();ctx.globalAlpha=rules.symbolOpacity;ctx.lineJoin="miter";
     for(const s of data.symbols)for(const st of s.strokes){ctx.strokeStyle=s.letter==="D"?"#8052a8":ChartAnalysis.symbolPalette[s.letter];ctx.lineWidth=st.width_px+1.5;ctx.lineCap=st.line_cap||"butt";ctx.beginPath();ctx.moveTo(...st.points[0]);for(const p of st.points.slice(1))ctx.lineTo(...p);ctx.stroke();}
     ctx.restore();
   }
@@ -206,14 +202,14 @@ const SnapshotAnalysis = (() => {
     for(const p of data.panels){ctx.save();const [l,t,r,b]=p.bounds;ctx.beginPath();ctx.rect(l,t,r-l,b-t);ctx.clip();
       if(on.equivalent && data.equivalent_temperature){
         const frame=[[l,t],[r,t],[r,b],[l,b]];
-        paintBands([{color:equivalentColor(p.equivalent_levels[0].value_k-1.5),rings:[frame]},...p.equivalent_bands.map(b=>({...b,color:equivalentColor(b.color_value_k)}))],on.equivalentOpacity??.45);
+        paintBands([{color:equivalentColor(p.equivalent_levels[0].value_k-1.5),rings:[frame]},...p.equivalent_bands.map(b=>({...b,color:equivalentColor(b.color_value_k)}))],on.equivalentOpacity??rules.equivalentOpacity);
       }
       // Source bands own the geometry; the shared palette owns display colors
       // so stored legacy colors cannot disagree with the UI and PNG legends.
-      if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity,band=>low.coldColors[p.cold_thresholds?.indexOf(band.threshold)]);
-      if(on.wind && p.pressure_hpa===300)paintBands(p.wind_bands,1);
-      if(on.precipitation && p.pressure_hpa===0)paintBands(p.precipitation_bands,.45,band=>precipitationColors[band.threshold/10]);
-      for(const [key,color,active] of [["wet_rectangles","#269ed2",on.wet],["positive_vorticity_rectangles","#ec6ca5",on.vorticity],["ascent_rectangles","#a3d84b",on.ascent]])if(active){ctx.save();ctx.globalAlpha=.3;ctx.fillStyle=color;for(const [x,y,xx,yy] of p[key]||[])ctx.fillRect(x,y,xx-x,yy-y);ctx.restore();}
+      if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity??rules.coldOpacity,band=>chart.coldColor(p.pressure_hpa,band.threshold));
+      if(on.wind && p.pressure_hpa===300)paintBands(p.wind_bands,1,band=>chart.windPalette[(band.threshold-40)/20]);
+      if(on.precipitation && p.pressure_hpa===0)paintBands(p.precipitation_bands,rules.precipitationOpacity,band=>precipitationColors[band.threshold/10]);
+      for(const [key,style,active] of [["wet_rectangles",rules.wet,on.wet],["positive_vorticity_rectangles",rules.vorticity,on.vorticity],["ascent_rectangles",rules.ascent,on.ascent]])if(active)chart.drawRectangleFill(ctx,p[key],style);
       ctx.restore();
     }
   }

@@ -1,16 +1,9 @@
 "use strict";
 const LowLevelAnalysis = (() => {
-  const coldColors = ["#a0d8fa", "#74b9ef", "#558ee0", "#2c64b7", "#173f8a"];
-  const warmThresholds = [9,12,15,18,21,24];
-  const warmColors = ["#fff3a6","#ffd166","#ff914d","#ef4444","#c92d35","#991b1b"];
+  const chart=typeof ChartAnalysis!=="undefined"?ChartAnalysis:require("./analysis.js"),rules=chart.coloringRules;
+  const {coldColors,warmThresholds,warmColors}=rules;
+  const temperatureColor=chart.temperatureColor;
   const warmCache = new WeakMap();
-  function temperatureColor(pressure, value) {
-    const warm=value>0,limit=warm?(pressure===850?24:15):(pressure===850?24:36);
-    const stops=warm?["#b8b8b8","#f4d35e","#f89c3c","#e63946",warmColors.at(-1)]:["#b8b8b8","#7acbef","#3485d4","#2c64b7",coldColors.at(-1)];
-    const step=Math.min(4,Math.abs(value)/limit*4),i=Math.min(3,Math.floor(step)),mix=step-i;
-    const a=stops[i].slice(1).match(/../g).map(v=>parseInt(v,16)),b=stops[i+1].slice(1).match(/../g).map(v=>parseInt(v,16));
-    return "#"+a.map((v,j)=>Math.round(v+(b[j]-v)*mix).toString(16).padStart(2,"0")).join("");
-  }
   function warmRings(panel, threshold) {
     if (panel.pressure_hpa!==850 || !warmThresholds.includes(threshold)) return [];
     return thermalRings(panel,threshold,true);
@@ -83,7 +76,7 @@ const LowLevelAnalysis = (() => {
     if(!warmCache.has(panel))warmCache.set(panel,warmThresholds.map((threshold,i)=>({threshold,color:warmColors[i],rings:warmRings(panel,threshold)})));
     return warmCache.get(panel);
   }
-  function drawWarmFills(ctx,data,opacity=.35) {
+  function drawWarmFills(ctx,data,opacity=rules.warmOpacity) {
     for(const panel of data.panels.filter(p=>p.pressure_hpa===850)){
       const canvas=ctx.canvas.ownerDocument.createElement("canvas");canvas.width=data.width;canvas.height=data.height;
       const sc=canvas.getContext("2d");
@@ -94,7 +87,7 @@ const LowLevelAnalysis = (() => {
   const scales = [
     {pressure_hpa:700,values:[-12,-6,0,6,12]},
     {pressure_hpa:850,values:[-6,-3,0,3,6,9,12,15,18,21]}
-  ].map(s => ({...s,colors:s.values.map(v=>temperatureColor(s.pressure_hpa,v)),dash:[],opacity:.5}));
+  ].map(s => chart.temperatureScale(s.pressure_hpa,s.values));
   const sourceHash = "58be2c8fd8bcc5b27c87a8fa748869a2145ca7d8403a9ecdc3ce586cfc95f249";
   const imageHash = "a45b011b2c5329b4f3c2dabd035ef7daac90669fb08d848974cf95852321382c";
   function validate(data, selected) {
@@ -103,7 +96,7 @@ const LowLevelAnalysis = (() => {
     const inside=(p,b)=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&p[0]>=b[0]-8&&p[0]<=b[2]+8&&p[1]>=b[1]-8&&p[1]<=b[3]+8;
     for (const [index,panel] of data.panels.entries()) {
       const scale=scales[index], b=expectedBounds[index];
-      if (panel.pressure_hpa!==scale.pressure_hpa || !Array.isArray(panel.bounds) || panel.bounds.length!==4 || panel.bounds.some((v,i)=>v!==b[i]) || panel.levels?.length!==scale.values.length || JSON.stringify(panel.cold_thresholds)!==JSON.stringify(index? [0,-3,-6,-9,-12]:[-15,-18,-21,-24,-27]) || !Array.isArray(panel.wet_rectangles) || !panel.wet_rectangles.length || panel.wet_rectangles.length>600 || panel.troughs?.length!==(index?3:4) || panel.ridges?.length!==2) throw Error("AUPQ78の気圧面を確認できません");
+      if (panel.pressure_hpa!==scale.pressure_hpa || !Array.isArray(panel.bounds) || panel.bounds.length!==4 || panel.bounds.some((v,i)=>v!==b[i]) || panel.levels?.length!==scale.values.length || JSON.stringify(panel.cold_thresholds)!==JSON.stringify(rules.coldThresholds[panel.pressure_hpa]) || !Array.isArray(panel.wet_rectangles) || !panel.wet_rectangles.length || panel.wet_rectangles.length>600 || panel.troughs?.length!==(index?3:4) || panel.ridges?.length!==2) throw Error("AUPQ78の気圧面を確認できません");
       for (const [i,level] of panel.levels.entries()) {
         if (level.temperature_c!==scale.values[i] || !Array.isArray(level.lines) || !level.lines.length || !Array.isArray(level.labels)) throw Error("AUPQ78の等温線を確認できません");
         for (const line of level.lines) if (typeof line.closed!=="boolean" || line.points?.length<2 || line.points.length>1500 || !line.points.every(p=>inside(p,b)) || line.points.some((p,j)=>j&&Math.hypot(p[0]-line.points[j-1][0],p[1]-line.points[j-1][1])<.1)) throw Error("AUPQ78の等温線の位置を確認できません");
@@ -144,7 +137,7 @@ const LowLevelAnalysis = (() => {
       return [...line.points,[last[0],top],[first[0],top]];
     });
   }
-  function drawFills(ctx,data,{wet=false,cold700=false,cold850=false,warm850=false,warmOpacity=.35,opacity=.35}={}) {
+  function drawFills(ctx,data,{wet=false,cold700=false,cold850=false,warm850=false,warmOpacity=rules.warmOpacity,opacity=rules.coldOpacity}={}) {
     if(warm850)drawWarmFills(ctx,data,warmOpacity);
     ctx.save();
     for (const panel of data.panels) {
@@ -154,14 +147,14 @@ const LowLevelAnalysis = (() => {
       if (panel.pressure_hpa===700?cold700:cold850) {
         const scratch=ctx.canvas.ownerDocument.createElement("canvas");scratch.width=data.width;scratch.height=data.height;
         const sc=scratch.getContext("2d");
-        panel.cold_thresholds.forEach((threshold,index)=> {
+        panel.cold_thresholds.forEach(threshold=> {
           const rings=coldRings(panel,threshold); if (!rings.length) return;
-          sc.fillStyle=coldColors[index];sc.beginPath();
+          sc.fillStyle=chart.coldColor(panel.pressure_hpa,threshold);sc.beginPath();
           for (const ring of rings) {sc.moveTo(...ring[0]);for(const p of ring.slice(1))sc.lineTo(...p);sc.closePath();}sc.fill("evenodd");
         });
         ctx.globalAlpha=opacity;ctx.drawImage(scratch,0,0);
       }
-      if (wet) {ctx.globalAlpha=.3;ctx.fillStyle="#269ed2";ctx.beginPath();for (const [x0,y0,x1,y1] of panel.wet_rectangles)ctx.rect(x0,y0,x1-x0,y1-y0);ctx.fill();}
+      if (wet) chart.drawRectangleFill(ctx,panel.wet_rectangles,rules.wet);
       ctx.restore();
     }
     ctx.restore();

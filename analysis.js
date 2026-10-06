@@ -1,6 +1,50 @@
 "use strict";
 // Review-bound height axes and wind-band centerlines on one chart.
 const ChartAnalysis = (() => {
+  // Pressure and element own the style; product-specific data own geometry.
+  const coloringRules = Object.freeze({
+    temperatureOpacity: .5, symbolOpacity: .5, coldOpacity: .35, warmOpacity: .35,
+    coldThresholds: Object.freeze({700:Object.freeze([-15,-18,-21,-24,-27]),850:Object.freeze([0,-3,-6,-9,-12])}),
+    coldColors: Object.freeze(["#a0d8fa","#74b9ef","#558ee0","#2c64b7","#173f8a"]),
+    warmThresholds: Object.freeze([9,12,15,18,21,24]),
+    warmColors: Object.freeze(["#fff3a6","#ffd166","#ff914d","#ef4444","#c92d35","#991b1b"]),
+    wet: Object.freeze({color:"#269ed2",opacity:.3}),
+    vorticity: Object.freeze({color:"#ec6ca5",opacity:.3}),
+    ascent: Object.freeze({color:"#a3d84b",opacity:.3}),
+    axes: Object.freeze({trough:"#ef2323",ridge:"#2563eb",opacity:1,width:4}),
+    precipitationOpacity: .45,
+    precipitationColors: Object.freeze(["#bceefa","#91dbf4","#60c2eb","#329fdc","#147fc0","#0861a8"]),
+    equivalentOpacity: .45,
+    equivalentStops: Object.freeze([[260,"#173f8a"],[280,"#3485d4"],[300,"#7acbef"],[315,"#eef4d3"],[330,"#ffd166"],[350,"#ef7046"],[370,"#991b1b"]].map(Object.freeze))
+  });
+  function mixColor(a,b,f) {
+    const rgb=c=>c.slice(1).match(/../g).map(v=>parseInt(v,16));
+    return "#"+rgb(a).map((v,j)=>Math.round(v+(rgb(b)[j]-v)*f).toString(16).padStart(2,"0")).join("");
+  }
+  function temperatureColor(pressure,value) {
+    if(pressure===300 || pressure===500){
+      const scale=isothermScales.find(s=>s.pressure_hpa===pressure);
+      const i=Math.max(0,Math.min(scale.colors.length-1,Math.round((-value-(pressure===300?27:3))/(pressure===300?6:3))));
+      return scale.colors[i];
+    }
+    if(![700,850].includes(pressure))throw Error("Unsupported temperature pressure");
+    const warm=value>0,limit=warm?(pressure===850?24:15):(pressure===850?24:36);
+    const stops=warm?["#b8b8b8","#f4d35e","#f89c3c","#e63946",coloringRules.warmColors.at(-1)]:["#b8b8b8","#7acbef","#3485d4","#2c64b7",coloringRules.coldColors.at(-1)];
+    const step=Math.min(4,Math.abs(value)/limit*4),i=Math.min(3,Math.floor(step));
+    return mixColor(stops[i],stops[i+1],step-i);
+  }
+  function coldColor(pressure,threshold) {
+    return coloringRules.coldColors[coloringRules.coldThresholds[pressure]?.indexOf(threshold)];
+  }
+  function temperatureScale(pressure,values) {
+    return {pressure_hpa:pressure,values,colors:values.map(v=>temperatureColor(pressure,v)),dash:[],opacity:coloringRules.temperatureOpacity};
+  }
+  function drawRectangleFill(ctx,rectangles,style) {
+    if(!rectangles?.length)return;
+    ctx.save();ctx.globalAlpha=style.opacity;ctx.fillStyle=style.color;ctx.beginPath();
+    for(const [x,y,r,b]of rectangles)ctx.rect(x,y,r-x,b-y);
+    ctx.fill();ctx.restore();
+  }
   function validate(data, chart) {
     if (data.schema_version !== 1 || data.source_sha256 !== chart.source_sha256 || data.image_sha256 !== chart.image_sha256 || data.observation_time !== chart.observation_time || data.width !== chart.width || data.height !== chart.height || !Array.isArray(data.panels) || data.panels.length !== 2) throw new Error("解析資料が原図と一致しません");
     for (const [index, panel] of data.panels.entries()) {
@@ -170,7 +214,7 @@ const ChartAnalysis = (() => {
   function drawSymbols(ctx, data) {
     ctx.save();
     ctx.globalCompositeOperation = "source-over";
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = coloringRules.symbolOpacity;
     ctx.lineJoin = "miter";
     for (const symbol of data.symbols) for (const stroke of symbol.strokes) {
       ctx.strokeStyle = symbolPalette[symbol.letter]; ctx.lineWidth = stroke.width_px + 1.5; ctx.lineCap = stroke.line_cap;
@@ -181,8 +225,8 @@ const ChartAnalysis = (() => {
     ctx.restore();
   }
   const isothermScales = [
-    { pressure_hpa:300, values:[-27,-33,-39,-45,-51], colors:["#a0d8fa","#74b9ef","#558ee0","#7460cb","#4c1d95"], dash:[], opacity:1 },
-    { pressure_hpa:500, values:[-3,-6,-9,-12,-15,-18,-21,-24,-27,-30], colors:["#a0d8fa","#85c5f1","#6aafe8","#5799df","#5485d7","#6071ce","#6d5dc4","#6847b3","#5932a4","#4c1d95"], dash:[], opacity:0.5 }
+    { pressure_hpa:300, values:[-27,-33,-39,-45,-51], colors:["#a0d8fa","#74b9ef","#558ee0","#7460cb","#4c1d95"], dash:[], opacity:coloringRules.temperatureOpacity },
+    { pressure_hpa:500, values:[-3,-6,-9,-12,-15,-18,-21,-24,-27,-30], colors:["#a0d8fa","#85c5f1","#6aafe8","#5799df","#5485d7","#6071ce","#6d5dc4","#6847b3","#5932a4","#4c1d95"], dash:[], opacity:coloringRules.temperatureOpacity }
   ];
   const isothermPalette = isothermScales[0].colors;
   function validateIsotherms(data, chart) {
@@ -253,8 +297,8 @@ const ChartAnalysis = (() => {
     }
   }
   function drawTroughs(ctx, curves, opacity = 1) {
-    ctx.save(); ctx.strokeStyle = "#f02020"; ctx.lineWidth = 4;
-    ctx.globalAlpha = 0.85 * opacity; ctx.lineCap = ctx.lineJoin = "round";
+    ctx.save(); ctx.strokeStyle = coloringRules.axes.trough; ctx.lineWidth = coloringRules.axes.width;
+    ctx.globalAlpha = coloringRules.axes.opacity * opacity; ctx.lineCap = ctx.lineJoin = "round";
     for (const points of curves) {
       if (points.length < 2) continue;
       const sides = [[], []];
@@ -282,8 +326,8 @@ const ChartAnalysis = (() => {
     ctx.restore();
   }
   function drawRidges(ctx, curves, opacity = 1) {
-    ctx.save(); ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 4;
-    ctx.globalAlpha = 0.85 * opacity; ctx.lineCap = "round"; ctx.lineJoin = "miter";
+    ctx.save(); ctx.strokeStyle = coloringRules.axes.ridge; ctx.lineWidth = coloringRules.axes.width;
+    ctx.globalAlpha = coloringRules.axes.opacity * opacity; ctx.lineCap = "round"; ctx.lineJoin = "miter";
     for (const points of curves) {
       if (points.length < 2) continue;
       const samples = []; let distance = 0;
@@ -366,6 +410,6 @@ const ChartAnalysis = (() => {
       if (tool.kind === "ridge") drawRidges(ctx,candidates.ridges,opacity);
     } finally { ctx.restore(); }
   }
-  return { validate, validateHeightAxes, analyze, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges, overlayAnalyses, validatePanelRegistration, validatePanelOverlay, createPanelOverlay, drawPanelOverlay };
+  return { coloringRules, mixColor, temperatureColor, temperatureScale, coldColor, drawRectangleFill, validate, validateHeightAxes, analyze, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges, overlayAnalyses, validatePanelRegistration, validatePanelOverlay, createPanelOverlay, drawPanelOverlay };
 })();
 if (typeof module !== "undefined") module.exports = ChartAnalysis;
