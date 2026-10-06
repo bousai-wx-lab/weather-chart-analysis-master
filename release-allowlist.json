@@ -241,7 +241,9 @@
     "assets/analysis/feas526-12-20261005-forecast.json",
     "assets/analysis/feas526-12-forecast.json",
     "assets/analysis/fxjp854-12-20261005-equivalent.json",
+    "manual-axis.js",
     "share-state.js",
+    "scripts/test_manual_axis.js",
     "scripts/test_share_state.js"
   ],
   "allowed_external_hosts": [

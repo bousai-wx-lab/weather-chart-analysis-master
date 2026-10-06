@@ -1,5 +1,6 @@
 "use strict";
 const ChartShare = (() => {
+  const axes = typeof ManualAxis !== "undefined" ? ManualAxis : require("./manual-axis.js");
   const maxFragment = 60000, maxBytes = 2000000, maxPoints = 50000;
   const flags = Object.freeze(["showWind","showTrough","showRidge","showJet","showSymbols","showGeography","showTemperature","showTemperature500","showVorticity","showAscent","showPrecipitation","showEquivalent","showWet","showCold700","showCold850","showWarm850","showTrough700","showRidge700"]);
   const opacities = Object.freeze(["geographyOpacity","equivalentOpacity","warmOpacity","coldOpacity"]);
@@ -11,17 +12,24 @@ const ChartShare = (() => {
   }
   function validate(value) {
     keys(value,["version","chart","drawing","view"]);
-    if (value.version !== 1) invalid();
+    if (![1,2].includes(value.version)) invalid();
     const c = value.chart, d = value.drawing;
     keys(c,["product","variant","page","source","image","width","height","analysis"]);
     if (![c.product,c.variant].every(v => typeof v === "string" && /^[a-z0-9-]{1,100}$/.test(v)) || !Number.isInteger(c.page) || !number(c.page,1,100) || ![c.source,c.image].every(v => typeof v === "string" && /^[a-f0-9]{64}$/.test(v)) || !(c.analysis === null || (typeof c.analysis === "string" && /^[a-f0-9]{64}$/.test(c.analysis))) || ![c.width,c.height].every(v => Number.isInteger(v) && number(v,200,12288))) invalid();
     keys(d,["history","future",...flags,...opacities,"geographyStyle","overlayTarget","overlays"]);
     if (flags.some(k => typeof d[k] !== "boolean") || opacities.some(k => !number(d[k],0,1)) || typeof d.geographyStyle !== "string" || !/^[a-z-]{1,40}$/.test(d.geographyStyle) || ![300,500].includes(d.overlayTarget)) invalid();
     let points = 0;
+    const axisIds=new Set();
     for (const list of [d.history,d.future]) {
       if (!Array.isArray(list) || list.length > 5000) invalid();
       for (const stroke of list) {
         if (stroke?.kind === "clear") { keys(stroke,["kind"]); continue; }
+        if(stroke?.kind === "axis") {
+          if(value.version!==2 || !axes.valid(stroke,c.width,c.height) || axisIds.has(stroke.id))invalid();
+          axisIds.add(stroke.id);points+=stroke.nodes.length*3;
+          if(points>maxPoints)tooLarge();
+          continue;
+        }
         keys(stroke,["kind","color","width","opacity","points"]);
         if (!["paint","erase"].includes(stroke.kind) || typeof stroke.color !== "string" || !/^#[a-f0-9]{6}$/i.test(stroke.color) || !number(stroke.width,0.001,Math.max(c.width,c.height)*2) || !number(stroke.opacity,0,1) || !Array.isArray(stroke.points) || !stroke.points.length) invalid();
         points += stroke.points.length;
@@ -48,8 +56,7 @@ const ChartShare = (() => {
     return {product:selected.product.id,variant:selected.variant.id,page:selected.page.number,source:selected.variant.source_sha256,image:selected.page.image_sha256,width:selected.page.width,height:selected.page.height,analysis:selected.variant.analysis_sha256 || null};
   }
   function currentDrawing(drawing) {
-    const lastClear = drawing.history.map(stroke => stroke.kind).lastIndexOf("clear");
-    return {...drawing,history:drawing.history.slice(lastClear+1),future:[]};
+    return {...drawing,history:axes.flattened(drawing.history),future:[]};
   }
   function bind(value, selected, styles) {
     validate(value);
@@ -88,24 +95,26 @@ const ChartShare = (() => {
       const compressed = await streamBytes(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate")),maxBytes);
       if (compressed.length < raw.length) { bytes = compressed; mode = "d"; }
     }
-    const fragment = `#share=1.${mode}.${base64(bytes)}`;
+    const fragment = `#share=${value.version}.${mode}.${base64(bytes)}`;
     if (fragment.length > maxFragment) tooLarge();
     return fragment;
   }
   async function decode(fragment) {
     if (!fragment.startsWith("#share=")) return null;
     if (fragment.length > maxFragment) tooLarge();
-    const match = /^#share=1\.([jd])\.([A-Za-z0-9_-]+)$/.exec(fragment);
+    const match = /^#share=([12])\.([jd])\.([A-Za-z0-9_-]+)$/.exec(fragment);
     if (!match) invalid();
     try {
-      const encoded = match[2].replaceAll("-","+").replaceAll("_","/");
+      const encoded = match[3].replaceAll("-","+").replaceAll("_","/");
       let bytes = Uint8Array.from(atob(encoded),c => c.charCodeAt(0));
-      if (match[1] === "d") {
+      if (match[2] === "d") {
         if (typeof DecompressionStream === "undefined") throw Error("このブラウザーは共有リンクの復元に対応していません。新しいブラウザーで開いてください。");
         bytes = await streamBytes(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate")),maxBytes);
       }
       if (bytes.length > maxBytes) tooLarge();
-      return validate(JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(bytes)));
+      const value=validate(JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(bytes)));
+      if(value.version!==Number(match[1]))invalid();
+      return value;
     } catch (error) {
       if (error.message.startsWith("共有") || error.message.startsWith("手描き") || error.message.startsWith("このブラウザー")) throw error;
       invalid();

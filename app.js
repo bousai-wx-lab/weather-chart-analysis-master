@@ -76,6 +76,7 @@ let color = "#2563eb";
 let active = null;
 let pointer = null;
 let pan = null;
+let axisDraft = null, axisPreview = null, axisSelected = null, axisNode = null, axisDrag = null, axisAdding = false;
 let ready = false;
 let chartLabel = "AUPQ35";
 let exportUrl = null;
@@ -284,11 +285,13 @@ function controls() {
   windLayer.setAttribute("aria-label",trial?.equivalent_temperature?"850hPaの相当温位を260〜370 Kの寒色から暖色で塗り分け":trial?.feas_forecast?"上段500hPaの正渦度と、下段850hPaの寒気・暖気を色分け":trial?.surface_forecast?"上段500hPaの正渦度と、下段地上の降水量を色分け":"300hPa等風速線に沿った緑色の塗り分け");
   const afterClear = history.slice(history.map((s) => s.kind).lastIndexOf("clear") + 1);
   const paintCount = afterClear.filter((s) => s.kind === "paint").length;
-  byId("undo").disabled = !history.length;
-  byId("redo").disabled = !future.length;
-  byId("clear").disabled = !paintCount;
-  byId("save").disabled = !ready || featuresLoading;
-  byId("share").disabled = !ready || featuresLoading || shareBusy || pointer !== null;
+  const axisCount = ManualAxis.resolved(history).size;
+  byId("undo").disabled = !history.length && !axisDraft;
+  byId("redo").disabled = !future.length || Boolean(axisDraft);
+  byId("clear").disabled = !paintCount && !axisCount;
+  byId("save").disabled = !ready || featuresLoading || Boolean(axisDraft) || pointer !== null;
+  byId("share").disabled = !ready || featuresLoading || shareBusy || pointer !== null || Boolean(axisDraft);
+  updateAxisControls();
   byId("share").textContent = shareBusy ? "リンク作成中…" : "共有リンクコピー";
   for (const id of ["trough", "ridge", "jet"]) byId(id).disabled = !ready || !candidates;
   byId("jet").disabled ||= Boolean(lowLevel || dynamics); byId("ridge").disabled ||= Boolean(dynamics && !isFeas());
@@ -362,7 +365,7 @@ function controls() {
   }
   const layerCount = updateAnalysisPanel();
   const overlayCount = updateOverlayPanel();
-  const layers = [layerCount ? `解析${layerCount}項目` : "原図", overlayCount ? `重ね合わせ${overlayCount}項目` : "", paintCount ? `手描き${paintCount}筆` : ""].filter(Boolean);
+  const layers = [layerCount ? `解析${layerCount}項目` : "原図", overlayCount ? `重ね合わせ${overlayCount}項目` : "", paintCount ? `手描き${paintCount}筆` : "",axisCount ? `手描き曲線${axisCount}本` : ""].filter(Boolean);
   byId("status").textContent = loadingError || (!ready ? "図を読み込み中" : [geographyError, terrainError, symbolError, temperatureError, analysisError, overlayError].filter(Boolean).join("・") || [currentSelection?.product.code, ...(layers.length ? layers : ["原図を表示中"])].filter(Boolean).join("・"));
 }
 
@@ -533,6 +536,7 @@ function path(stroke) {
 
 function apply(stroke) {
   if (stroke.kind === "clear") { context.clearRect(0, 0, ink.width, ink.height); return; }
+  if (stroke.kind === "axis") { ManualAxis.draw(context,stroke,ChartAnalysis); return; }
   path(stroke);
   context.save();
   context.globalCompositeOperation = stroke.kind === "erase" ? "destination-out" : "source-over";
@@ -543,15 +547,106 @@ function apply(stroke) {
 
 function render() {
   context.clearRect(0, 0, ink.width, ink.height);
-  for (const stroke of history) apply(stroke);
+  for (const stroke of ManualAxis.flattened(history,axisDrag)) apply(stroke);
   if (active) apply(active);
+  if (axisDraft) {
+    const points=[...axisDraft.points];
+    if(axisPreview && ManualAxis.distance(points.at(-1),axisPreview)>1)points.push(axisPreview);
+    ManualAxis.draw(context,{type:axisDraft.type,nodes:ManualAxis.smooth(points,ink.width,ink.height)},ChartAnalysis);
+  }
+  drawAxisEditor(); updateAxisControls();
 }
 
 function selectMode(next) {
+  if(axisDraft && next!==mode)completeAxis(false);
   mode = next;
   ink.dataset.mode = mode;
-  for (const id of ["paint", "erase", "move"]) byId(id).setAttribute("aria-pressed", String(id === mode));
-  byId("hint").textContent = mode === "move" ? "拡大した図をドラッグして移動します。" : mode === "erase" ? "色塗りだけを消します。原図は残ります。" : "ドラッグして色を塗ります。原図の黒い線は残ります。";
+  for (const [id,value] of [["paint","paint"],["erase","erase"],["move","move"],["manual-trough","trough"],["manual-ridge","ridge"],["axis-edit","axis-edit"]]) byId(id).setAttribute("aria-pressed", String(value === mode));
+  byId("hint").textContent = mode === "move" ? "拡大した図をドラッグして移動します。" : mode === "erase" ? "手描きだけを消します。原図は残ります。" : "ドラッグして色を塗ります。原図の黒い線は残ります。";
+  axisAdding=false;drawAxisEditor();updateAxisControls();controls();
+}
+
+function selectedAxis() { return ManualAxis.resolved(history,axisDrag).get(axisSelected); }
+function updateAxisControls() {
+  const curve=selectedAxis(),editing=mode==="axis-edit",drawing=["trough","ridge"].includes(mode);
+  for(const id of ["manual-trough","manual-ridge","axis-edit"])byId(id).disabled=!ready || pointer!==null;
+  byId("axis-draft-actions").hidden=!axisDraft;
+  byId("axis-finish").disabled=!axisDraft || axisDraft.points.length<2;
+  byId("axis-edit-actions").hidden=!editing || !curve;
+  byId("axis-add-node").disabled=!curve || curve.nodes.length>=ManualAxis.maxNodes;
+  byId("axis-add-node").setAttribute("aria-pressed",String(axisAdding));
+  byId("axis-remove-node").disabled=!curve || curve.nodes.length<=2 || axisNode===null;
+  byId("manual").querySelector(".palette").hidden=drawing || editing;
+  byId("manual").querySelector(".settings").hidden=drawing || editing;
+  if(drawing)byId("hint").textContent=`${mode==="trough"?"赤い二重線のトラフ":"青いギザギザ線のリッジ"}。クリックで頂点を置き、ダブルクリック・Enter・「完了」で確定します。Escapeでキャンセル。`;
+  if(editing)byId("hint").textContent=axisAdding ? "線上をクリックすると、形を保ったまま頂点を追加します。" : "線を選び、四角い頂点をドラッグして移動します。白い丸のハンドルで曲がり具合を調整できます。";
+}
+function drawAxisEditor() {
+  const svg=byId("axis-editor");svg.replaceChildren();
+  if(!ready || byId("manual").hidden)return;
+  const curve=mode==="axis-edit"?selectedAxis():null;
+  const nodes=curve?.nodes || (axisDraft?ManualAxis.smooth(axisDraft.points,ink.width,ink.height):[]);
+  if(curve && axisNode!==null && axisNode>=nodes.length)axisNode=nodes.length-1;
+  if(!nodes.length)return;
+  const scale=ink.width/Math.max(1,ink.getBoundingClientRect().width),radius=5*scale;
+  svg.setAttribute("viewBox",`0 0 ${ink.width} ${ink.height}`);
+  const element=(name,attrs)=>{
+    const el=document.createElementNS("http://www.w3.org/2000/svg",name);
+    for(const [key,value]of Object.entries(attrs))el.setAttribute(key,String(value));
+    svg.append(el);return el;
+  };
+  if(curve && axisNode!==null) {
+    const n=nodes[axisNode];
+    for(const part of ["in","out"]) {
+      if((part==="in" && axisNode===0) || (part==="out" && axisNode===nodes.length-1))continue;
+      element("line",{x1:n.p[0],y1:n.p[1],x2:n[part][0],y2:n[part][1],stroke:"#2563eb","stroke-width":1.5*scale});
+      element("circle",{cx:n[part][0],cy:n[part][1],r:radius,fill:"#fff",stroke:"#2563eb","stroke-width":1.5*scale,"data-handle":part});
+    }
+  }
+  nodes.forEach((n,i)=>element("rect",{x:n.p[0]-radius,y:n.p[1]-radius,width:radius*2,height:radius*2,fill:i===axisNode?"#2563eb":"#fff",stroke:"#243247","stroke-width":1.5*scale,"data-node":i}));
+}
+function completeAxis(edit=true) {
+  if(!axisDraft)return;
+  const draft=axisDraft;axisDraft=axisPreview=null;
+  if(draft.points.length>=2) {
+    const curve={kind:"axis",id:crypto.randomUUID(),type:draft.type,nodes:ManualAxis.smooth(draft.points,ink.width,ink.height)};
+    history.push(curve);future.length=0;axisSelected=curve.id;axisNode=0;
+    if(edit)selectMode("axis-edit");
+  }
+  render();controls();
+}
+function cancelAxis() {axisDraft=axisPreview=null;render();controls();}
+function commitAxisEdit(nodes) {
+  if(!selectedAxis())return;
+  history.push({kind:"axis-edit",id:axisSelected,nodes});future.length=0;render();controls();
+}
+function axisDown(p) {
+  const pos=[p.x,p.y],tolerance=12*ink.width/ink.getBoundingClientRect().width;
+  if(["trough","ridge"].includes(mode)) {
+    if(!axisDraft)axisDraft={type:mode,points:[]};
+    if(axisDraft.points.length<ManualAxis.maxNodes && (!axisDraft.points.length || ManualAxis.distance(pos,axisDraft.points.at(-1))>tolerance/12))axisDraft.points.push(pos);
+    axisPreview=null;render();controls();return;
+  }
+  let curve=selectedAxis(),hit=null;
+  if(curve && !axisAdding) {
+    const targets=curve.nodes.map((n,i)=>({index:i,part:"p",distance:ManualAxis.distance(n.p,pos)}));
+    if(axisNode!==null)for(const part of ["in","out"])
+      if(!((part==="in" && axisNode===0)||(part==="out" && axisNode===curve.nodes.length-1)))targets.push({index:axisNode,part,distance:ManualAxis.distance(curve.nodes[axisNode][part],pos)});
+    const nearest=targets.sort((a,b)=>a.distance-b.distance)[0];
+    if(nearest.distance<tolerance)hit={index:nearest.index,part:nearest.part};
+  }
+  if(hit) {axisNode=hit.index;axisDrag={id:curve.id,...hit,before:ManualAxis.copy(curve.nodes),nodes:ManualAxis.copy(curve.nodes)};}
+  else {
+    const nearest=[...ManualAxis.resolved(history).values()].reverse().map(c=>({curve:c,hit:ManualAxis.nearest(c.nodes,pos)})).sort((a,b)=>a.hit.distance-b.hit.distance)[0];
+    if(nearest && nearest.hit.distance<tolerance) {
+      curve=nearest.curve;axisSelected=curve.id;
+      if(axisAdding && curve.nodes.length<ManualAxis.maxNodes && nearest.hit.t>0.02 && nearest.hit.t<0.98) {
+        axisNode=nearest.hit.segment+1;commitAxisEdit(ManualAxis.insert(curve.nodes,nearest.hit.segment,nearest.hit.t));
+      } else axisNode=curve.nodes.reduce((best,n,i)=>ManualAxis.distance(n.p,pos)<ManualAxis.distance(curve.nodes[best].p,pos)?i:best,0);
+    } else {axisSelected=axisNode=null;}
+    axisAdding=false;
+  }
+  render();controls();
 }
 
 function viewSize() {
@@ -586,6 +681,7 @@ function fit(anchor) {
   }
   else { const rect = paper.getBoundingClientRect(); viewport.scrollLeft += rect.left + center.x * rect.width - focus.x; viewport.scrollTop += rect.top + center.y * rect.height - focus.y; }
   updateZoomLabel();
+  drawAxisEditor();
   controls();
 }
 function setZoom(factor, anchor) {
@@ -639,18 +735,24 @@ ink.addEventListener("pointerdown", (event) => {
   pointer = event.pointerId;
   ink.setPointerCapture(pointer);
   ink.dataset.dragging = "true";
-  if (mode === "move") {
+  if (["trough","ridge","axis-edit"].includes(mode)) {
+    axisDown(point(event));
+  } else if (mode === "move") {
     rowView = null; controls();
     pan = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
   } else {
     active = { kind: mode, color, width: Number(byId("width").value) * ink.width / ink.getBoundingClientRect().width, opacity: Number(byId("opacity").value), points: [point(event)] };
     render();
   }
+  controls();
 });
 
 ink.addEventListener("pointermove", (event) => {
+  if(pointer===null && axisDraft) {const p=point(event);axisPreview=[p.x,p.y];render();return;}
   if (event.pointerId !== pointer) return;
-  if (pan) {
+  if(axisDrag) {
+    const p=point(event);axisDrag.nodes=ManualAxis.move(axisDrag.before,axisDrag.index,axisDrag.part,[p.x,p.y],ink.width,ink.height);render();
+  } else if (pan) {
     viewport.scrollLeft = pan.left + pan.x - event.clientX;
     viewport.scrollTop = pan.top + pan.y - event.clientY;
   } else if (active) {
@@ -662,6 +764,12 @@ ink.addEventListener("pointermove", (event) => {
 
 function finish(event) {
   if (event.pointerId !== pointer) return;
+  if(axisDrag) {
+    const edit=axisDrag;axisDrag=null;
+    if(event.type!=="pointercancel" && JSON.stringify(edit.nodes)!==JSON.stringify(edit.before)) {
+      history.push({kind:"axis-edit",id:edit.id,nodes:edit.nodes});future.length=0;
+    }
+  }
   if (active) {
     history.push(active); future.length = 0; active = null;
   }
@@ -672,6 +780,20 @@ function finish(event) {
 ink.addEventListener("pointerup", finish);
 ink.addEventListener("pointercancel", finish);
 ink.addEventListener("lostpointercapture", finish);
+ink.addEventListener("dblclick", () => {if(axisDraft)completeAxis();});
+for(const [id,value]of [["manual-trough","trough"],["manual-ridge","ridge"],["axis-edit","axis-edit"]])byId(id).addEventListener("click",()=>selectMode(value));
+byId("axis-finish").addEventListener("click",()=>completeAxis());
+byId("axis-cancel").addEventListener("click",cancelAxis);
+byId("axis-add-node").addEventListener("click",()=>{axisAdding=!axisAdding;updateAxisControls();});
+byId("axis-remove-node").addEventListener("click",()=>{
+  const curve=selectedAxis();
+  if(!curve || curve.nodes.length<=2 || axisNode===null)return;
+  const nodes=ManualAxis.copy(curve.nodes);nodes.splice(axisNode,1);axisNode=Math.min(axisNode,nodes.length-1);commitAxisEdit(nodes);
+});
+byId("axis-remove").addEventListener("click",()=>{
+  if(!selectedAxis())return;
+  history.push({kind:"axis-delete",id:axisSelected});future.length=0;axisSelected=axisNode=null;render();controls();
+});
 
 for (const id of ["paint", "erase", "move"]) byId(id).addEventListener("click", () => selectMode(id));
 for (const swatch of document.querySelectorAll("[data-color]")) swatch.addEventListener("click", () => {
@@ -682,11 +804,15 @@ byId("color").addEventListener("input", (event) => {
   color = event.target.value; selectMode("paint");
   for (const button of document.querySelectorAll("[data-color]")) button.setAttribute("aria-pressed", "false");
 });
-byId("undo").addEventListener("click", () => { if (history.length && pointer === null) { future.push(history.pop()); render(); controls(); } });
+byId("undo").addEventListener("click", () => {
+  if(pointer!==null)return;
+  if(axisDraft) {axisDraft.points.pop();if(!axisDraft.points.length)axisDraft=null;axisPreview=null;render();controls();}
+  else if(history.length) { future.push(history.pop()); render(); controls(); }
+});
 byId("redo").addEventListener("click", () => { if (future.length && pointer === null) { history.push(future.pop()); render(); controls(); } });
 byId("clear").addEventListener("click", () => byId("clear-dialog").showModal());
 byId("clear-dialog").addEventListener("close", () => {
-  if (byId("clear-dialog").returnValue === "clear") { history.push({ kind: "clear" }); future.length = 0; render(); controls(); }
+  if (byId("clear-dialog").returnValue === "clear") { axisDraft=axisPreview=null;history.push({ kind: "clear" }); future.length = 0; render(); controls(); }
 });
 byId("zoom").addEventListener("change", (event) => {
   if (event.target.value === "fit") { fitView = true; rowView = null; fit(); }
@@ -695,7 +821,7 @@ byId("zoom").addEventListener("change", (event) => {
 new ResizeObserver(() => fit()).observe(viewport);
 
 byId("save").addEventListener("click", () => {
-  if (!ready || featuresLoading || !currentSelection) return;
+  if (!ready || featuresLoading || !currentSelection || axisDraft || pointer!==null) return;
   const selected = currentSelection;
   const exportRevision = loadRevision;
   const output = document.createElement("canvas");
@@ -823,6 +949,11 @@ byId("save").addEventListener("click", () => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if(!byId("manual").hidden && !["INPUT","SELECT","TEXTAREA"].includes(event.target.tagName) && !byId("clear-dialog").open && !byId("share-dialog").open && !byId("overlay-dialog").open) {
+    if(event.key==="Enter" && axisDraft && axisDraft.points.length>=2) {event.preventDefault();completeAxis();return;}
+    if(event.key==="Escape" && (axisDraft || axisDrag || mode==="axis-edit")) {axisDrag=null;pointer=null;ink.dataset.dragging="false";axisSelected=axisNode=null;cancelAxis();return;}
+    if((event.key==="Delete" || event.key==="Backspace") && mode==="axis-edit" && selectedAxis()) {event.preventDefault();byId("axis-remove-node").click();return;}
+  }
   if (!byId("overlay-dialog").open && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z" && !["INPUT", "SELECT"].includes(event.target.tagName)) {
     event.preventDefault(); byId(event.shiftKey ? "redo" : "undo").click();
   }
@@ -872,6 +1003,7 @@ function captureDrawing() {
 }
 function keepDrawing() {
   if (pointer !== null) finish({pointerId:pointer});
+  if(axisDraft)completeAxis(false);
   if (ready && currentSelection) drawingStates.set(currentSelection.key,captureDrawing());
 }
 function shareMessage(message) {
@@ -881,7 +1013,7 @@ function shareMessage(message) {
 }
 function captureShared() {
   return {
-    version:1,chart:ChartShare.identity(currentSelection),drawing:ChartShare.currentDrawing(captureDrawing()),
+    version:2,chart:ChartShare.identity(currentSelection),drawing:ChartShare.currentDrawing(captureDrawing()),
     view:{fit:fitView,zoom:fitView ? 1 : zoomFactor,x:viewport.scrollLeft/Math.max(1,viewport.scrollWidth-viewport.clientWidth),y:viewport.scrollTop/Math.max(1,viewport.scrollHeight-viewport.clientHeight)}
   };
 }
@@ -953,6 +1085,7 @@ async function loadSelection(retry = false, shared = null) {
   const selected = ChartCatalog.selection(catalog, byId("chart-select").value, byId("source-select").value, Number(byId("page-select").value));
   currentSelection = selected; ready = false; paper.hidden = true; paper.dataset.ready = "false";
   active = pointer = pan = null;
+  axisDraft=axisPreview=axisSelected=axisNode=axisDrag=null;axisAdding=false;
   geographyMask = geographyBase = geography = satelliteImage = elevationData = terrainImage = symbols = windBands = candidates = isotherms = lowLevel = dynamics = trial = null;
   temperatureLegends();
   panelRegistration = null;

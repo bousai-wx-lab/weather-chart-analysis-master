@@ -8,7 +8,7 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=6c527230075a3953">
+  <link rel="stylesheet" href="styles.css?v=0d6661ac8eba9290">
   <script src="analysis.js?v=c29e1167372baa26" defer></script>
   <script src="geography.js?v=8efbf1eb5570ec04" defer></script>
   <script src="catalog.js?v=5d05b51e947a0758" defer></script>
@@ -16,9 +16,10 @@
   <script src="geography-atlas.js?v=b5ebd20dcdfe7728" defer></script>
   <script src="dynamics.js?v=e6b3307d3f75d036" defer></script>
   <script src="snapshot-analysis.js?v=a4822d85e6972d25" defer></script>
-  <script src="share-state.js?v=552322210ece16f2" defer></script>
+  <script src="manual-axis.js?v=abd61e843e4b53a6" defer></script>
+  <script src="share-state.js?v=37bdeb8ba8fba7fa" defer></script>
   <script src="chart-view.js?v=a90b4ff142d435b7" defer></script>
-  <script src="app.js?v=59165ffd5e96e966" defer></script>
+  <script src="app.js?v=e8eb2ef3dcc636df" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -120,6 +121,20 @@
         <button type="button" id="erase" aria-pressed="false">消しゴム</button>
         <button type="button" id="move" aria-pressed="false">移動</button>
       </div>
+      <div class="group axis-tools" aria-label="曲線の作図">
+        <button type="button" id="manual-trough" aria-pressed="false">トラフ</button>
+        <button type="button" id="manual-ridge" aria-pressed="false">リッジ</button>
+        <button type="button" id="axis-edit" aria-pressed="false">頂点の編集</button>
+      </div>
+      <div class="group" id="axis-draft-actions" hidden>
+        <button type="button" id="axis-finish">完了</button>
+        <button type="button" id="axis-cancel">キャンセル</button>
+      </div>
+      <div class="group axis-edit-actions" id="axis-edit-actions" hidden>
+        <button type="button" id="axis-add-node" aria-pressed="false">頂点を追加</button>
+        <button type="button" id="axis-remove-node">頂点を削除</button>
+        <button type="button" id="axis-remove">この線を削除</button>
+      </div>
       <div class="group palette" aria-label="色">
         <button type="button" class="swatch blue" data-color="#2563eb" aria-label="青" aria-pressed="true">青</button>
         <button type="button" class="swatch red" data-color="#dc2626" aria-label="赤" aria-pressed="false">赤</button>
@@ -163,6 +178,7 @@
         <canvas id="symbol-layer" aria-label="元の黒字が透ける少し太い半透明の色線。Lは赤、Hは青、Cは水色、Wはオレンジ"></canvas>
         <canvas id="overlay-layer" aria-label="同じ時刻の別の気圧面で解析した強風軸・トラフ・リッジの重ね合わせ"></canvas>
         <canvas id="ink" aria-label="天気図の色塗り面"></canvas>
+        <svg id="axis-editor" aria-hidden="true"></svg>
       </div>
     </div>
     </section>

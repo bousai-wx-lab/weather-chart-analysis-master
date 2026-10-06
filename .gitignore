@@ -4,6 +4,8 @@
 !404.html
 !styles.css
 !app.js
+!manual-axis.js
+!scripts/test_manual_axis.js
 !share-state.js
 !chart-view.js
 !scripts/test_chart_view.js

@@ -23,7 +23,7 @@ const mutate = fn => { const bad=clone(state);fn(bad);assert.throws(() => Share.
   assert.deepEqual(cleared.history,[]);assert.deepEqual(cleared.future,[]);
   Share.bind(state,selected,["elevation-relief"]);
   assert.equal(await Share.decode("#other"),null);
-  mutate(s => s.version=2);
+  mutate(s => s.version=3);
   mutate(s => s.drawing.showEquivalent="false");
   mutate(s => s.drawing.equivalentOpacity=1.1);
   mutate(s => s.drawing.history[1].points[0].x=-1);
