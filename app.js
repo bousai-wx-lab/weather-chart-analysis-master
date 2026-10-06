@@ -984,9 +984,7 @@ async function loadSelection(retry = false, shared = null) {
   for (const section of document.querySelectorAll("[data-requires]")) section.hidden = false;
   const retrieved = new Date(selected.variant.retrieved_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
   chartLabel = selected.variant.observation_label || `${selected.variant.label} · ${retrieved} JST取得`;
-  byId("chart-name").textContent = `${selected.product.name}${selected.product.period ? " · " + selected.product.period : ""}`;
-  byId("chart-info").textContent = chartLabel;
-  byId("chart-note").textContent = isTrialSelection(selected) ? "今回収録した原図の解析試行。トラフ・リッジを含む精度は検証中です。" : reviewed ? `自動更新なし。${selected.variant.features === "reviewed-aupq78"?"上段700hPa・下段850hPa":isFeasSelection(selected)?"上段500hPa・下段地上気圧／850hPa気温":selected.variant.features === "reviewed-axfe578"?"上段500hPa・下段850hPa気温／700hPa上昇流":"上段300hPa・下段500hPa"}。固定原図の着色・解析も使えます。` : "自動更新なし。陸海の着色と手描きでの解析を使えます。解析・予想の日時は原図内を確認してください。";
+  byId("source-select").title = chartLabel + (isTrialSelection(selected) ? " / 解析試行：気象学的な精度は未検証。" : "");
   byId("source-link").href = selected.variant.source_url;
   byId("source-link").textContent = `気象庁 ${selected.product.code} 原図${selected.variant.source_url.endsWith(".pdf") ? "PDF" : "PNG"}`;
   controls();
@@ -1029,7 +1027,7 @@ async function loadGeographyAtlas(selected,revision,signal) {
     const data=GeographyAtlas.validate(atlas,selected);
     if(revision!==loadRevision)return;
     rowFrames=ChartView.rows(selected,data);
-    if(!data.panels.length){byId("chart-note").textContent="自動更新なし。手描きでの解析を使えます。解析・予想の日時は原図内を確認してください。";return;}
+    if(!data.panels.length)return;
     const mask=await checkedImage(data.mask.path,data.mask.sha256,data.mask.width,data.mask.height,signal);
     if(revision!==loadRevision)return;
     geography={...data,atlas:true};geographyMask=mask;
@@ -1128,13 +1126,10 @@ async function loadTrial(selected,revision,signal) {
     const data=SnapshotAnalysis.validate(JSON.parse(new TextDecoder().decode(bytes)),selected,location.hostname);
     if(revision!==loadRevision)return;
     trial=data;symbols=isotherms=data;
-    if(data.equivalent_temperature){symbols=isotherms=null;showTrough=showRidge=showTrough700=showRidge700=false;byId("chart-note").textContent="850hPa相当温位を260〜370 Kの共通配色で表示。12・24・36・48時間の各有効時刻を確認してください。";}
+    if(data.equivalent_temperature){symbols=isotherms=null;showTrough=showRidge=showTrough700=showRidge700=false;}
     if(data.feas_forecast)temperatureLayer.setAttribute("aria-label","下段850hPaの3℃ごとの等温線。暖気は暖色、寒気は寒色");
-    if(data.feas_forecast)byId("chart-note").textContent="上段500hPa：文字・正渦度・トラフ・リッジ。下段地上：文字・850hPa等温線・寒気・暖気。陸海背景も選べます。各枠の有効時刻を確認してください。";
-    if(data.surface_forecast)byId("chart-note").textContent=`上段500hPa：正渦度・トラフ・リッジ。下段地上：前${trialOther().accumulation_hours}時間の降水量。各枠の有効時刻を確認してください。`;
     if(data.color_only){
       showTrough=showRidge=showTrough700=showRidge700=false;
-      byId("chart-note").textContent="上段500hPa気温・700hPa湿域、下段850hPa気温・700hPa上昇流。固定原図の着色を使えます。";
     }
     if(data.product==="AUPQ78")lowLevel=data;
     if(["AXFE578","FEAS50"].includes(data.product))dynamics=data;

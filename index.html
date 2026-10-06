@@ -8,7 +8,7 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=81f527aeaf295ee1">
+  <link rel="stylesheet" href="styles.css?v=6c527230075a3953">
   <script src="analysis.js?v=c29e1167372baa26" defer></script>
   <script src="geography.js?v=8efbf1eb5570ec04" defer></script>
   <script src="catalog.js?v=5d05b51e947a0758" defer></script>
@@ -18,7 +18,7 @@
   <script src="snapshot-analysis.js?v=a4822d85e6972d25" defer></script>
   <script src="share-state.js?v=552322210ece16f2" defer></script>
   <script src="chart-view.js?v=a90b4ff142d435b7" defer></script>
-  <script src="app.js?v=4038e1efc4c80839" defer></script>
+  <script src="app.js?v=59165ffd5e96e966" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -38,12 +38,8 @@
     <section class="chart-selection" aria-label="選択中の天気図">
       <label for="chart-select">天気図 <span id="chart-count"></span></label>
       <select id="chart-select" disabled><option>一覧を読み込み中</option></select>
-      <p id="chart-info">AUPQ35 · 300 / 500hPa · 図を読み込み中</p>
-      <details id="source-details"><summary>資料・時刻を選ぶ</summary>
-        <label for="source-select">資料・基準時刻</label><select id="source-select" disabled><option>読み込み中</option></select>
-        <div id="page-selection" hidden><label for="page-select">ページ</label><select id="page-select"></select></div>
-        <p id="chart-name"></p><p id="chart-note" class="gesture-note"></p>
-      </details>
+      <select id="source-select" aria-label="天気図の基準時刻" disabled><option>時刻を読み込み中</option></select>
+      <div id="page-selection" hidden><label for="page-select">ページ</label><select id="page-select"></select></div>
       <button type="button" id="chart-retry" hidden>図を再読み込み</button>
     </section>
     <nav class="panel-modes" aria-label="解析の方法"><button type="button" id="analysis-mode" aria-pressed="true" aria-controls="analysis-panel">解析</button><button type="button" id="manual-mode" aria-pressed="false" aria-controls="manual">手描き</button></nav>
