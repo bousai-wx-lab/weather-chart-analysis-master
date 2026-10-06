@@ -190,7 +190,12 @@ dialog::backdrop { background: #23334b55; } dialog p { margin: 0 0 14px; } dialo
 .panel-actions { padding: 8px 12px; flex-shrink: 0; border-top: 1px solid #cbd5df; background: #f5f8fb; }
 .panel-actions .export-section { margin-top: 6px; }
 .panel-actions .gesture-note { margin-top: 5px; font-size: 10px; }
-.panel-actions #original { flex: .85; color: #58677a; }
+.panel-actions #share { flex: 1.2; color: #164b68; padding-left: 4px; padding-right: 4px; }
+#share-message { margin: 7px 0 0; font-size: 11px; line-height: 1.5; color: #164b68; overflow-wrap: anywhere; }
+#share-dialog { width: 480px; color: #243247; }
+#share-title { margin: 0 0 14px; font-size: 17px; }
+#share-dialog label { display: block; font-size: 12px; margin-bottom: 6px; }
+#share-url { display: block; box-sizing: border-box; width: 100%; resize: vertical; font: inherit; font-size: 12px; border: 1px solid #bacbd8; border-radius: 4px; padding: 8px; margin-bottom: 12px; }
 .panel-actions #export-link { flex-basis: 100%; }
 .manual-panel .toolbar { padding-top: 0; }
 .manual-panel .tools { display: grid; grid-template-columns: 1fr 1fr 1fr; }

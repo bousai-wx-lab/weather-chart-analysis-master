@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-06T05:42:02.502352+00:00",
+  "generated_at": "2026-10-06T10:01:11.155434+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
-      "bytes": 4099,
-      "sha256": "d954708bcc72d809a3e5698bb77b462eea112f3bc049a5f28d0431cf6a767e85",
+      "bytes": 4180,
+      "sha256": "b1b400cc3da9852379a8f4f615e332f86fe98645d4794df6e77edcfda9bd2457",
       "mime_type": "application/yaml"
     },
     {
       "path": ".gitignore",
-      "bytes": 10116,
-      "sha256": "39e13dfd17057f000ee1ca01e54af7b1ed2f59bd9e9c52da96ebeeb9900a643d",
+      "bytes": 10161,
+      "sha256": "83d17c4a5f81f6ee6676d41d6f4d82fc146cc5537dfb259080363adf25a1cccf",
       "mime_type": "application/octet-stream"
     },
     {
@@ -29,14 +29,14 @@
     },
     {
       "path": "README.md",
-      "bytes": 41717,
-      "sha256": "192aba67e3ebecb37ce6d7be246234138e2e02b93b3fdadc7e1c5c5a92be650e",
+      "bytes": 43270,
+      "sha256": "07d4ce704f699ca7b290f41be78ca7c24d5bb9b340c70880deb06b8ff8f74a25",
       "mime_type": "text/markdown"
     },
     {
       "path": "SECURITY.md",
-      "bytes": 1472,
-      "sha256": "e83caf02c350d8d02bf2f6520bd579c2e7fbcf60e470392f7788fc812534642d",
+      "bytes": 2396,
+      "sha256": "13faff70b008660a03c71d77dc1eefa07bb67d4cd0048fc2edb3f597ef8c58e3",
       "mime_type": "text/markdown"
     },
     {
@@ -47,8 +47,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 91287,
-      "sha256": "d46e014def733c3d143590ba6e95ddb8c6571d9fac924c98eba1b75f3323e00d",
+      "bytes": 96248,
+      "sha256": "f04494aecd1c74971cb80ef1734d47a1edb0b420fc665ef3c6cdae2e6beaee80",
       "mime_type": "text/javascript"
     },
     {
@@ -1301,8 +1301,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 29038,
-      "sha256": "4d1f356998bd30577ad0bed3e779b8d62bfca73ba64b95feed2050ebaaeabb8d",
+      "bytes": 29899,
+      "sha256": "8846638db388b1a885245e5deb77d10188e88168ff7071f0a197ad3cc78ce8ff",
       "mime_type": "text/html"
     },
     {
@@ -1331,8 +1331,8 @@
     },
     {
       "path": "release-allowlist.json",
-      "bytes": 58560,
-      "sha256": "2517fb6a6b597bfea4cdc474eccbdc08e79c684a7a2e3f4294e7e87fe349610c",
+      "bytes": 58617,
+      "sha256": "5300d67c1f679dc3a6454a1e25372472075bb520fb3a76551836e3d52a31f282",
       "mime_type": "application/json"
     },
     {
@@ -1390,6 +1390,12 @@
       "mime_type": "text/x-python"
     },
     {
+      "path": "scripts/test_share_state.js",
+      "bytes": 4508,
+      "sha256": "50116260a8dee32623dce12b8b795bca59d44e55f34cb1ab60f26dba4c787ada",
+      "mime_type": "text/javascript"
+    },
+    {
       "path": "scripts/test_snapshot_analysis.js",
       "bytes": 21062,
       "sha256": "bc0f150a80cc857c8106738f54eaaf4a08cca4736eeff24476f3ee2d5417f87c",
@@ -1397,9 +1403,15 @@
     },
     {
       "path": "scripts/update_manifest.py",
-      "bytes": 1609,
-      "sha256": "5a665c09e3e6296ff5ad3a935be1cc1b5a2f7c7e75c89075d5291b8fd17c633e",
+      "bytes": 1627,
+      "sha256": "f9c29d8c3e09b74392c18f228487425dacfd31bb4031a2066ee02c7e69502154",
       "mime_type": "text/x-python"
+    },
+    {
+      "path": "share-state.js",
+      "bytes": 7791,
+      "sha256": "0a0f533dc902dff15976fed3145b7df336d9fbbeef91a8541628a6ece7f1610b",
+      "mime_type": "text/javascript"
     },
     {
       "path": "snapshot-analysis.js",
@@ -1409,8 +1421,8 @@
     },
     {
       "path": "styles.css",
-      "bytes": 19878,
-      "sha256": "9398cfa67eff539f861bf44a9c0b95693dc3620df93118665daf5085e417bb44",
+      "bytes": 20403,
+      "sha256": "395a7076de5bdecbd08bf70d957be34359f1143ebf1f251956ba0e2da83ce8a0",
       "mime_type": "text/css"
     },
     {

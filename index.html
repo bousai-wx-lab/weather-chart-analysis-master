@@ -8,7 +8,7 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=9398cfa67eff539f">
+  <link rel="stylesheet" href="styles.css?v=395a7076de5bdecb">
   <script src="analysis.js?v=c29e1167372baa26" defer></script>
   <script src="geography.js?v=8efbf1eb5570ec04" defer></script>
   <script src="catalog.js?v=5d05b51e947a0758" defer></script>
@@ -16,7 +16,8 @@
   <script src="geography-atlas.js?v=b5ebd20dcdfe7728" defer></script>
   <script src="dynamics.js?v=e6b3307d3f75d036" defer></script>
   <script src="snapshot-analysis.js?v=a4822d85e6972d25" defer></script>
-  <script src="app.js?v=d46e014def733c3d" defer></script>
+  <script src="share-state.js?v=0a0f533dc902dff1" defer></script>
+  <script src="app.js?v=f04494aecd1c7497" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -140,12 +141,13 @@
         <button type="button" id="clear" disabled>手描きを消す</button>
       </div>
     </div>
-    <p id="hint" class="gesture-note">拡大した図をドラッグして移動します。</p><p class="privacy-note">描画内容は送信・自動保存しません。図を切り替えても手描きは戻せますが、ページを再読込すると消えます。</p>
+    <p id="hint" class="gesture-note">拡大した図をドラッグして移動します。</p><p class="privacy-note">描画内容は自動保存しません。残したい状態は「共有リンクコピー」でリンクを控えてください。そのリンクを開くと解析と手描きを戻せます。</p>
     </section>
     </div>
     <div class="panel-actions" aria-label="表示と保存">
       <div class="group view"><button type="button" id="zoom-out" aria-label="天気図を縮小" disabled>−</button><select id="zoom" aria-label="天気図の表示倍率"><option value="fit">全体</option><option value="0.25">25%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option><option value="4">400%</option><option value="custom" id="custom-zoom" hidden>倍率</option></select><button type="button" id="zoom-in" aria-label="天気図を拡大" disabled>＋</button><button type="button" id="fit">全体</button></div>
-      <div class="group export-section"><button type="button" id="original" disabled>解析を外す</button><button type="button" id="save" class="save" disabled>PNG保存</button><a id="export-link" download="aupq35-colored.png" hidden>書き出したPNG</a></div>
+      <div class="group export-section"><button type="button" id="share" disabled>共有リンクコピー</button><button type="button" id="save" class="save" disabled>PNG保存</button><a id="export-link" download="aupq35-colored.png" hidden>書き出したPNG</a></div>
+      <p id="share-message" role="status" aria-live="polite" hidden></p>
       <p class="gesture-note">ホイールで拡大 · ドラッグで移動</p>
     </div>
     </aside>
@@ -173,6 +175,13 @@
     <span>出典：<a id="source-link" href="https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupq35_00.pdf" target="_blank" rel="noopener noreferrer">気象庁 AUPQ35 原図PDF</a>（画像化）</span>
     <span>解析案は本ツールの推定で、気象庁の解析ではありません。</span>
   </footer>
+  <dialog id="share-dialog" aria-labelledby="share-title">
+    <h2 id="share-title">共有リンク</h2>
+    <p class="dialog-note">このリンクを開くと、同じ天気図・解析の表示と濃さ・手描きが復元されます。</p>
+    <label for="share-url">コピーするリンク</label><textarea id="share-url" readonly spellcheck="false" rows="4"></textarea>
+    <p id="share-copy-note" role="status" aria-live="polite" class="dialog-note">リンク欄を選択してコピーすることもできます。</p>
+    <div><button type="button" id="share-copy">コピー</button><button type="button" id="share-close">閉じる</button></div>
+  </dialog>
   <dialog id="clear-dialog"><form method="dialog"><p>手描きの色塗りをすべて消しますか？</p><p class="dialog-note">原図と解析案は残ります。取り消しで戻せます。</p><div><button value="cancel">戻る</button><button value="clear" class="danger">手描きを消す</button></div></form></dialog>
   <dialog id="overlay-dialog" aria-labelledby="overlay-dialog-title">
     <div class="overlay-dialog-heading"><h2 id="overlay-dialog-title">解析を重ねる</h2><button type="button" id="overlay-close" aria-label="重ね合わせの画面を閉じる">×</button></div>

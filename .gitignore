@@ -4,6 +4,8 @@
 !404.html
 !styles.css
 !app.js
+!share-state.js
+!scripts/test_share_state.js
 !analysis.js
 !low-level.js
 !aupq78-analysis.json

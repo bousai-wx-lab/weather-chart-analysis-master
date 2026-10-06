@@ -87,6 +87,8 @@ let loadingError = "";
 let featuresLoading = false;
 let loadRevision = 0;
 let loadController = null;
+let shareBusy = false;
+let catalogRevision = 0;
 const drawingStates = new Map();
 const zoomSteps = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 const analysisTools = [
@@ -285,6 +287,8 @@ function controls() {
   byId("redo").disabled = !future.length;
   byId("clear").disabled = !paintCount;
   byId("save").disabled = !ready || featuresLoading;
+  byId("share").disabled = !ready || featuresLoading || shareBusy || pointer !== null;
+  byId("share").textContent = shareBusy ? "リンク作成中…" : "共有リンクコピー";
   for (const id of ["trough", "ridge", "jet"]) byId(id).disabled = !ready || !candidates;
   byId("jet").disabled ||= Boolean(lowLevel || dynamics); byId("ridge").disabled ||= Boolean(dynamics && !isFeas());
   byId("wind").disabled = !ready || !windBands;
@@ -307,7 +311,6 @@ function controls() {
   byId("warm-opacity-value").textContent = `${Math.round(warmOpacity*100)}%`;
   for(const swatch of byId("warm850-legend").querySelectorAll("i"))swatch.style.opacity=String(warmOpacity);
   byId("cold-opacity-value").textContent = `${Math.round(coldOpacity*100)}%`;
-  byId("original").disabled = !((lowLevel && (showWet || showCold700 || showCold850 || showWarm850 || showTrough700 || showRidge700)) || (dynamics && (showVorticity || (!isFeas() && showAscent) || showCold850 || showWarm850))) && !enabledOverlays().length && !showWind && !showTrough && !showRidge && !showJet && !(showSymbols && symbols) && !(showGeography && geography) && !((showTemperature || showTemperature500) && isotherms);
   byId("geography-toggle").disabled = byId("geography-opacity").disabled = !ready || !geography;
   byId("geography-toggle").setAttribute("aria-pressed", String(Boolean(showGeography && geography)));
   byId("geography-opacity-value").textContent = `${Math.round(geographyOpacity * 100)}%`;
@@ -340,7 +343,6 @@ function controls() {
   if(trial) {
     for(const tool of analysisTools){const available=trialAvailable(tool.id),button=byId(tool.button);button.disabled=!ready||!available;button.setAttribute("aria-pressed",String(available && trialEnabled(tool.id)));}
     if(trial.color_only||trial.surface_forecast||trial.feas_forecast||trial.equivalent_temperature){
-      byId("original").disabled=!analysisTools.some(tool=>trialAvailable(tool.id)&&trialEnabled(tool.id))&&!enabledOverlays().length;
       for(const id of ["wet","ascent","cold850","warm850"])paper.dataset[id]=String(trialAvailable(id)&&trialEnabled(id));
     }
     paper.dataset.equivalent=String(trialAvailable("equivalent")&&showEquivalent);
@@ -489,7 +491,7 @@ byId("temperature500").addEventListener("click", () => {
   if (!ready || !isotherms) return;
   showTemperature500 = !showTemperature500; drawTemperature(); controls();
 });
-for (const id of ["analyze", "trough", "ridge", "jet", "original"]) byId(id).addEventListener("click", () => {
+for (const id of ["analyze", "trough", "ridge", "jet"]) byId(id).addEventListener("click", () => {
   if (!ready || byId(id).disabled) return;
   if (id === "analyze") {
     const on = byId(id).getAttribute("aria-pressed") !== "true";
@@ -499,10 +501,6 @@ for (const id of ["analyze", "trough", "ridge", "jet", "original"]) byId(id).add
   if (id === "trough") showTrough = !showTrough;
   if (id === "ridge") showRidge = !showRidge;
   if (id === "jet") showJet = !showJet;
-  if (id === "original") {
-    for (const tool of analysisTools) tool.setEnabled(false);
-    for (const state of overlayState) state.enabled = false;
-  }
   drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); controls();
 });
 
@@ -851,11 +849,58 @@ async function checkedImage(path, expectedHash, width, height, signal, retry = f
     return image;
   } finally { URL.revokeObjectURL(url); }
 }
-function keepDrawing() {
-  if (!ready || !currentSelection) return;
-  if (pointer !== null) finish({ pointerId: pointer });
-  drawingStates.set(currentSelection.key, { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, showVorticity, showAscent, showPrecipitation, showEquivalent, equivalentOpacity, showWet, showCold700, showCold850, showWarm850, warmOpacity, showTrough700, showRidge700, coldOpacity, overlayTarget, overlays: overlayState.map(layer => ({...layer})) });
+function captureDrawing() {
+  return { history: [...history], future: [...future], showWind, showTrough, showRidge, showJet, showSymbols, showGeography, geographyStyle, geographyOpacity, showTemperature, showTemperature500, showVorticity, showAscent, showPrecipitation, showEquivalent, equivalentOpacity, showWet, showCold700, showCold850, showWarm850, warmOpacity, showTrough700, showRidge700, coldOpacity, overlayTarget, overlays: overlayState.map(layer => ({...layer})) };
 }
+function keepDrawing() {
+  if (pointer !== null) finish({pointerId:pointer});
+  if (ready && currentSelection) drawingStates.set(currentSelection.key,captureDrawing());
+}
+function shareMessage(message) {
+  byId("share-message").textContent = message;
+  byId("share-message").hidden = !message;
+}
+function captureShared() {
+  return {
+    version:1,chart:ChartShare.identity(currentSelection),drawing:captureDrawing(),
+    view:{fit:fitView,zoom:fitView ? 1 : zoomFactor,x:viewport.scrollLeft/Math.max(1,viewport.scrollWidth-viewport.clientWidth),y:viewport.scrollTop/Math.max(1,viewport.scrollHeight-viewport.clientHeight)}
+  };
+}
+async function copyShareLink(link) {
+  try {
+    if (!navigator.clipboard?.writeText) throw Error("Copy unavailable");
+    await navigator.clipboard.writeText(link);
+    shareMessage("共有リンクをコピーしました。貼り付けて共有できます。");
+    return true;
+  } catch { return false; }
+}
+byId("share").addEventListener("click",async () => {
+  if (byId("share").disabled) return;
+  const revision = loadRevision, captured = captureShared();
+  shareBusy = true; shareMessage(""); controls();
+  try {
+    if ([loadingError,geographyError,terrainError,symbolError,temperatureError,analysisError,overlayError].some(Boolean) || validOverlays().length !== overlayState.length) throw Error("解析の読み込みを確認できないため、共有リンクを作成できません。図を再読み込みしてください。");
+    const fragment = await ChartShare.encode(captured);
+    if (revision !== loadRevision) return;
+    const url = new URL(location.href); url.search = ""; url.hash = fragment;
+    const link = url.href;
+    if (!await copyShareLink(link)) {
+      byId("share-url").value = link;
+      byId("share-copy-note").textContent = "リンク欄を選択してコピーすることもできます。";
+      byId("share-dialog").showModal(); byId("share-url").focus(); byId("share-url").select();
+      shareMessage("共有リンクを作成しました。開いた欄からコピーしてください。");
+    }
+  } catch (error) { shareMessage(error.message); }
+  finally { shareBusy = false; controls(); }
+});
+byId("share-copy").addEventListener("click",async () => {
+  if (await copyShareLink(byId("share-url").value)) byId("share-dialog").close();
+  else {
+    byId("share-copy-note").textContent = "自動コピーを利用できません。選択したリンクをコピーしてください。";
+    byId("share-url").focus(); byId("share-url").select();
+  }
+});
+byId("share-close").addEventListener("click",() => byId("share-dialog").close());
 function setOptions(select, records, value) {
   select.replaceChildren();
   for (const record of records) {
@@ -879,8 +924,10 @@ byId("chart-select").addEventListener("change", selectProduct);
 byId("source-select").addEventListener("change", selectSource);
 byId("page-select").addEventListener("change", () => loadSelection());
 byId("chart-retry").addEventListener("click", () => catalog ? loadSelection(true) : loadCatalog());
-async function loadSelection(retry = false) {
+async function loadSelection(retry = false, shared = null) {
   keepDrawing();
+  if (shared) drawingStates.set(`${shared.chart.product}/${shared.chart.variant}/${shared.chart.page}`,shared.drawing);
+  shareMessage("");
   const revision = ++loadRevision;
   loadController?.abort(); loadController = new AbortController();
   const signal = loadController.signal;
@@ -937,7 +984,20 @@ async function loadSelection(retry = false) {
     else if (["reviewed-axfe578","reviewed-feas50"].includes(selected.variant.features)) await loadDynamics(selected,revision,signal);
     else if (reviewed) await loadFeatures(selected, revision, signal);
     if(selected.variant.features!=="reviewed-aupq35")await loadGeographyAtlas(selected,revision,signal);
-    if (revision === loadRevision) { featuresLoading = false; byId("manual-only").hidden = reviewed || Boolean(geography); controls(); }
+    if (revision === loadRevision) {
+      featuresLoading = false; byId("manual-only").hidden = reviewed || Boolean(geography); controls();
+      if (shared) {
+        if (validOverlays().length !== shared.drawing.overlays.length) {
+          history.length = future.length = 0; overlayState = []; render(); drawOverlays(); controls();
+          shareMessage("共有リンクの重ね合わせを確認できないため、手描きの復元を停止しました。");
+        } else {
+          fitView = shared.view.fit; zoomFactor = shared.view.zoom; fit();
+          viewport.scrollLeft = shared.view.x * Math.max(0,viewport.scrollWidth-viewport.clientWidth);
+          viewport.scrollTop = shared.view.y * Math.max(0,viewport.scrollHeight-viewport.clientHeight);
+          shareMessage([geographyError,terrainError,symbolError,temperatureError,analysisError,overlayError].some(Boolean) || geographyStyle !== shared.drawing.geographyStyle ? "共有された図は開きましたが、解析の一部を復元できませんでした。" : "共有された天気図・解析・手描きを復元しました。");
+        }
+      }
+    }
   } catch (error) {
     if (revision !== loadRevision || error.name === "AbortError") return;
     loadingError = "図を読み込めませんでした。「図を再読み込み」か別の天気図を選んでください。";
@@ -1149,6 +1209,7 @@ async function loadFeatures(selected, revision, signal) {
   ]);
 }
 async function loadCatalog() {
+  const revision = ++catalogRevision, fragment = location.hash;
   loadingError = ""; byId("chart-retry").hidden = true;
   try {
     catalog = ChartCatalog.validate(await fetchJSON("chart-catalog.json"));
@@ -1156,6 +1217,7 @@ async function loadCatalog() {
       const response=await fetch("local-collection/catalog.json",{cache:"no-store"});
       if(response.ok){localCollection=await response.json();catalog=SnapshotAnalysis.merge(catalog,localCollection,location.hostname);}
     }
+    if (revision !== catalogRevision) return;
     const picker = byId("chart-select"); picker.replaceChildren();
     for (const [id, label] of [["observation", "実況天気図"], ["forecast", "予想天気図"]]) {
       const group = document.createElement("optgroup"); group.label = label;
@@ -1166,10 +1228,33 @@ async function loadCatalog() {
     }
     picker.disabled = false; picker.value = "aupq35";
     byId("chart-count").textContent = `実況${catalog.products.filter(p => p.group === "observation").length}・予想${catalog.products.filter(p => p.group === "forecast").length}`;
-    selectProduct();
+    let shared = null, shareFailure = "";
+    try {
+      shared = await ChartShare.decode(fragment);
+      if (revision !== catalogRevision) return;
+      if (shared) {
+        const selected = ChartCatalog.selection(catalog,shared.chart.product,shared.chart.variant,shared.chart.page);
+        ChartShare.bind(shared,selected,ChartGeography.patterns.map(p => p.id));
+        picker.value = selected.product.id;
+        setOptions(byId("source-select"),selected.product.variants,selected.variant.id);
+        setOptions(byId("page-select"),selected.variant.pages.map(page => ({id:String(page.number),label:`${page.number} / ${selected.variant.pages.length} ページ`})),String(selected.page.number));
+        byId("page-selection").hidden = selected.variant.pages.length === 1;
+      }
+    } catch (error) { shared = null; shareFailure = error.message === "Unknown chart selection" ? "共有リンクの天気図は現在収録されていません。手描きの復元を停止しました。" : error.message; }
+    if (shared) await loadSelection(false,shared);
+    else {
+      setOptions(byId("source-select"),catalog.products.find(p => p.id === picker.value).variants);
+      const variant = catalog.products.find(p => p.id === picker.value).variants[0];
+      setOptions(byId("page-select"),variant.pages.map(page => ({id:String(page.number),label:`${page.number} / ${variant.pages.length} ページ`})));
+      byId("page-selection").hidden = variant.pages.length === 1;
+      await loadSelection();
+      if (shareFailure) shareMessage(shareFailure);
+    }
   } catch (_) {
+    if (revision !== catalogRevision) return;
     catalog = null; loadingError = "天気図の一覧を読み込めませんでした。「図を再読み込み」を押してください。";
     byId("chart-select").disabled = true; byId("chart-retry").hidden = false; controls();
   }
 }
+window.addEventListener("hashchange",() => { if (location.hash.startsWith("#share=")) loadCatalog(); });
 loadCatalog();
