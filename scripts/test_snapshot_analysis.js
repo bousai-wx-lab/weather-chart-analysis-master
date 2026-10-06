@@ -70,6 +70,20 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
 }
 assert.equal(recent,61);assert.equal(analyses,13);assert.equal(maps,57);
 const lowLevel=require("../low-level.js");
+// Legacy source band colors must not override the palette shown in the legend.
+// Use the actual FEAS source and a 700hPa panel with missing intermediate bands.
+const fillColors=[],scratch={beginPath(){},moveTo(){},lineTo(){},closePath(){},fill(){fillColors.push(this.fillStyle);}};
+const fillCtx={canvas:{ownerDocument:{createElement(){return {getContext(){return scratch;}};}}},save(){},restore(){},beginPath(){},rect(){},clip(){},drawImage(){}};
+const feasColors=read("assets/analysis/feas50-12-20261005.json");
+snapshot.drawFills(fillCtx,feasColors,{cold850:true,opacity:.35});
+assert.deepEqual(fillColors,lowLevel.coldColors,"FEAS fill must match the shared cold legend, including navy instead of stored purple");
+fillColors.length=0;
+const sparse700={pressure_hpa:700,bounds:[0,0,100,100],cold_thresholds:[-15,-18,-21,-24,-27],cold_bands:[{threshold:-27,color:"#4c1d95",rings:[[[0,0],[100,0],[100,100]]]}]};
+snapshot.drawFills(fillCtx,{width:100,height:100,panels:[sparse700]},{cold700:true,opacity:.35});
+assert.deepEqual(fillColors,["#173f8a"],"Missing intermediate bands must not shift the temperature-to-color assignment");
+fillColors.length=0;
+snapshot.drawFills(fillCtx,{width:100,height:100,panels:[{pressure_hpa:300,bounds:[0,0,100,100],wind_bands:[{threshold:40,color:ChartAnalysis.windPalette[0],rings:sparse700.cold_bands[0].rings}]}]},{wind:true});
+assert.deepEqual(fillColors,[ChartAnalysis.windPalette[0]],"Temperature palette changes must preserve the wind palette");
 function inRing(r,[x,y]){
   let hit=false;
   for(let i=0,j=r.length-1;i<r.length;j=i++){

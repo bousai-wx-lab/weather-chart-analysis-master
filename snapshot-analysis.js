@@ -143,14 +143,16 @@ const SnapshotAnalysis = (() => {
   }
   function drawFills(ctx,data,on) {
     if(on.warm850)low.drawWarmFills(ctx,data,on.warmOpacity);
-    const paintBands=(bands,opacity)=>{
+    const paintBands=(bands,opacity,colorFor=band=>band.color)=>{
       const canvas=ctx.canvas.ownerDocument.createElement("canvas");canvas.width=data.width;canvas.height=data.height;
       const sc=canvas.getContext("2d");
-      for(const band of bands||[]){sc.fillStyle=band.color;sc.beginPath();for(const ring of band.rings){sc.moveTo(...ring[0]);for(const q of ring.slice(1))sc.lineTo(...q);sc.closePath();}sc.fill("evenodd");}
+      for(const band of bands||[]){const color=colorFor(band);if(!color)continue;sc.fillStyle=color;sc.beginPath();for(const ring of band.rings){sc.moveTo(...ring[0]);for(const q of ring.slice(1))sc.lineTo(...q);sc.closePath();}sc.fill("evenodd");}
       ctx.save();ctx.globalAlpha=opacity;ctx.drawImage(canvas,0,0);ctx.restore();
     };
     for(const p of data.panels){ctx.save();const [l,t,r,b]=p.bounds;ctx.beginPath();ctx.rect(l,t,r-l,b-t);ctx.clip();
-      if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity);
+      // Source bands own the geometry; the shared palette owns display colors
+      // so stored legacy colors cannot disagree with the UI and PNG legends.
+      if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity,band=>low.coldColors[p.cold_thresholds?.indexOf(band.threshold)]);
       if(on.wind && p.pressure_hpa===300)paintBands(p.wind_bands,1);
       for(const [key,color,active] of [["wet_rectangles","#269ed2",on.wet],["positive_vorticity_rectangles","#ec6ca5",on.vorticity],["ascent_rectangles","#a3d84b",on.ascent]])if(active){ctx.save();ctx.globalAlpha=.3;ctx.fillStyle=color;for(const [x,y,xx,yy] of p[key]||[])ctx.fillRect(x,y,xx-x,yy-y);ctx.restore();}
       ctx.restore();

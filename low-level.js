@@ -1,12 +1,12 @@
 "use strict";
 const LowLevelAnalysis = (() => {
-  const coldColors = ["#a0d8fa", "#74b9ef", "#558ee0", "#7460cb", "#4c1d95"];
+  const coldColors = ["#a0d8fa", "#74b9ef", "#558ee0", "#2c64b7", "#173f8a"];
   const warmThresholds = [9,12,15,18,21,24];
-  const warmColors = ["#fff3a6","#ffd166","#ff914d","#ef4444","#cc2878","#8b3fc7"];
+  const warmColors = ["#fff3a6","#ffd166","#ff914d","#ef4444","#c92d35","#991b1b"];
   const warmCache = new WeakMap();
   function temperatureColor(pressure, value) {
     const warm=value>0,limit=warm?(pressure===850?24:15):(pressure===850?24:36);
-    const stops=warm?["#b8b8b8","#f4d35e","#f89c3c","#e63946","#8b3fc7"]:["#b8b8b8","#7acbef","#3485d4","#5753ba","#6f2da8"];
+    const stops=warm?["#b8b8b8","#f4d35e","#f89c3c","#e63946",warmColors.at(-1)]:["#b8b8b8","#7acbef","#3485d4","#2c64b7",coldColors.at(-1)];
     const step=Math.min(4,Math.abs(value)/limit*4),i=Math.min(3,Math.floor(step)),mix=step-i;
     const a=stops[i].slice(1).match(/../g).map(v=>parseInt(v,16)),b=stops[i+1].slice(1).match(/../g).map(v=>parseInt(v,16));
     return "#"+a.map((v,j)=>Math.round(v+(b[j]-v)*mix).toString(16).padStart(2,"0")).join("");

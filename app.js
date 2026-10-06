@@ -713,7 +713,7 @@ byId("save").addEventListener("click", () => {
       ctx.fillText(`${panel.pressure_hpa}hPa寒気：${on?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+310+row*44);
       for(const [i,v] of panel.cold_thresholds.entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+290+row*44,32,24);ctx.restore();ctx.fillStyle="#243247";ctx.fillText(`${v}℃以下`,x+42,ink.height+310+row*44);}
     }
-    ctx.fillText("寒気の目安：低温ほど濃い紫。",26,ink.height+399,output.width-52);
+    ctx.fillText("寒気の目安：低温ほど濃い青、最大は濃紺。",26,ink.height+399,output.width-52);
   }
   if (exportTerrain) {
     ctx.fillText("地表標高：NOAA ETOPO 2022 / EGM2008基準 / 1分格子（南北約1.9km）/ 投影変換した広域表示", 26, ink.height + 268);
@@ -788,7 +788,7 @@ function initialize(selected) {
   for (const canvas of [jetLayer,overlayLayer]) canvas.hidden = !reviewed || low || dyn;
   windLayer.setAttribute("aria-label",["fxfe5782","fxfe5784","fxfe577"].includes(selected.product.id)?"700hPaの湿域・上昇流と850hPaの寒気・暖気の色塗り":["aupq78","axfe578","feas-feas50"].includes(selected.product.id)?"湿域・寒気・暖気・正渦度・上昇流の色塗り":"300hPa等風速線に沿った緑色の塗り分け");
   analysisLayer.setAttribute("aria-label",low?"700・850hPaのトラフ、赤い二重曲線。リッジ、青いジグザグ線":feas?"500hPaと地上気圧のトラフは赤い二重曲線、リッジは青いジグザグ線":"500hPaのトラフは赤い二重曲線、リッジは青いジグザグ線");
-  temperatureLayer.setAttribute("aria-label",["fxfe5782","fxfe5784","fxfe577"].includes(selected.product.id)?"上段500hPaと下段850hPaの等温線。対応する実況図と同じ配色":["aupq78","axfe578","feas-feas50"].includes(selected.product.id)?"700・850hPaの等温線。0℃を境に暖色と寒色、両端は紫":selected.product.id==="aupq35"?"500hPaの気温線。暖かい薄い青から寒い濃い紫":"300・500hPaの気温線。暖かい薄い青から寒い濃い紫");
+  temperatureLayer.setAttribute("aria-label",["fxfe5782","fxfe5784","fxfe577"].includes(selected.product.id)?"上段500hPaと下段850hPaの等温線。対応する実況図と同じ配色":["aupq78","axfe578","feas-feas50"].includes(selected.product.id)?"700・850hPaの等温線。0℃を境に暖色と寒色、暖気はえんじ色、寒気は濃紺":selected.product.id==="aupq35"?"500hPaの気温線。暖かい薄い青から寒い濃い紫":"300・500hPaの気温線。暖かい薄い青から寒い濃い紫");
   paper.style.aspectRatio = `${ink.width} / ${ink.height}`;
   ready = true; paper.hidden = false; paper.dataset.ready = "true"; paper.dataset.chart = selected.product.id; paper.dataset.source = selected.variant.id;
   selectMode(byId("manual").open ? "paint" : "move"); render(); drawAnalysis(); drawWind(); drawSymbols(); drawGeography(); drawTemperature(); fit(); controls();
