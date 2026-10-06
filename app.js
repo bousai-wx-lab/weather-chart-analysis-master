@@ -754,7 +754,6 @@ function setPanel(open, focus = false) {
 }
 byId("panel-close").addEventListener("click", () => setPanel(false, true));
 byId("panel-open").addEventListener("click", () => setPanel(true, true));
-byId("choose-chart").addEventListener("click", () => { setPanel(true); byId("chart-select").scrollIntoView({ block: "nearest" }); byId("chart-select").focus(); });
 const narrowView = matchMedia("(max-width: 720px)");
 setPanel(!narrowView.matches);
 narrowView.addEventListener("change", (event) => setPanel(!event.matches));

@@ -4,9 +4,6 @@
 body { margin: 0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 .topbar { height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 14px; color: #fff; background: #164b68; border-bottom: 2px solid #5cb2bf; position: relative; z-index: 5; }
 h1 { font-size: 17px; font-weight: 700; margin: 0; white-space: nowrap; letter-spacing: .02em; }
-.edition { font-size: 10px; padding: 2px 5px; border: 1px solid #83a8bb; border-radius: 3px; white-space: nowrap; }
-#choose-chart { font-size: 12px; min-height: 30px; white-space: nowrap; padding: 3px 8px; color: #fff; background: transparent; border-color: #83a8bb; }
-#choose-chart:hover { background: #ffffff18; }
 .header-links { margin-left: auto; }
 .header-links > summary { display: none; }
 .header-links nav { display: flex; align-items: center; gap: 14px; }
@@ -165,7 +162,7 @@ dialog::backdrop { background: #23334b55; } dialog p { margin: 0 0 14px; } dialo
   .header-links nav a { padding: 9px 12px; }
 }
 @media (max-width: 720px) {
-  .topbar { padding: 0 8px; gap: 6px; } h1 { font-size: 15px; } .edition { display: none; }
+  .topbar { padding: 0 8px; gap: 6px; } h1 { font-size: 15px; }
   #workspace, #workspace.panel-collapsed { grid-template-columns: minmax(0, 1fr); }
   #control-panel { position: absolute; left: 0; top: 0; bottom: 0; z-index: 4; width: min(280px, calc(100% - 50px)); box-shadow: 3px 0 14px #24324733; }
   .viewer { grid-column: 1; }
