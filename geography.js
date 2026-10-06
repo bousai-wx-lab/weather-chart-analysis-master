@@ -9,7 +9,8 @@ const ChartGeography = (() => {
     { id: "waves", label: "陸は点・海は波", land: "dots", sea: "waves" },
     { id: "paper", label: "紙の質感", land: "paper", sea: "sea-paper" },
     { id: "sand", label: "砂と水面", land: "sand", sea: "ripples" },
-    { id: "satellite", label: "衛星写真", satellite: true }
+    { id: "satellite", label: "衛星写真", satellite: true },
+    { id: "grass", label: "草面と水面", land: "grass", sea: "ripples" }
   ].map(Object.freeze));
   const tiles = new Map();
   function validate(data, chart) {
@@ -34,7 +35,7 @@ const ChartGeography = (() => {
   function tile(kind) {
     if (tiles.has(kind)) return tiles.get(kind);
     const canvas = document.createElement("canvas");
-    const texture = ["paper", "sea-paper", "sand", "ripples"].includes(kind);
+    const texture = ["paper", "sea-paper", "sand", "ripples", "grass"].includes(kind);
     const size = texture ? 192 : 16;
     canvas.width = canvas.height = size;
     const c = canvas.getContext("2d");
@@ -49,14 +50,19 @@ const ChartGeography = (() => {
     } else if (kind === "waves") {
       c.strokeStyle = "#6190ad"; c.beginPath(); c.moveTo(0, 8); c.bezierCurveTo(4, 2, 4, 2, 8, 8); c.bezierCurveTo(12, 14, 12, 14, 16, 8); c.stroke();
     } else {
-      c.fillStyle = { paper: "#ede0cb", "sea-paper": "#e1edf3", sand: "#ebd7b8", ripples: "#dcecf3" }[kind]; c.fillRect(0, 0, size, size);
+      c.fillStyle = { paper: "#ede0cb", "sea-paper": "#e1edf3", sand: "#ebd7b8", ripples: "#dcecf3", grass: "#bfd7a5" }[kind]; c.fillRect(0, 0, size, size);
       let seed = 137;
       const random = () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296; };
-      for (let n = 0; n < (kind === "sand" ? 1900 : 900); n++) {
+      for (let n = 0; n < (kind === "sand" ? 1900 : kind === "grass" ? 1300 : 900); n++) {
         const x = random() * size, y = random() * size;
         c.globalAlpha = 0.08 + random() * 0.3;
-        c.fillStyle = kind === "sea-paper" || kind === "ripples" ? "#668eaa" : "#8c7457";
-        c.fillRect(x, y, kind === "sand" ? 1.5 : 1 + random() * 10, 1 + random() * 1.5);
+        if (kind === "grass") {
+          c.strokeStyle = random() < 0.5 ? "#6c924e" : "#9ebf7b"; c.lineWidth = 0.8;
+          c.beginPath(); c.moveTo(x, y); c.lineTo(x + random() * 2 - 1, y - 2 - random() * 3); c.stroke();
+        } else {
+          c.fillStyle = kind === "sea-paper" || kind === "ripples" ? "#668eaa" : "#8c7457";
+          c.fillRect(x, y, kind === "sand" ? 1.5 : 1 + random() * 10, 1 + random() * 1.5);
+        }
       }
       c.globalAlpha = 0.6;
       if (kind === "ripples") {
