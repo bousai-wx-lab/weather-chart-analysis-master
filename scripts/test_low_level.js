@@ -54,6 +54,27 @@ const islands=low.warmRings(island,12);
 assert.equal(bandContains(islands,[130,130]),true);assert.equal(bandContains(islands,[200,200]),false);assert.equal(bandContains(islands,[50,50]),false);
 assert.deepEqual(low.warmRings(stripe,24),[]);
 assert.deepEqual(low.warmRings(thermal([lev(12,contour([[100,100],[100,300]])),lev(15,contour([[200,50],[200,350]]))]),12),[]);
+// Source dashes stop just before the frame: preserve the warm strip, but do
+// not promote an interior break or an inward-facing endpoint to a boundary.
+const nativeTrace={method:"native_regular_dash_connectivity",unassigned_groups:0,dash_length_px:6,numeric_label_font_px:24};
+const inset=structuredClone(stripe);inset.temperature_trace=nativeTrace;
+inset.levels[0].lines=inset.levels[0].lines.map(line=>({...line,points:line.points.map(([x,y])=>[x,y===0?25:375])}));
+const insetRings=low.warmRings(inset,12);
+assert.equal(bandContains(insetRings,[200,390]),true);assert.equal(bandContains(insetRings,[50,390]),false);
+assert.equal(bandContains(insetRings,[350,390]),false);
+const broken=thermal([lev(12,contour([[100,100],[100,300]])),lev(15,contour([[200,50],[200,350]]))]);broken.temperature_trace=nativeTrace;
+assert.deepEqual(low.warmRings(broken,12),[]);
+const inward=structuredClone(inset);inward.levels[0].lines[0].points=[[100,25],[100,0],[100,375]];
+assert.deepEqual(low.warmRings(inward,12),[]);
+// Actual FEAS regression: the 21 C band reaches the southern frame between
+// two open contours, while the colder side and the northern cold area stay out.
+const feas=JSON.parse(fs.readFileSync(path.join(root,"assets/analysis/feas50-12-20261005.json"))).panels[1];
+const warm21=low.warmRings(feas,21);
+assert.equal(bandContains(warm21,[450,2400]),true);
+assert.equal(bandContains(warm21,[480,2460]),true);
+assert.equal(bandContains(warm21,[200,2350]),false);
+assert.equal(bandContains(warm21,[1450,2200]),false);
+assert.equal(bandContains(warm21,[1150,1800]),false);
 assert.equal(low.temperatureColor(850,24),"#8b3fc7");assert.equal(low.temperatureColor(700,15),"#8b3fc7");
 assert.equal(low.temperatureColor(850,-24),"#6f2da8");assert.equal(low.temperatureColor(700,-36),"#6f2da8");
 assert.equal(low.temperatureColor(850,0),low.temperatureColor(700,0));

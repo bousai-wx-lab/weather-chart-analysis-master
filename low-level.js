@@ -24,9 +24,22 @@ const LowLevelAnalysis = (() => {
         if((a[1]>y)!==(c[1]>y) && x<(c[0]-a[0])*(y-a[1])/(c[1]-a[1])+a[0])hit=!hit;
       }return hit;
     };
-    const edge=([x,y])=>{
-      const choices=[[Math.abs(y-t),Math.max(0,Math.min(w,x-l))],[Math.abs(x-r),w+Math.max(0,Math.min(h,y-t))],[Math.abs(y-b),w+h+Math.max(0,Math.min(w,r-x))],[Math.abs(x-l),2*w+h+Math.max(0,Math.min(h,b-y))]].sort((a,b)=>a[0]-b[0]);
-      return choices[0][0]<12?choices[0][1]:null;
+    const trace=panel.temperature_trace;
+    const nativeDash=trace?.method==="native_regular_dash_connectivity" && trace.unassigned_groups===0 &&
+      Number.isFinite(trace.dash_length_px) && trace.dash_length_px>0 && Number.isFinite(trace.numeric_label_font_px) && trace.numeric_label_font_px>0;
+    const edge=(points)=>{
+      const [x,y]=points[0];
+      const choices=[[Math.abs(y-t),Math.max(0,Math.min(w,x-l)),[0,-1]],[Math.abs(x-r),w+Math.max(0,Math.min(h,y-t)),[1,0]],[Math.abs(y-b),w+h+Math.max(0,Math.min(w,r-x)),[0,1]],[Math.abs(x-l),2*w+h+Math.max(0,Math.min(h,b-y)),[-1,0]]].sort((a,b)=>a[0]-b[0]);
+      const [distance,position,normal]=choices[0];
+      if(distance<12)return position;
+      // Native FEAS dashes can stop in the narrow margin before the frame.
+      // Close the fill across that margin only when the source curve heads
+      // outward. Interior breaks never become invented chart-wide boundaries.
+      if(!nativeDash || distance>trace.numeric_label_font_px+2*trace.dash_length_px)return null;
+      const next=points.find(p=>Math.hypot(p[0]-x,p[1]-y)>2*trace.dash_length_px);
+      if(!next)return null;
+      const dx=x-next[0],dy=y-next[1];
+      return (dx*normal[0]+dy*normal[1])/Math.hypot(dx,dy)>.4?position:null;
     };
     const at=s=>{s=((s%total)+total)%total;return s<=w?[l+s,t]:s<=w+h?[r,t+s-w]:s<=2*w+h?[r-(s-w-h),b]:[l,b-(s-2*w-h)];};
     const refs=panel.levels.filter(v=>v.temperature_c!==threshold).flatMap(v=>v.lines.flatMap(line=>[.25,.5,.75].map(f=>({value:v.temperature_c,point:line.points[Math.floor((line.points.length-1)*f)]}))));
@@ -34,7 +47,7 @@ const LowLevelAnalysis = (() => {
     const rings=[];let incomplete=false;
     for(const line of level.lines){
       if(line.closed){rings.push(line.points);continue;}
-      const start=edge(line.points.at(-1)),end0=edge(line.points[0]);
+      const start=edge([...line.points].reverse()),end0=edge(line.points);
       if(start===null || end0===null){incomplete=true;continue;}
       const end=end0<=start?end0+total:end0;
       const corners=[0,w,w+h,2*w+h].flatMap(s=>[s,s+total]).filter(s=>s>start&&s<end).sort((a,b)=>a-b);
