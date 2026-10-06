@@ -859,6 +859,7 @@ function keepDrawing() {
 function shareMessage(message) {
   byId("share-message").textContent = message;
   byId("share-message").hidden = !message;
+  if (message) byId("status").textContent = message;
 }
 function captureShared() {
   return {
