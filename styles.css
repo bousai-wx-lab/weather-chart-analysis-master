@@ -80,23 +80,61 @@ button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-v
 input[type='color'] { display: block; border: 0; padding: 0; width: 30px; height: 22px; background: none; cursor: pointer; }
 .settings { gap: 10px; } label { font-size: 12px; } label select { margin-left: 4px; }
 .history { flex-wrap: wrap; }
-.axis-tools { display: grid; grid-template-columns: 1fr 1fr 1.5fr; }
-.axis-tools button { padding: 5px 4px; }
-#manual-trough { color: #ef2323; }
-#manual-ridge { color: #2563eb; }
-.axis-edit-actions { flex-wrap: wrap; }
-.vector-tools { display: grid; grid-template-columns: repeat(4,1fr); }
-.vector-tools button { padding: 5px 2px; font-size: 11px; }
-.vector-style { margin: 0; padding: 8px; border: 1px solid #dce3eb; border-radius: 5px; min-width: 0; }
-.vector-style legend { color: #164b68; font-size: 11px; }
-.vector-style-fields { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 4px 0; }
-.vector-style label { font-size: 11px; }
-.vector-style input[type='number'] { width: 46px; min-height: 30px; box-sizing: border-box; font: inherit; border: 1px solid #ccd5e1; border-radius: 4px; }
-.vector-style input[type='color'] { width: 32px; height: 26px; }
-.vector-style select { font-size: 11px; padding: 4px; max-width: 114px; }
-#vector-size-style input { margin-left: 8px; }
-.weather-picker { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; }
-.weather-picker button { font-size: 22px; padding: 3px; }
+/* Drawing tools show their marks; settings follow the active tool. */
+.manual-panel .toolbar { gap: 10px; }
+.manual-navigation { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.drawing-tools { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 6px; }
+.draw-tool { position: relative; display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; font-size: 11px; border-radius: 7px; }
+.draw-tool svg { width: 28px; height: 24px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.manual-navigation .draw-tool { min-height: 38px; padding: 5px 4px; }
+.manual-navigation svg { width: 18px; height: 20px; }
+.drawing-tools .draw-tool { flex-direction: column; gap: 3px; height: 58px; padding: 5px 2px; }
+.draw-tool[aria-pressed='true'] { color: #164b68; border: 2px solid #205880; padding: 4px 1px; background: #edf6fb; box-shadow: none; font-weight: 700; }
+.draw-tool[aria-pressed='true']::after { content: ''; position: absolute; right: 3px; top: 3px; width: 5px; height: 5px; border-radius: 50%; background: #205880; }
+#manual-trough { color: #dc2626; } #manual-ridge { color: #2563eb; }
+.weather-tool-icon { font-size: 24px; line-height: 24px; }
+.tool-options { padding: 10px; border-radius: 8px; border: 1px solid #d9e4ed; background: #f5f9fc; display: flex; flex-direction: column; gap: 10px; }
+.tool-guidance { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+#tool-name { font-size: 12px; color: #164b68; }
+#tool-state { font-size: 10px; color: #58677a; }
+.tool-options #hint { margin: -4px 0 0; color: #536579; font-size: 11px; line-height: 1.65; }
+#axis-draft-actions button { flex: 1; }
+#axis-finish { background: #205880; border-color: #205880; color: #fff; font-weight: 600; }
+#axis-finish:disabled { background: #e4eaf0; border-color: #d4dce6; color: #7b8a99; }
+.axis-edit-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.axis-edit-actions button { font-size: 11px; padding: 5px 3px; }
+#axis-remove { grid-column: 1 / -1; color: #a54343; }
+.tool-options .palette { gap: 5px; justify-content: space-between; }
+.tool-options .swatch { width: 28px; min-width: 28px; height: 28px; min-height: 28px; border-radius: 50%; padding: 0; font-size: 0; }
+.tool-options .swatch[aria-pressed='true']::after { content: '✓'; font-size: 15px; }
+.tool-options .swatch[aria-pressed='true'] { outline: 2px solid #536579; outline-offset: 2px; box-shadow: inset 0 0 0 2px #fff; }
+.tool-options .custom-color { display: flex; align-items: center; gap: 3px; }
+.tool-options input[type='color'] { width: 30px; height: 30px; border: 1px solid #ccd5e1; border-radius: 4px; padding: 2px; }
+.tool-options .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tool-options label { font-size: 11px; }
+.tool-options .settings label { display: flex; flex-direction: column; gap: 4px; }
+.tool-options .settings label select { width: 100%; margin: 0; }
+#shape-picker label { display: flex; align-items: center; justify-content: space-between; }
+#shape-type { flex: 1; margin-left: 8px; }
+.vector-style { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.vector-style legend { margin: 0 0 6px; color: #58677a; font-size: 10px; }
+.vector-style-fields { display: flex; gap: 8px; margin: 0; }
+.vector-style-fields > label { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.vector-style input[type='number'] { width: 100%; height: 34px; padding: 4px 6px; font: inherit; border: 1px solid #ccd5e1; border-radius: 5px; }
+.vector-style select { width: 100%; min-width: 0; font-size: 11px; padding: 4px; margin: 0; }
+#vector-fill-style { align-items: end; }
+#vector-fill-style label:first-child { flex-direction: row; align-items: center; min-height: 34px; }
+#vector-size-style { display: flex; align-items: center; gap: 8px; }
+#vector-size-style input { width: 80px; }
+.weather-picker { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 5px; }
+.weather-picker button { font-size: 22px; padding: 3px; min-height: 36px; }
+.draw-on-chart { display: none; background: #205880; border-color: #205880; color: #fff; font-weight: 600; }
+.draw-on-chart:hover:not(:disabled) { background: #164b68; }
+.manual-panel .history { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+.manual-panel .history button { font-size: 11px; padding: 4px 2px; }
+.history button span { font-size: 17px; vertical-align: -1px; }
+.manual-panel .privacy-note { margin: 10px 0 0; font-size: 10px; line-height: 1.6; }
+#ink[data-mode='axis-edit'] { cursor: default; }
 #axis-editor { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 7; pointer-events: none; }
 .save { background: #1d4f7d; border-color: #1d4f7d; color: #fff; font-weight: 600; }
 .save:hover:not(:disabled) { background: #173f64; }
@@ -208,14 +246,19 @@ dialog::backdrop { background: #23334b55; } dialog p { margin: 0 0 14px; } dialo
 #share-url { display: block; box-sizing: border-box; width: 100%; resize: vertical; font: inherit; font-size: 12px; border: 1px solid #bacbd8; border-radius: 4px; padding: 8px; margin-bottom: 12px; }
 .panel-actions #export-link { flex-basis: 100%; }
 .manual-panel .toolbar { padding-top: 0; }
-.manual-panel .tools { display: grid; grid-template-columns: 1fr 1fr 1fr; }
-.manual-panel .tools button { padding: 5px 4px; font-size: 11px; }
 .empty-analysis { padding: 10px 2px; }
 .empty-analysis p { font-size: 12px; line-height: 1.8; color: #58677a; }
 .empty-analysis button { width: 100%; color: #164b68; background: #edf5fa; }
 @media (max-width: 720px) {
   #control-panel { width: min(300px, calc(100% - 44px)); }
   .panel-modes button { min-height: 40px; }
+  .manual-panel .toolbar { gap: 8px; }
+  .drawing-tools .draw-tool { height: 54px; }
+  .tool-options { padding: 8px; gap: 8px; }
+  .draw-on-chart { display: block; min-height: 40px; }
+  .manual-navigation .draw-tool, .tool-options button, .tool-options select, .manual-panel .history button { min-height: 40px; }
+  .tool-options .swatch { width: 30px; min-width: 30px; height: 40px; border-radius: 6px; }
+  .tool-options input[type="color"], .vector-style input[type="number"] { height: 40px; }
   .layer-row, .layer-detail-button { min-height: 42px; }
   #active-only { min-height: 36px; }
 }

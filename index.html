@@ -8,7 +8,7 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=9d9bda5a8c6627fb">
+  <link rel="stylesheet" href="styles.css?v=d53f8da131e79138">
   <script src="analysis.js?v=c29e1167372baa26" defer></script>
   <script src="geography.js?v=8efbf1eb5570ec04" defer></script>
   <script src="catalog.js?v=5d05b51e947a0758" defer></script>
@@ -19,7 +19,7 @@
   <script src="manual-axis.js?v=97444597caa86879" defer></script>
   <script src="share-state.js?v=9869b76f6611cc0d" defer></script>
   <script src="chart-view.js?v=a90b4ff142d435b7" defer></script>
-  <script src="app.js?v=f8d517a2cd369c6d" defer></script>
+  <script src="app.js?v=cd4c161581405ea0" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -114,35 +114,39 @@
       <div id="manual-only" class="empty-analysis" hidden><h2>この図は手描きで解析</h2><p>自動の色塗り・解析はまだありません。原図を確認しながら、色や太さを選んで書き込めます。</p><button type="button" id="start-manual">手描きを開く</button></div>
     </section>
     <section id="manual" class="manual-panel" aria-label="手描きの道具" hidden>
-    <div class="toolbar" aria-label="色塗りの道具">
-      <div class="group tools" aria-label="操作">
-        <button type="button" id="paint" aria-pressed="true">色を塗る</button>
-        <button type="button" id="erase" aria-pressed="false">消しゴム</button>
-        <button type="button" id="move" aria-pressed="false">移動</button>
+    <div class="toolbar" aria-label="手描きの道具">
+      <div class="manual-navigation" aria-label="編集と画面操作">
+        <button type="button" id="axis-edit" class="draw-tool" aria-pressed="false"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><path d="m8 2 17 12-8 2-4 7Z"/><rect x="1" y="2" width="3" height="3"/></svg><span>選択・編集</span></button><button type="button" id="move" class="draw-tool" aria-pressed="false"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><path d="M16 2v20M6 12h20m-13-7 3-3 3 3m-6 14 3 3 3-3M9 9l-3 3 3 3m14-6 3 3-3 3"/></svg><span>画面を移動</span></button>
       </div>
-      <div class="group axis-tools" aria-label="曲線の作図">
-        <button type="button" id="manual-trough" aria-pressed="false">トラフ</button>
-        <button type="button" id="manual-ridge" aria-pressed="false">リッジ</button>
-        <button type="button" id="axis-edit" aria-pressed="false">選択・頂点編集</button>
+      <div class="drawing-tools" role="group" aria-label="描く道具">
+        <button type="button" id="paint" class="draw-tool" aria-pressed="true"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><path d="m22 3 5 5-14 14H8v-5Z"/><path d="m18 7 5 5M5 22h22"/></svg><span>色を塗る</span></button>
+        <button type="button" id="erase" class="draw-tool" aria-pressed="false"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><path d="m18 3 10 9-11 11H9l-6-6Z"/><path d="m10 11 10 9M17 23h12"/></svg><span>消しゴム</span></button>
+        <button type="button" id="manual-trough" class="draw-tool" aria-pressed="false"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><path d="M3 4c6 1 7 16 13 16S23 6 29 5M3 8c6 1 7 16 13 16S23 10 29 9"/></svg><span>トラフ</span></button>
+        <button type="button" id="manual-ridge" class="draw-tool" aria-pressed="false"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><path d="m2 4 5 1-2 5 6-1-2 6 6-2-1 6 5-3 1 5 4-5 3 2 3-5"/></svg><span>リッジ</span></button>
+        <button type="button" id="manual-curve" class="draw-tool" aria-pressed="false"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><path d="M2 19C10-9 18 35 30 4"/></svg><span>曲線</span></button>
+        <button type="button" id="manual-line" class="draw-tool" aria-pressed="false"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><path d="M3 20 29 4"/><path d="m23 4 6 0 0 6"/></svg><span>直線</span></button>
+        <button type="button" id="manual-shape" class="draw-tool" aria-pressed="false"><svg viewBox="0 0 32 24" aria-hidden="true" focusable="false"><rect x="2" y="4" width="14" height="14" rx="1"/><circle cx="23" cy="15" r="7"/></svg><span>図形</span></button>
+        <button type="button" id="manual-emoji" class="draw-tool" aria-pressed="false"><span class="weather-tool-icon" aria-hidden="true">☀️</span><span>天気マーク</span></button>
       </div>
-      <div class="group vector-tools" aria-label="線と図形">
-        <button type="button" id="manual-curve" aria-pressed="false">曲線</button>
-        <button type="button" id="manual-line" aria-pressed="false">直線</button>
-        <button type="button" id="manual-shape" aria-pressed="false">図形</button>
-        <button type="button" id="manual-emoji" aria-pressed="false">天気マーク</button>
-      </div>
+      <div class="tool-options" aria-label="選んだ道具の設定">
+        <div class="tool-guidance"><strong id="tool-name">色を塗る</strong><span id="tool-state">ドラッグで描く</span></div>
+        <p id="hint" class="gesture-note">ドラッグして色を塗ります。</p>
+        <div class="group" id="axis-draft-actions" hidden>
+          <button type="button" id="axis-finish">曲線を確定</button>
+          <button type="button" id="axis-cancel">キャンセル</button>
+        </div>
       <div id="shape-picker" hidden><label>図形<select id="shape-type"><option value="rect">四角</option><option value="ellipse">円・楕円</option><option value="roundrect">角丸四角</option><option value="triangle">三角</option></select></label></div>
       <div id="weather-picker" class="weather-picker" aria-label="カレンダーの天気マーク" hidden></div>
       <fieldset id="vector-style" class="vector-style" hidden>
-        <legend>書式</legend>
+        <legend id="vector-style-title">線の設定</legend>
         <div id="vector-line-style" class="vector-style-fields">
           <label>線の色<input type="color" id="vector-color" value="#2563eb"></label>
           <label>太さ<input type="number" id="vector-width" min="1" max="40" step="1" value="6"></label>
-          <label>濃さ<input type="number" id="vector-opacity" min="0" max="100" step="1" value="100">%</label>
+          <label>濃さ (%)<input type="number" id="vector-opacity" min="0" max="100" step="1" value="100"></label>
         </div>
         <div id="vector-arrow-style" class="vector-style-fields">
-          <label>始点<select id="vector-start"><option value="none">なし</option><option value="arrow">矢印 ▶</option><option value="open">開いた矢印</option><option value="circle">丸 ●</option><option value="diamond">ひし形 ◆</option></select></label>
-          <label>終点<select id="vector-end"><option value="none">なし</option><option value="arrow">矢印 ▶</option><option value="open">開いた矢印</option><option value="circle">丸 ●</option><option value="diamond">ひし形 ◆</option></select></label>
+          <label>始点<select id="vector-start"><option value="none">なし</option><option value="arrow">矢印 ◀</option><option value="open">矢印 ＜</option><option value="circle">丸 ●</option><option value="diamond">ひし形 ◆</option></select></label>
+          <label>終点<select id="vector-end"><option value="none">なし</option><option value="arrow">矢印 ▶</option><option value="open">矢印 ＞</option><option value="circle">丸 ●</option><option value="diamond">ひし形 ◆</option></select></label>
         </div>
         <div id="vector-fill-style" class="vector-style-fields" hidden>
           <label><input type="checkbox" id="vector-filled" checked>塗りつぶし</label>
@@ -150,10 +154,6 @@
         </div>
         <label id="vector-size-style" hidden>大きさ<input type="number" id="vector-size" min="24" max="12288" value="140"></label>
       </fieldset>
-      <div class="group" id="axis-draft-actions" hidden>
-        <button type="button" id="axis-finish">完了</button>
-        <button type="button" id="axis-cancel">キャンセル</button>
-      </div>
       <div class="group axis-edit-actions" id="axis-edit-actions" hidden>
         <button type="button" id="axis-add-node" aria-pressed="false">頂点を追加</button>
         <button type="button" id="axis-remove-node">頂点を削除</button>
@@ -168,16 +168,18 @@
         <label class="custom-color">自由色<input type="color" id="color" value="#2563eb" aria-label="自由色"></label>
       </div>
       <div class="group settings">
-        <label>太さ<select id="width"><option value="5">細</option><option value="14" selected>中</option><option value="30">太</option><option value="60">極太</option></select></label>
-        <label>濃さ<select id="opacity"><option value="0.2">20%</option><option value="0.35" selected>35%</option><option value="0.6">60%</option><option value="1">100%</option></select></label>
+        <label id="brush-size"><span id="brush-size-label">太さ</span><select id="width"><option value="5">細</option><option value="14" selected>中</option><option value="30">太</option><option value="60">極太</option></select></label>
+        <label id="brush-opacity">濃さ<select id="opacity"><option value="0.2">20%</option><option value="0.35" selected>35%</option><option value="0.6">60%</option><option value="1">100%</option></select></label>
       </div>
-      <div class="group history">
-        <button type="button" id="undo" disabled>取り消し</button>
-        <button type="button" id="redo" disabled>やり直し</button>
-        <button type="button" id="clear" disabled>手描きを消す</button>
+      </div>
+      <button type="button" id="draw-on-chart" class="draw-on-chart">天気図に描く →</button>
+      <div class="group history" aria-label="手描きの履歴">
+        <button type="button" id="undo" title="取り消し（⌘ / Ctrl + Z）" disabled><span aria-hidden="true">↶</span> 戻す</button>
+        <button type="button" id="redo" title="やり直し（⌘ / Ctrl + Shift + Z）" disabled><span aria-hidden="true">↷</span> やり直す</button>
+        <button type="button" id="clear" disabled>すべて消す</button>
       </div>
     </div>
-    <p id="hint" class="gesture-note">拡大した図をドラッグして移動します。</p><p class="privacy-note">描画内容は自動保存しません。残したい状態は「共有リンクコピー」でリンクを控えてください。そのリンクを開くと解析と手描きを戻せます。</p>
+    <p class="privacy-note">残す・共有するには「共有リンクコピー」。<br>手描きは自動保存されません。</p>
     </section>
     </div>
     <div class="panel-actions" aria-label="表示と保存">

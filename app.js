@@ -566,7 +566,6 @@ function selectMode(next) {
   mode = next;
   ink.dataset.mode = mode;
   for (const [id,value] of [["paint","paint"],["erase","erase"],["move","move"],["manual-trough","trough"],["manual-ridge","ridge"],["axis-edit","axis-edit"],...vectorModeButtons]) byId(id).setAttribute("aria-pressed", String(value === mode));
-  byId("hint").textContent = mode === "move" ? "拡大した図をドラッグして移動します。" : mode === "erase" ? "手描きだけを消します。原図は残ります。" : "ドラッグして色を塗ります。原図の黒い線は残ります。";
   axisAdding=false;drawAxisEditor();updateAxisControls();controls();
 }
 
@@ -587,6 +586,8 @@ function syncVectorStyle(object) {
 function updateAxisControls() {
   const curve=selectedAxis(),editing=mode==="axis-edit",drawing=["trough","ridge","curve"].includes(mode);
   for(const id of ["manual-trough","manual-ridge","axis-edit",...vectorModeButtons.map(x=>x[0])])byId(id).disabled=!ready || pointer!==null;
+  byId("draw-on-chart").disabled=!ready || featuresLoading || pointer!==null;
+  byId("draw-on-chart").textContent=mode==="axis-edit"?"天気図で編集 →":mode==="move"?"天気図を動かす →":axisDraft?"作図を続ける →":"天気図に描く →";
   byId("axis-draft-actions").hidden=!axisDraft;
   byId("axis-finish").disabled=!axisDraft || axisDraft.points.length<2;
   byId("axis-edit-actions").hidden=!editing || !curve;
@@ -595,8 +596,10 @@ function updateAxisControls() {
   byId("axis-add-node").disabled=!editableCurve || curve.nodes.length>=ManualAxis.maxNodes;
   byId("axis-add-node").setAttribute("aria-pressed",String(axisAdding));
   byId("axis-remove-node").disabled=!editableCurve || curve.nodes.length<=2 || axisNode===null;
-  byId("manual").querySelector(".palette").hidden=drawing || editing || vectorModes.includes(mode);
-  byId("manual").querySelector(".settings").hidden=drawing || editing || vectorModes.includes(mode);
+  byId("manual").querySelector(".palette").hidden=mode!=="paint";
+  byId("manual").querySelector(".settings").hidden=!["paint","erase"].includes(mode);
+  byId("brush-opacity").hidden=mode!=="paint";
+  byId("brush-size-label").textContent=mode==="erase"?"消す範囲":"太さ";
   byId("shape-picker").hidden=mode!=="shape";
   byId("weather-picker").hidden=mode!=="emoji";
   const type=vectorType(),box=["rect","ellipse","roundrect","triangle","emoji"].includes(type);
@@ -605,11 +608,24 @@ function updateAxisControls() {
   byId("vector-fill-style").hidden=!box || type==="emoji";byId("vector-size-style").hidden=type!=="emoji";
   if(editing)syncVectorStyle(curve);
   for(const button of byId("weather-picker").children)button.setAttribute("aria-pressed",String(button.dataset.weather===weatherId));
-  if(drawing)byId("hint").textContent=`${mode==="curve"?"曲線":mode==="trough"?"赤い二重線のトラフ":"青いギザギザ線のリッジ"}。クリックで頂点を置き、ダブルクリック・Enter・「完了」で確定します。Escapeでキャンセル。`;
-  if(mode==="line")byId("hint").textContent="ドラッグして直線を引きます。配置後も両端や線全体を動かし、書式を変更できます。";
-  if(mode==="shape")byId("hint").textContent="ドラッグして図形を描きます。クリックだけでも置けます。Shiftで縦横を同じ長さにします。";
-  if(mode==="emoji")byId("hint").textContent="天気マークを選んで図をクリックします。配置後はドラッグで移動し、四隅でサイズを変更できます。";
-  if(editing)byId("hint").textContent=axisAdding ? "線上をクリックすると、形を保ったまま頂点を追加します。" : "線・図形・天気マークを選んでドラッグで移動。四角い点で位置・サイズ、白い丸で曲線の曲がり具合を調整します。";
+  const names={paint:"色を塗る",erase:"消しゴム",move:"画面を移動",trough:"トラフ",ridge:"リッジ",curve:"曲線",line:"直線",shape:"図形",emoji:"天気マーク","axis-edit":"選択・編集",rect:"四角",ellipse:"円・楕円",roundrect:"角丸四角",triangle:"三角"};
+  const hints={
+    paint:"図をドラッグして塗ります。原図の黒い線は残ります。",
+    erase:"ドラッグした部分の手描きを消します。線・図形を丸ごと消すには「選択・編集」。",
+    move:"拡大した天気図をドラッグして動かします。描いたものを動かすときは「選択・編集」。",
+    trough:"赤い二重線。図を順にクリックして頂点を置きます。最後に「曲線を確定」またはダブルクリック。",
+    ridge:"青いギザギザ線。図を順にクリックして頂点を置きます。最後に「曲線を確定」またはダブルクリック。",
+    curve:"図を順にクリックして頂点を置きます。最後に「曲線を確定」またはダブルクリック。",
+    line:"始点から終点までドラッグして引きます。両端の矢印と色・太さを変えられます。",
+    shape:"図をドラッグして大きさを決めます。Shiftを押すと正方形・円になります。",
+    emoji:"マークを選んで図をクリック。ドラッグすると大きさも決められます。"
+  };
+  const hint=editing ? axisAdding?"線上をクリックして頂点を追加します。":!curve?"図の上で線・図形・天気マークをクリックして選びます。":ManualAxis.isBox(curve)?"ドラッグで移動、四隅の点で大きさを調整できます。":ManualAxis.isCurve(curve)?"四角い頂点をドラッグして移動。白い丸を動かすと曲がり具合を調整できます。":"両端の点をドラッグして調整。線をドラッグすると全体を動かせます。" : hints[mode];
+  const title=editing && curve ? names[curve.type]+"を編集中":names[mode];
+  const state=axisDraft ? `頂点 ${axisDraft.points.length}個・作図中` : editing ? curve?"選択中":"図をクリックして選ぶ" : drawing?"クリックで頂点を置く":mode==="emoji"?"クリックで配置":"ドラッグで操作";
+  for(const [id,value]of [["tool-name",title],["tool-state",state],["hint",hint]])if(byId(id).textContent!==value)byId(id).textContent=value;
+  byId("vector-style-title").textContent=type==="emoji"?"マークの設定":box?"図形の設定":"線の設定";
+
 }
 function drawAxisEditor() {
   const svg=byId("axis-editor");svg.replaceChildren();
@@ -754,6 +770,7 @@ function setPanel(open, focus = false) {
 }
 byId("panel-close").addEventListener("click", () => setPanel(false, true));
 byId("panel-open").addEventListener("click", () => setPanel(true, true));
+byId("draw-on-chart").addEventListener("click", () => { setPanel(false); viewport.focus({preventScroll:true}); });
 const narrowView = matchMedia("(max-width: 720px)");
 setPanel(!narrowView.matches);
 narrowView.addEventListener("change", (event) => setPanel(!event.matches));
