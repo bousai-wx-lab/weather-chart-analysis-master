@@ -68,7 +68,7 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
   }
   recent++;
 }
-assert.equal(recent,61);assert.equal(analyses,19);assert.equal(maps,57);
+assert.equal(recent,61);assert.equal(analyses,30);assert.equal(maps,57);
 let surfaces=0;
 for(const p of catalog.products.filter(p=>["FXFE502","FXFE504","FXFE507"].includes(p.code)))for(const v of p.variants){
   const selected=ChartCatalog.selection(catalog,p.id,v.id,1),raw=fs.readFileSync(path.join(root,v.analysis_path));
@@ -180,6 +180,46 @@ for(const p of catalog.products.filter(p=>["FXFE5782","FXFE5784","FXFE577"].incl
   forecasts++;
 }
 assert.equal(forecasts,12);
+let feasForecasts=0;
+const feasHours={FEAS502:24,FEAS504:48,FEAS507:72,FEAS509:96,FEAS512:120,FEAS514:144,FEAS516:168,FEAS519:192,FEAS521:216,FEAS524:240,FEAS526:264};
+for(const product of catalog.products.filter(p=>feasHours[p.code.split("/").at(-1)]))for(const variant of product.variants){
+  const selected=ChartCatalog.selection(catalog,product.id,variant.id,1),raw=fs.readFileSync(path.join(root,variant.analysis_path));
+  assert.equal(crypto.createHash("sha256").update(raw).digest("hex"),variant.analysis_sha256);
+  assert.ok(allow.allowed_files.includes(variant.analysis_path));
+  const data=snapshot.validate(JSON.parse(raw),selected,"bousai-wx-lab.github.io");
+  assert.equal(data.feas_forecast,true);
+  assert.deepEqual(data.panels.map(p=>p.pressure_hpa),[500,850]);
+  assert.ok(atlas.validate(geo,selected).panels.length===2,"Both original map frames need land/water coverage");
+  const [upper,lower]=data.panels;
+  assert.ok(upper.troughs.length && upper.ridges.length && upper.positive_vorticity_rectangles.length);
+  assert.ok(upper.positive_vorticity_rectangles.every(r=>r[3]-r[1]<upper.bounds[3]-upper.bounds[1]),"A meridian must not become a full-height pink fill");
+  assert.equal(lower.troughs.length+lower.ridges.length,0);
+  assert.equal(lower.temperature_interval_c,3);
+  assert.equal(lower.temperature_label_interval_c,6);
+  assert.ok([3,9,15,21].every(t=>lower.levels.some(l=>l.temperature_c===t)),"Unnumbered intermediate isotherms must remain present");
+  assert.deepEqual(lower.cold_bands.map(b=>b.threshold),[0,-3,-6,-9,-12]);
+  for(const band of lower.cold_bands){assert.ok(band.rings.length);checkTemperatureSide(lower,band,false);}
+  for(const band of lowLevel.warmBands(lower)){assert.ok(band.rings.length,"Supported warm bands must reach the map edge");checkTemperatureSide(lower,band,true);}
+  assert.ok(data.symbols.some(s=>s.letter==="L") && data.symbols.some(s=>s.letter==="H") && data.symbols.some(s=>s.letter==="C") && data.symbols.some(s=>s.letter==="W"));
+  for(const axis of [...upper.troughs,...upper.ridges]){
+    const turns=[];
+    for(let i=2;i<axis.points.length;i++){
+      const a=axis.points[i-2],b=axis.points[i-1],c=axis.points[i];
+      const cross=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);
+      const dot=(b[0]-a[0])*(c[0]-b[0])+(b[1]-a[1])*(c[1]-b[1]);
+      if(Math.abs(Math.atan2(cross,dot))>.005)turns.push(Math.sign(cross));
+    }
+    assert.ok(new Set(turns).size<=1,"One broad phenomenon must not turn into a small S curve");
+  }
+  for(const mutate of [d=>delete d.feas_forecast,d=>d.panels[0].forecast_hour++,d=>d.panels[1].pressure_hpa=0,
+    d=>d.panels[1].temperature_interval_c=6,d=>delete d.panels[1].temperature_trace,
+    d=>d.panels[1].temperature_trace.frame_margin_px=100,d=>d.panels[1].temperature_trace.unassigned_groups=1,
+    d=>d.panels[1].troughs=d.panels[0].troughs,d=>d.panels[0].positive_vorticity_rectangles[0][0]=0]){
+    const bad=structuredClone(data);mutate(bad);assert.throws(()=>snapshot.validate(bad,selected,"localhost"));
+  }
+  feasForecasts++;
+}
+assert.equal(feasForecasts,22);
 const a=catalog.products.find(p=>p.id==="aupq35");assert.match(a.variants[0].label,/2026-10-04 12:00 UTC/);assert.match(a.variants[1].label,/2026-10-04 00:00 UTC/);assert.equal(a.variants[2].id,"aupq35-reviewed");
 const bad=structuredClone(catalog);bad.products.find(p=>p.id==="aupq35").variants[0].analysis_path="../private/trial.json";assert.throws(()=>ChartCatalog.validate(bad));
-console.log(`SNAPSHOT_TESTS_OK latest_pages=${recent} trial_sources=${analyses} forecast_color_sources=${forecasts} maps=${maps} public_source_binding_checked local_trial_not_public approved_status_not_fabricated`);
+console.log(`SNAPSHOT_TESTS_OK latest_pages=${recent} trial_sources=${analyses} forecast_color_sources=${forecasts} feas_forecast_sources=${feasForecasts} maps=${maps} public_source_binding_checked local_trial_not_public approved_status_not_fabricated`);

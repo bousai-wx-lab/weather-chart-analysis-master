@@ -13,6 +13,9 @@ const LowLevelAnalysis = (() => {
   }
   function warmRings(panel, threshold) {
     if (panel.pressure_hpa!==850 || !warmThresholds.includes(threshold)) return [];
+    return thermalRings(panel,threshold,true);
+  }
+  function thermalRings(panel, threshold, warmer) {
     const level=panel.levels.find(l=>l.temperature_c===threshold);
     if (!level?.lines.length) return [];
     const [l,t,r,b]=panel.bounds,w=r-l,h=b-t,total=2*(w+h);
@@ -32,6 +35,10 @@ const LowLevelAnalysis = (() => {
       const choices=[[Math.abs(y-t),Math.max(0,Math.min(w,x-l)),[0,-1]],[Math.abs(x-r),w+Math.max(0,Math.min(h,y-t)),[1,0]],[Math.abs(y-b),w+h+Math.max(0,Math.min(w,r-x)),[0,1]],[Math.abs(x-l),2*w+h+Math.max(0,Math.min(h,b-y)),[-1,0]]].sort((a,b)=>a[0]-b[0]);
       const [distance,position,normal]=choices[0];
       if(distance<12)return position;
+      // FEAS forecast PDF contours are clipped in a narrow inset of the map
+      // frame. A tangential curve can terminate there as well as an outward
+      // one; the bound is supplied and validated with this native source.
+      if(nativeDash && Number.isFinite(trace.frame_margin_px) && distance<=trace.frame_margin_px)return position;
       // Native FEAS dashes can stop in the narrow margin before the frame.
       // Close the fill across that margin only when the source curve heads
       // outward. Interior breaks never become invented chart-wide boundaries.
@@ -59,15 +66,15 @@ const LowLevelAnalysis = (() => {
       // closed warm islands supported by adjacent, independently valued lines.
       return level.lines.filter(line=>line.closed).map(line=>line.points).filter(ring=>{
         const inside=refs.filter(ref=>contains(ring,ref.point));
-        if(inside.length)return inside.every(ref=>ref.value>threshold);
+        if(inside.length)return inside.every(ref=>warmer?ref.value>threshold:ref.value<threshold);
         const distance=ref=>Math.min(...ring.filter((_,i)=>i%8===0).map(p=>Math.hypot(p[0]-ref.point[0],p[1]-ref.point[1])));
-        return [...refs].sort((a,b)=>distance(a)-distance(b)).slice(0,3).every(ref=>ref.value<threshold);
+        return [...refs].sort((a,b)=>distance(a)-distance(b)).slice(0,3).every(ref=>warmer?ref.value<threshold:ref.value>threshold);
       });
     }
     // Across each complete isotherm the warm/cold side alternates. Infer the
     // parity from other printed contour values, preserving separate islands
     // and cold holes without stacking overlapping half-chart polygons.
-    const votes=refs.map(ref=>({same:rings.reduce((hit,ring)=>hit!==contains(ring,ref.point),false)===(ref.value>threshold)}));
+    const votes=refs.map(ref=>({same:rings.reduce((hit,ring)=>hit!==contains(ring,ref.point),false)===(warmer?ref.value>threshold:ref.value<threshold)}));
     const same=votes.filter(v=>v.same).length;
     if(Math.max(same,votes.length-same)/votes.length<.9)return [];
     return same>=votes.length/2?rings:[frame,...rings];
@@ -124,6 +131,7 @@ const LowLevelAnalysis = (() => {
     return data;
   }
   function coldRings(panel, threshold) {
+    if(panel.pressure_hpa===850 && panel.temperature_trace?.frame_margin_px && [0,-3,-6,-9,-12].includes(threshold))return thermalRings(panel,threshold,false);
     const level=panel.levels.find(l=>l.temperature_c===threshold);
     if (!level) return []; // No extrapolation below the lowest printed contour.
     const [left,top,right,bottom]=panel.bounds;

@@ -268,7 +268,7 @@ byId("start-manual").addEventListener("click", () => { selectPanelMode(true); by
 
 function controls() {
   byId("precipitation").disabled=true;byId("precipitation").setAttribute("aria-pressed","false");
-  windLayer.setAttribute("aria-label",trial?.surface_forecast?"上段500hPaの正渦度と、下段地上の降水量を色分け":"300hPa等風速線に沿った緑色の塗り分け");
+  windLayer.setAttribute("aria-label",trial?.feas_forecast?"上段500hPaの正渦度と、下段850hPaの寒気・暖気を色分け":trial?.surface_forecast?"上段500hPaの正渦度と、下段地上の降水量を色分け":"300hPa等風速線に沿った緑色の塗り分け");
   const afterClear = history.slice(history.map((s) => s.kind).lastIndexOf("clear") + 1);
   const paintCount = afterClear.filter((s) => s.kind === "paint").length;
   byId("undo").disabled = !history.length;
@@ -329,7 +329,7 @@ function controls() {
   paper.dataset.geography = showGeography && geography ? geographyStyle : "off";
   if(trial) {
     for(const tool of analysisTools){const available=trialAvailable(tool.id),button=byId(tool.button);button.disabled=!ready||!available;button.setAttribute("aria-pressed",String(available && trialEnabled(tool.id)));}
-    if(trial.color_only||trial.surface_forecast){
+    if(trial.color_only||trial.surface_forecast||trial.feas_forecast){
       byId("original").disabled=!analysisTools.some(tool=>trialAvailable(tool.id)&&trialEnabled(tool.id))&&!enabledOverlays().length;
       for(const id of ["wet","ascent","cold850","warm850"])paper.dataset[id]=String(trialAvailable(id)&&trialEnabled(id));
     }
@@ -679,7 +679,7 @@ byId("save").addEventListener("click", () => {
   const temperatureFooterHeight = exportTemperatures.length ? exportTemperatures.length*40+56 : 0;
   const overlayFooterHeight = exportOverlays.length ? (exportOverlays.length+1)*44 : 0;
   const exportWarm=showWarm850 && Boolean((trial || lowLevel || dynamics)?.panels.some(p=>p.pressure_hpa===850));
-  const footerHeight = ((lowLevel || dynamics || trial?.color_only || trial?.surface_forecast) ? 440 : exportTerrain ? 340 : 260) + (exportWarm ? 56 : 0) + (trial?.surface_forecast && exportTerrain ? 170 : 0);
+  const footerHeight = ((lowLevel || dynamics || trial?.color_only || trial?.surface_forecast || trial?.feas_forecast) ? 440 : exportTerrain ? 340 : 260) + (exportWarm ? 56 : 0) + ((trial?.surface_forecast || trial?.feas_forecast) && exportTerrain ? 170 : 0);
   output.width = ink.width; output.height = ink.height + footerHeight + temperatureFooterHeight + overlayFooterHeight;
   const ctx = output.getContext("2d");
   ctx.fillStyle = "white"; ctx.fillRect(0, 0, output.width, output.height);
@@ -706,8 +706,8 @@ byId("save").addEventListener("click", () => {
   ctx.fillText("利用者の着色・解析は気象庁の公式の解析ではありません。天気図解析マスター · Weather Chart Analysis Master · Bousai Wx Lab", 26, ink.height + 193, output.width - 52);
   const geoLabel = showGeography && geography ? `${ChartGeography.patterns.find(p => p.id === geographyStyle).label}（濃さ${Math.round(geographyOpacity * 100)}%）` : "表示なし";
   ctx.fillText(geography ? `陸海：${geoLabel}${showGeography && geographyStyle === "satellite" ? " / NASA Earth Observatory・Reto Stoeckli / 2004年10月の地表画像（投影変換）" : ""}` : "自動更新なし。解析・予想の日時は原図内を確認してください。", 26, ink.height + 231, output.width - 52);
-  if(dynamics) {
-    ctx.fillText(`500hPa正渦度：${showVorticity?"ピンク・濃さ30%":"表示なし"}${isFeas()?"":` / 700hPa上昇流：${showAscent?"黄緑・濃さ30%":"表示なし"}`}`,26,ink.height+275);
+  if(dynamics || trial?.feas_forecast) {
+    ctx.fillText(`500hPa正渦度：${showVorticity?"ピンク・濃さ30%":"表示なし"}${isFeas()||trial?.feas_forecast?"":` / 700hPa上昇流：${showAscent?"黄緑・濃さ30%":"表示なし"}`}`,26,ink.height+275);
     ctx.fillText(`850hPa寒気：${showCold850?`濃さ${Math.round(coldOpacity*100)}%`:"表示なし"}`,26,ink.height+319);
     for(const [i,v] of [0,-3,-6,-9,-12].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+297,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+319);}
   }
@@ -736,7 +736,7 @@ byId("save").addEventListener("click", () => {
     ctx.fillText("寒気の目安：低温ほど濃い青、最大は濃紺。",26,ink.height+399,output.width-52);
   }
   if (exportTerrain) {
-    const terrainOffset = trial?.surface_forecast ? 170 : 0;
+    const terrainOffset = trial?.surface_forecast || trial?.feas_forecast ? 170 : 0;
     ctx.fillText("地表標高：NOAA ETOPO 2022 / EGM2008基準 / 1分格子（南北約1.9km）/ 投影変換した広域表示", 26, ink.height + 268 + terrainOffset);
     if (geographyStyle === "relief") ctx.fillText("陰影の明暗は斜面の向き・傾き。北西からの照明で山の凹凸を強調しています。", 26, ink.height + 307 + terrainOffset);
     else for (const [index, label] of elevationData.legend.labels.entries()) {
@@ -990,7 +990,7 @@ function trialLegends() {
       swatch.style.borderColor=scale.colors[j];swatch.style.setProperty("--temperature-color",scale.colors[j]);swatch.style.setProperty("--temperature-opacity",scale.opacity);entry.append(swatch,`${value}℃`);legend.append(entry);
     }
     const heading=byId(i?"lower-plane":"upper-plane"),pos=document.createElement("span");pos.textContent=i?"下段":"上段";
-    heading.replaceChildren(trial.surface_forecast?(i?"地上 ":"500 hPa "):trial.color_only?(i?"850 / 700 hPa ":"500 / 700 hPa "):trial.product==="FEAS50"&&i?"地上 / 850 hPa ":trial.product==="AXFE578"&&i?"850 / 700 hPa ":`${scale.pressure_hpa} hPa `,pos);
+    heading.replaceChildren(trial.surface_forecast?(i?"地上 ":"500 hPa "):trial.color_only?(i?"850 / 700 hPa ":"500 / 700 hPa "):(trial.product==="FEAS50"||trial.feas_forecast)&&i?"地上 / 850 hPa ":trial.product==="AXFE578"&&i?"850 / 700 hPa ":`${scale.pressure_hpa} hPa `,pos);
     legend.setAttribute("aria-label",`${scale.pressure_hpa}hPaの気温線`);
     byId(`detail-${id}`).querySelector("p").textContent="原図の等温線を半透明の色線で表示します。";
     document.querySelector(`[data-layer-detail="${id}"]`).setAttribute("aria-label",`${scale.pressure_hpa}hPaの気温線の詳細`);
@@ -998,9 +998,9 @@ function trialLegends() {
   if(trial.color_only)byId("upper-plane").parentElement.append(document.querySelector('[data-layer="wet"]'));
   else byId("lower-plane").parentElement.append(document.querySelector('[data-layer="wet"]'));
   byId("detail-wet").querySelector("p").textContent=trial.color_only?"700hPaの湿域（T−Td < 3℃）の縦線範囲を青水色・濃さ30%で表示します。降水域とは異なります。":"原図の湿域（T−Td < 3℃）のドットを含む範囲。元のドットと線が透ける濃さ30%。境界はドット間隔の半分程度の近似です。降水域とは異なります。";
-  if(trial.color_only)byId("detail-temperature500").querySelector("p").textContent="原図の850hPa等温線は3℃間隔、数値の印字は6℃間隔です。寒気・暖気の色塗りも、原図にある3℃ごとの境界を使います。";
+  if(trial.color_only||trial.feas_forecast)byId("detail-temperature500").querySelector("p").textContent="原図の850hPa等温線は3℃間隔、数値の印字は6℃間隔です。寒気・暖気の色塗りも、原図にある3℃ごとの境界を使います。";
   for(const id of ["trough","ridge","trough700","ridge700"]) {
-    const upper=["trough","ridge"].includes(id)?trial.surface_forecast||["AXFE578","FEAS50"].includes(trial.product):["AUPQ35","AUPQ78"].includes(trial.product);
+    const upper=["trough","ridge"].includes(id)?trial.surface_forecast||trial.feas_forecast||["AXFE578","FEAS50"].includes(trial.product):["AUPQ35","AUPQ78"].includes(trial.product);
     byId(upper?"upper-plane":"lower-plane").parentElement.append(document.querySelector(`[data-layer="${id}"]`));
     const ridge=id.startsWith("ridge"),plane=trialPlane(id),panel=id.endsWith("700")?trialOther():trialMain();
     byId(id).textContent=`${plane}の${ridge?"リッジ":"トラフ"}`;
@@ -1022,6 +1022,8 @@ async function loadTrial(selected,revision,signal) {
     const data=SnapshotAnalysis.validate(JSON.parse(new TextDecoder().decode(bytes)),selected,location.hostname);
     if(revision!==loadRevision)return;
     trial=data;symbols=isotherms=data;
+    if(data.feas_forecast)temperatureLayer.setAttribute("aria-label","下段850hPaの3℃ごとの等温線。暖気は暖色、寒気は寒色");
+    if(data.feas_forecast)byId("chart-note").textContent="上段500hPa：文字・正渦度・トラフ・リッジ。下段地上：文字・850hPa等温線・寒気・暖気。陸海背景も選べます。各枠の有効時刻を確認してください。";
     if(data.surface_forecast)byId("chart-note").textContent=`上段500hPa：正渦度・トラフ・リッジ。下段地上：前${trialOther().accumulation_hours}時間の降水量。各枠の有効時刻を確認してください。`;
     if(data.color_only){
       showTrough=showRidge=showTrough700=showRidge700=false;
