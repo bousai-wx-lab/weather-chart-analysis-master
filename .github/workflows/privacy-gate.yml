@@ -48,6 +48,7 @@ jobs:
           node scripts/test_chart_view.js
           node --check manual-axis.js
           node scripts/test_manual_axis.js
+          node scripts/test_drawing_tools.js
           node --check share-state.js
           node scripts/test_share_state.js
           node --check analysis.js

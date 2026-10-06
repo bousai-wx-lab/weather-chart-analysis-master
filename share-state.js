@@ -12,7 +12,7 @@ const ChartShare = (() => {
   }
   function validate(value) {
     keys(value,["version","chart","drawing","view"]);
-    if (![1,2].includes(value.version)) invalid();
+    if (![1,2,3].includes(value.version)) invalid();
     const c = value.chart, d = value.drawing;
     keys(c,["product","variant","page","source","image","width","height","analysis"]);
     if (![c.product,c.variant].every(v => typeof v === "string" && /^[a-z0-9-]{1,100}$/.test(v)) || !Number.isInteger(c.page) || !number(c.page,1,100) || ![c.source,c.image].every(v => typeof v === "string" && /^[a-f0-9]{64}$/.test(v)) || !(c.analysis === null || (typeof c.analysis === "string" && /^[a-f0-9]{64}$/.test(c.analysis))) || ![c.width,c.height].every(v => Number.isInteger(v) && number(v,200,12288))) invalid();
@@ -25,10 +25,15 @@ const ChartShare = (() => {
       for (const stroke of list) {
         if (stroke?.kind === "clear") { keys(stroke,["kind"]); continue; }
         if(stroke?.kind === "axis") {
-          if(value.version!==2 || !axes.valid(stroke,c.width,c.height) || axisIds.has(stroke.id))invalid();
+          if(value.version<2 || !axes.valid(stroke,c.width,c.height) || axisIds.has(stroke.id))invalid();
           axisIds.add(stroke.id);points+=stroke.nodes.length*3;
           if(points>maxPoints)tooLarge();
           continue;
+        }
+        if(stroke?.kind === "vector") {
+          if(value.version!==3 || !axes.validVector(stroke,c.width,c.height) || axisIds.has(stroke.id))invalid();
+          axisIds.add(stroke.id);points+=stroke.nodes.length*3;
+          if(points>maxPoints)tooLarge();continue;
         }
         keys(stroke,["kind","color","width","opacity","points"]);
         if (!["paint","erase"].includes(stroke.kind) || typeof stroke.color !== "string" || !/^#[a-f0-9]{6}$/i.test(stroke.color) || !number(stroke.width,0.001,Math.max(c.width,c.height)*2) || !number(stroke.opacity,0,1) || !Array.isArray(stroke.points) || !stroke.points.length) invalid();
@@ -102,7 +107,7 @@ const ChartShare = (() => {
   async function decode(fragment) {
     if (!fragment.startsWith("#share=")) return null;
     if (fragment.length > maxFragment) tooLarge();
-    const match = /^#share=([12])\.([jd])\.([A-Za-z0-9_-]+)$/.exec(fragment);
+    const match = /^#share=([123])\.([jd])\.([A-Za-z0-9_-]+)$/.exec(fragment);
     if (!match) invalid();
     try {
       const encoded = match[3].replaceAll("-","+").replaceAll("_","/");

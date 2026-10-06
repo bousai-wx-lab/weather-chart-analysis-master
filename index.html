@@ -8,7 +8,7 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=0d6661ac8eba9290">
+  <link rel="stylesheet" href="styles.css?v=d15ed43a49883aa7">
   <script src="analysis.js?v=c29e1167372baa26" defer></script>
   <script src="geography.js?v=8efbf1eb5570ec04" defer></script>
   <script src="catalog.js?v=5d05b51e947a0758" defer></script>
@@ -16,10 +16,10 @@
   <script src="geography-atlas.js?v=b5ebd20dcdfe7728" defer></script>
   <script src="dynamics.js?v=e6b3307d3f75d036" defer></script>
   <script src="snapshot-analysis.js?v=a4822d85e6972d25" defer></script>
-  <script src="manual-axis.js?v=abd61e843e4b53a6" defer></script>
-  <script src="share-state.js?v=37bdeb8ba8fba7fa" defer></script>
+  <script src="manual-axis.js?v=97444597caa86879" defer></script>
+  <script src="share-state.js?v=9869b76f6611cc0d" defer></script>
   <script src="chart-view.js?v=a90b4ff142d435b7" defer></script>
-  <script src="app.js?v=e8eb2ef3dcc636df" defer></script>
+  <script src="app.js?v=1210a36b273a879c" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -124,8 +124,33 @@
       <div class="group axis-tools" aria-label="曲線の作図">
         <button type="button" id="manual-trough" aria-pressed="false">トラフ</button>
         <button type="button" id="manual-ridge" aria-pressed="false">リッジ</button>
-        <button type="button" id="axis-edit" aria-pressed="false">頂点の編集</button>
+        <button type="button" id="axis-edit" aria-pressed="false">選択・頂点編集</button>
       </div>
+      <div class="group vector-tools" aria-label="線と図形">
+        <button type="button" id="manual-curve" aria-pressed="false">曲線</button>
+        <button type="button" id="manual-line" aria-pressed="false">直線</button>
+        <button type="button" id="manual-shape" aria-pressed="false">図形</button>
+        <button type="button" id="manual-emoji" aria-pressed="false">天気マーク</button>
+      </div>
+      <div id="shape-picker" hidden><label>図形<select id="shape-type"><option value="rect">四角</option><option value="ellipse">円・楕円</option><option value="roundrect">角丸四角</option><option value="triangle">三角</option></select></label></div>
+      <div id="weather-picker" class="weather-picker" aria-label="カレンダーの天気マーク" hidden></div>
+      <fieldset id="vector-style" class="vector-style" hidden>
+        <legend>書式</legend>
+        <div id="vector-line-style" class="vector-style-fields">
+          <label>線の色<input type="color" id="vector-color" value="#2563eb"></label>
+          <label>太さ<input type="number" id="vector-width" min="1" max="40" step="1" value="6"></label>
+          <label>濃さ<input type="number" id="vector-opacity" min="0" max="100" step="1" value="100">%</label>
+        </div>
+        <div id="vector-arrow-style" class="vector-style-fields">
+          <label>始点<select id="vector-start"><option value="none">なし</option><option value="arrow">矢印 ▶</option><option value="open">開いた矢印</option><option value="circle">丸 ●</option><option value="diamond">ひし形 ◆</option></select></label>
+          <label>終点<select id="vector-end"><option value="none">なし</option><option value="arrow">矢印 ▶</option><option value="open">開いた矢印</option><option value="circle">丸 ●</option><option value="diamond">ひし形 ◆</option></select></label>
+        </div>
+        <div id="vector-fill-style" class="vector-style-fields" hidden>
+          <label><input type="checkbox" id="vector-filled" checked>塗りつぶし</label>
+          <label>塗る色<input type="color" id="vector-fill" value="#555555"></label>
+        </div>
+        <label id="vector-size-style" hidden>大きさ<input type="number" id="vector-size" min="24" max="12288" value="140"></label>
+      </fieldset>
       <div class="group" id="axis-draft-actions" hidden>
         <button type="button" id="axis-finish">完了</button>
         <button type="button" id="axis-cancel">キャンセル</button>
@@ -133,7 +158,7 @@
       <div class="group axis-edit-actions" id="axis-edit-actions" hidden>
         <button type="button" id="axis-add-node" aria-pressed="false">頂点を追加</button>
         <button type="button" id="axis-remove-node">頂点を削除</button>
-        <button type="button" id="axis-remove">この線を削除</button>
+        <button type="button" id="axis-remove">選択したものを削除</button>
       </div>
       <div class="group palette" aria-label="色">
         <button type="button" class="swatch blue" data-color="#2563eb" aria-label="青" aria-pressed="true">青</button>
@@ -195,7 +220,7 @@
     <p id="share-copy-note" role="status" aria-live="polite" class="dialog-note">リンク欄を選択してコピーすることもできます。</p>
     <div><button type="button" id="share-copy">コピー</button><button type="button" id="share-close">閉じる</button></div>
   </dialog>
-  <dialog id="clear-dialog"><form method="dialog"><p>手描きの色塗りをすべて消しますか？</p><p class="dialog-note">原図と解析案は残ります。取り消しで戻せます。</p><div><button value="cancel">戻る</button><button value="clear" class="danger">手描きを消す</button></div></form></dialog>
+  <dialog id="clear-dialog"><form method="dialog"><p>線・図形・天気マークを含め、手描きをすべて消しますか？</p><p class="dialog-note">原図と解析案は残ります。取り消しで戻せます。</p><div><button value="cancel">戻る</button><button value="clear" class="danger">手描きを消す</button></div></form></dialog>
   <dialog id="overlay-dialog" aria-labelledby="overlay-dialog-title">
     <div class="overlay-dialog-heading"><h2 id="overlay-dialog-title">解析を重ねる</h2><button type="button" id="overlay-close" aria-label="重ね合わせの画面を閉じる">×</button></div>
     <section id="overlay-picker">

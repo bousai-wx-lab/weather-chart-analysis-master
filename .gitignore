@@ -6,6 +6,7 @@
 !app.js
 !manual-axis.js
 !scripts/test_manual_axis.js
+!scripts/test_drawing_tools.js
 !share-state.js
 !chart-view.js
 !scripts/test_chart_view.js

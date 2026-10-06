@@ -77,6 +77,9 @@ let active = null;
 let pointer = null;
 let pan = null;
 let axisDraft = null, axisPreview = null, axisSelected = null, axisNode = null, axisDrag = null, axisAdding = false;
+let activeVector = null, weatherId = "sun";
+const vectorModes=["curve","line","shape","emoji"];
+const vectorModeButtons=[["manual-curve","curve"],["manual-line","line"],["manual-shape","shape"],["manual-emoji","emoji"]];
 let ready = false;
 let chartLabel = "AUPQ35";
 let exportUrl = null;
@@ -365,7 +368,7 @@ function controls() {
   }
   const layerCount = updateAnalysisPanel();
   const overlayCount = updateOverlayPanel();
-  const layers = [layerCount ? `解析${layerCount}項目` : "原図", overlayCount ? `重ね合わせ${overlayCount}項目` : "", paintCount ? `手描き${paintCount}筆` : "",axisCount ? `手描き曲線${axisCount}本` : ""].filter(Boolean);
+  const layers = [layerCount ? `解析${layerCount}項目` : "原図", overlayCount ? `重ね合わせ${overlayCount}項目` : "", paintCount ? `手描き${paintCount}筆` : "",axisCount ? `線・図形${axisCount}個` : ""].filter(Boolean);
   byId("status").textContent = loadingError || (!ready ? "図を読み込み中" : [geographyError, terrainError, symbolError, temperatureError, analysisError, overlayError].filter(Boolean).join("・") || [currentSelection?.product.code, ...(layers.length ? layers : ["原図を表示中"])].filter(Boolean).join("・"));
 }
 
@@ -536,7 +539,7 @@ function path(stroke) {
 
 function apply(stroke) {
   if (stroke.kind === "clear") { context.clearRect(0, 0, ink.width, ink.height); return; }
-  if (stroke.kind === "axis") { ManualAxis.draw(context,stroke,ChartAnalysis); return; }
+  if (["axis","vector"].includes(stroke.kind)) { ManualAxis.draw(context,stroke,ChartAnalysis); return; }
   path(stroke);
   context.save();
   context.globalCompositeOperation = stroke.kind === "erase" ? "destination-out" : "source-over";
@@ -549,10 +552,11 @@ function render() {
   context.clearRect(0, 0, ink.width, ink.height);
   for (const stroke of ManualAxis.flattened(history,axisDrag)) apply(stroke);
   if (active) apply(active);
+  if(activeVector)ManualAxis.draw(context,activeVector,ChartAnalysis);
   if (axisDraft) {
     const points=[...axisDraft.points];
     if(axisPreview && ManualAxis.distance(points.at(-1),axisPreview)>1)points.push(axisPreview);
-    ManualAxis.draw(context,{type:axisDraft.type,nodes:ManualAxis.smooth(points,ink.width,ink.height)},ChartAnalysis);
+    ManualAxis.draw(context,{kind:axisDraft.type==="curve"?"vector":"axis",type:axisDraft.type,nodes:ManualAxis.smooth(points,ink.width,ink.height),style:axisDraft.style},ChartAnalysis);
   }
   drawAxisEditor(); updateAxisControls();
 }
@@ -561,31 +565,58 @@ function selectMode(next) {
   if(axisDraft && next!==mode)completeAxis(false);
   mode = next;
   ink.dataset.mode = mode;
-  for (const [id,value] of [["paint","paint"],["erase","erase"],["move","move"],["manual-trough","trough"],["manual-ridge","ridge"],["axis-edit","axis-edit"]]) byId(id).setAttribute("aria-pressed", String(value === mode));
+  for (const [id,value] of [["paint","paint"],["erase","erase"],["move","move"],["manual-trough","trough"],["manual-ridge","ridge"],["axis-edit","axis-edit"],...vectorModeButtons]) byId(id).setAttribute("aria-pressed", String(value === mode));
   byId("hint").textContent = mode === "move" ? "拡大した図をドラッグして移動します。" : mode === "erase" ? "手描きだけを消します。原図は残ります。" : "ドラッグして色を塗ります。原図の黒い線は残ります。";
   axisAdding=false;drawAxisEditor();updateAxisControls();controls();
 }
 
 function selectedAxis() { return ManualAxis.resolved(history,axisDrag).get(axisSelected); }
+function vectorType() {return mode==="shape"?byId("shape-type").value:mode==="axis-edit"?selectedAxis()?.type:mode;}
+function readVectorStyle(type=vectorType()) {
+  const box=["rect","ellipse","roundrect","triangle","emoji"].includes(type);
+  return {stroke:byId("vector-color").value,fill:box && byId("vector-filled").checked?byId("vector-fill").value:"none",width:Math.max(1,Math.min(40,Number(byId("vector-width").value)||6)),opacity:Math.max(0,Math.min(100,Number(byId("vector-opacity").value || 100)))/100,start:box?"none":byId("vector-start").value,end:box?"none":byId("vector-end").value};
+}
+function syncVectorStyle(object) {
+  if(!object || object.kind!=="vector" || byId("vector-style").contains(document.activeElement))return;
+  const s=object.style;
+  byId("vector-color").value=s.stroke;byId("vector-width").value=String(s.width);byId("vector-opacity").value=String(s.opacity*100);
+  byId("vector-start").value=s.start;byId("vector-end").value=s.end;
+  if(ManualAxis.isBox(object) && object.type!=="emoji"){byId("vector-filled").checked=s.fill!=="none";if(s.fill!=="none")byId("vector-fill").value=s.fill;}
+  if(object.type==="emoji")byId("vector-size").value=String(Math.round(ManualAxis.bounds(object).width));
+}
 function updateAxisControls() {
-  const curve=selectedAxis(),editing=mode==="axis-edit",drawing=["trough","ridge"].includes(mode);
-  for(const id of ["manual-trough","manual-ridge","axis-edit"])byId(id).disabled=!ready || pointer!==null;
+  const curve=selectedAxis(),editing=mode==="axis-edit",drawing=["trough","ridge","curve"].includes(mode);
+  for(const id of ["manual-trough","manual-ridge","axis-edit",...vectorModeButtons.map(x=>x[0])])byId(id).disabled=!ready || pointer!==null;
   byId("axis-draft-actions").hidden=!axisDraft;
   byId("axis-finish").disabled=!axisDraft || axisDraft.points.length<2;
   byId("axis-edit-actions").hidden=!editing || !curve;
-  byId("axis-add-node").disabled=!curve || curve.nodes.length>=ManualAxis.maxNodes;
+  const editableCurve=curve && ManualAxis.isCurve(curve);
+  byId("axis-add-node").hidden=byId("axis-remove-node").hidden=!editableCurve;
+  byId("axis-add-node").disabled=!editableCurve || curve.nodes.length>=ManualAxis.maxNodes;
   byId("axis-add-node").setAttribute("aria-pressed",String(axisAdding));
-  byId("axis-remove-node").disabled=!curve || curve.nodes.length<=2 || axisNode===null;
-  byId("manual").querySelector(".palette").hidden=drawing || editing;
-  byId("manual").querySelector(".settings").hidden=drawing || editing;
-  if(drawing)byId("hint").textContent=`${mode==="trough"?"赤い二重線のトラフ":"青いギザギザ線のリッジ"}。クリックで頂点を置き、ダブルクリック・Enter・「完了」で確定します。Escapeでキャンセル。`;
-  if(editing)byId("hint").textContent=axisAdding ? "線上をクリックすると、形を保ったまま頂点を追加します。" : "線を選び、四角い頂点をドラッグして移動します。白い丸のハンドルで曲がり具合を調整できます。";
+  byId("axis-remove-node").disabled=!editableCurve || curve.nodes.length<=2 || axisNode===null;
+  byId("manual").querySelector(".palette").hidden=drawing || editing || vectorModes.includes(mode);
+  byId("manual").querySelector(".settings").hidden=drawing || editing || vectorModes.includes(mode);
+  byId("shape-picker").hidden=mode!=="shape";
+  byId("weather-picker").hidden=mode!=="emoji";
+  const type=vectorType(),box=["rect","ellipse","roundrect","triangle","emoji"].includes(type);
+  byId("vector-style").hidden=!(vectorModes.includes(mode) || (editing && curve?.kind==="vector"));
+  byId("vector-line-style").hidden=type==="emoji";byId("vector-arrow-style").hidden=box;
+  byId("vector-fill-style").hidden=!box || type==="emoji";byId("vector-size-style").hidden=type!=="emoji";
+  if(editing)syncVectorStyle(curve);
+  for(const button of byId("weather-picker").children)button.setAttribute("aria-pressed",String(button.dataset.weather===weatherId));
+  if(drawing)byId("hint").textContent=`${mode==="curve"?"曲線":mode==="trough"?"赤い二重線のトラフ":"青いギザギザ線のリッジ"}。クリックで頂点を置き、ダブルクリック・Enter・「完了」で確定します。Escapeでキャンセル。`;
+  if(mode==="line")byId("hint").textContent="ドラッグして直線を引きます。配置後も両端や線全体を動かし、書式を変更できます。";
+  if(mode==="shape")byId("hint").textContent="ドラッグして図形を描きます。クリックだけでも置けます。Shiftで縦横を同じ長さにします。";
+  if(mode==="emoji")byId("hint").textContent="天気マークを選んで図をクリックします。配置後はドラッグで移動し、四隅でサイズを変更できます。";
+  if(editing)byId("hint").textContent=axisAdding ? "線上をクリックすると、形を保ったまま頂点を追加します。" : "線・図形・天気マークを選んでドラッグで移動。四角い点で位置・サイズ、白い丸で曲線の曲がり具合を調整します。";
 }
 function drawAxisEditor() {
   const svg=byId("axis-editor");svg.replaceChildren();
   if(!ready || byId("manual").hidden)return;
   const curve=mode==="axis-edit"?selectedAxis():null;
-  const nodes=curve?.nodes || (axisDraft?ManualAxis.smooth(axisDraft.points,ink.width,ink.height):[]);
+  const box=curve && ManualAxis.isBox(curve);
+  const nodes=box?ManualAxis.corners(curve).map(p=>({p})):curve?.nodes || (axisDraft?ManualAxis.smooth(axisDraft.points,ink.width,ink.height):[]);
   if(curve && axisNode!==null && axisNode>=nodes.length)axisNode=nodes.length-1;
   if(!nodes.length)return;
   const scale=ink.width/Math.max(1,ink.getBoundingClientRect().width),radius=5*scale;
@@ -595,7 +626,10 @@ function drawAxisEditor() {
     for(const [key,value]of Object.entries(attrs))el.setAttribute(key,String(value));
     svg.append(el);return el;
   };
-  if(curve && axisNode!==null) {
+  if(box) {
+    const b=ManualAxis.bounds(curve);element("rect",{x:b.x,y:b.y,width:b.width,height:b.height,fill:"none",stroke:"#2563eb","stroke-width":scale,"stroke-dasharray":`${4*scale} ${3*scale}`});
+  }
+  if(curve && ManualAxis.isCurve(curve) && axisNode!==null) {
     const n=nodes[axisNode];
     for(const part of ["in","out"]) {
       if((part==="in" && axisNode===0) || (part==="out" && axisNode===nodes.length-1))continue;
@@ -609,7 +643,7 @@ function completeAxis(edit=true) {
   if(!axisDraft)return;
   const draft=axisDraft;axisDraft=axisPreview=null;
   if(draft.points.length>=2) {
-    const curve={kind:"axis",id:crypto.randomUUID(),type:draft.type,nodes:ManualAxis.smooth(draft.points,ink.width,ink.height)};
+    const curve=draft.type==="curve"?{kind:"vector",id:crypto.randomUUID(),type:"curve",nodes:ManualAxis.smooth(draft.points,ink.width,ink.height),style:draft.style,emoji:null}:{kind:"axis",id:crypto.randomUUID(),type:draft.type,nodes:ManualAxis.smooth(draft.points,ink.width,ink.height)};
     history.push(curve);future.length=0;axisSelected=curve.id;axisNode=0;
     if(edit)selectMode("axis-edit");
   }
@@ -617,32 +651,35 @@ function completeAxis(edit=true) {
 }
 function cancelAxis() {axisDraft=axisPreview=null;render();controls();}
 function commitAxisEdit(nodes) {
-  if(!selectedAxis())return;
-  history.push({kind:"axis-edit",id:axisSelected,nodes});future.length=0;render();controls();
+  const object=selectedAxis();if(!object)return;
+  history.push(object.kind==="vector"?{kind:"vector-edit",id:axisSelected,value:{...object,nodes}}:{kind:"axis-edit",id:axisSelected,nodes});future.length=0;render();controls();
 }
 function axisDown(p) {
   const pos=[p.x,p.y],tolerance=12*ink.width/ink.getBoundingClientRect().width;
-  if(["trough","ridge"].includes(mode)) {
-    if(!axisDraft)axisDraft={type:mode,points:[]};
+  if(["trough","ridge","curve"].includes(mode)) {
+    if(!axisDraft)axisDraft={type:mode,points:[],style:readVectorStyle("curve")};
     if(axisDraft.points.length<ManualAxis.maxNodes && (!axisDraft.points.length || ManualAxis.distance(pos,axisDraft.points.at(-1))>tolerance/12))axisDraft.points.push(pos);
     axisPreview=null;render();controls();return;
   }
   let curve=selectedAxis(),hit=null;
   if(curve && !axisAdding) {
-    const targets=curve.nodes.map((n,i)=>({index:i,part:"p",distance:ManualAxis.distance(n.p,pos)}));
-    if(axisNode!==null)for(const part of ["in","out"])
+    const targets=(ManualAxis.isBox(curve)?ManualAxis.corners(curve).map(p=>({p})):curve.nodes).map((n,i)=>({index:i,part:ManualAxis.isBox(curve)?"resize":"p",distance:ManualAxis.distance(n.p,pos)}));
+    if(axisNode!==null && ManualAxis.isCurve(curve))for(const part of ["in","out"])
       if(!((part==="in" && axisNode===0)||(part==="out" && axisNode===curve.nodes.length-1)))targets.push({index:axisNode,part,distance:ManualAxis.distance(curve.nodes[axisNode][part],pos)});
     const nearest=targets.sort((a,b)=>a.distance-b.distance)[0];
     if(nearest.distance<tolerance)hit={index:nearest.index,part:nearest.part};
   }
-  if(hit) {axisNode=hit.index;axisDrag={id:curve.id,...hit,before:ManualAxis.copy(curve.nodes),nodes:ManualAxis.copy(curve.nodes)};}
+  if(hit) {axisNode=hit.index;axisDrag={id:curve.id,...hit,before:ManualAxis.copy(curve.nodes),nodes:ManualAxis.copy(curve.nodes),original:ManualAxis.clone(curve),start:pos};}
   else {
-    const nearest=[...ManualAxis.resolved(history).values()].reverse().map(c=>({curve:c,hit:ManualAxis.nearest(c.nodes,pos)})).sort((a,b)=>a.hit.distance-b.hit.distance)[0];
+    const nearest=[...ManualAxis.resolved(history).values()].reverse().map(c=>({curve:c,hit:ManualAxis.hit(c,pos,tolerance)})).sort((a,b)=>a.hit.distance-b.hit.distance)[0];
     if(nearest && nearest.hit.distance<tolerance) {
       curve=nearest.curve;axisSelected=curve.id;
-      if(axisAdding && curve.nodes.length<ManualAxis.maxNodes && nearest.hit.t>0.02 && nearest.hit.t<0.98) {
+      if(axisAdding && ManualAxis.isCurve(curve) && curve.nodes.length<ManualAxis.maxNodes && nearest.hit.t>0.02 && nearest.hit.t<0.98) {
         axisNode=nearest.hit.segment+1;commitAxisEdit(ManualAxis.insert(curve.nodes,nearest.hit.segment,nearest.hit.t));
-      } else axisNode=curve.nodes.reduce((best,n,i)=>ManualAxis.distance(n.p,pos)<ManualAxis.distance(curve.nodes[best].p,pos)?i:best,0);
+      } else {
+        axisNode=ManualAxis.isBox(curve)?null:curve.nodes.reduce((best,n,i)=>ManualAxis.distance(n.p,pos)<ManualAxis.distance(curve.nodes[best].p,pos)?i:best,0);
+        axisDrag={id:curve.id,part:"translate",original:ManualAxis.clone(curve),value:ManualAxis.clone(curve),start:pos};
+      }
     } else {axisSelected=axisNode=null;}
     axisAdding=false;
   }
@@ -735,8 +772,11 @@ ink.addEventListener("pointerdown", (event) => {
   pointer = event.pointerId;
   ink.setPointerCapture(pointer);
   ink.dataset.dragging = "true";
-  if (["trough","ridge","axis-edit"].includes(mode)) {
+  if (["trough","ridge","curve","axis-edit"].includes(mode)) {
     axisDown(point(event));
+  } else if(["line","shape","emoji"].includes(mode)) {
+    const p=point(event),type=vectorType();
+    activeVector={kind:"vector",id:crypto.randomUUID(),type,nodes:ManualAxis.anchors([[p.x,p.y],[p.x,p.y]]),style:readVectorStyle(type),emoji:type==="emoji"?weatherId:null};render();
   } else if (mode === "move") {
     rowView = null; controls();
     pan = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
@@ -751,7 +791,18 @@ ink.addEventListener("pointermove", (event) => {
   if(pointer===null && axisDraft) {const p=point(event);axisPreview=[p.x,p.y];render();return;}
   if (event.pointerId !== pointer) return;
   if(axisDrag) {
-    const p=point(event);axisDrag.nodes=ManualAxis.move(axisDrag.before,axisDrag.index,axisDrag.part,[p.x,p.y],ink.width,ink.height);render();
+    const p=point(event),pos=[p.x,p.y];
+    if(axisDrag.part==="translate")axisDrag.value=ManualAxis.translate(axisDrag.original,pos.map((v,k)=>v-axisDrag.start[k]),ink.width,ink.height);
+    else if(axisDrag.part==="resize")axisDrag.value=ManualAxis.resize(axisDrag.original,axisDrag.index,pos,ink.width,ink.height);
+    else axisDrag.nodes=ManualAxis.move(axisDrag.before,axisDrag.index,axisDrag.part,pos,ink.width,ink.height);
+    render();
+  } else if(activeVector) {
+    const p=point(event),start=activeVector.nodes[0].p;
+    if(event.shiftKey && ManualAxis.isBox(activeVector)) {
+      const size=Math.max(Math.abs(p.x-start[0]),Math.abs(p.y-start[1]));
+      p.x=Math.max(0,Math.min(ink.width,start[0]+Math.sign(p.x-start[0] || 1)*size));p.y=Math.max(0,Math.min(ink.height,start[1]+Math.sign(p.y-start[1] || 1)*size));
+    }
+    activeVector.nodes=ManualAxis.anchors([start,[p.x,p.y]]);render();
   } else if (pan) {
     viewport.scrollLeft = pan.left + pan.x - event.clientX;
     viewport.scrollTop = pan.top + pan.y - event.clientY;
@@ -766,8 +817,21 @@ function finish(event) {
   if (event.pointerId !== pointer) return;
   if(axisDrag) {
     const edit=axisDrag;axisDrag=null;
-    if(event.type!=="pointercancel" && JSON.stringify(edit.nodes)!==JSON.stringify(edit.before)) {
-      history.push({kind:"axis-edit",id:edit.id,nodes:edit.nodes});future.length=0;
+    const value=edit.value || {...edit.original,nodes:edit.nodes};
+    if(event.type!=="pointercancel" && JSON.stringify(value)!==JSON.stringify(edit.original)) {
+      history.push(value.kind==="vector"?{kind:"vector-edit",id:edit.id,value}:{kind:"axis-edit",id:edit.id,nodes:value.nodes});future.length=0;
+    }
+  }
+  if(activeVector) {
+    const object=activeVector;activeVector=null;
+    if(event.type!=="pointercancel") {
+      const [a,b]=object.nodes.map(n=>n.p);
+      if(ManualAxis.isBox(object) && (Math.abs(b[0]-a[0])<3 || Math.abs(b[1]-a[1])<3)) {
+        const size=object.type==="emoji"?Math.max(24,Math.min(Number(byId("vector-size").value)||140,ink.width,ink.height)):140;
+        const x=Math.max(0,Math.min(ink.width-size,a[0]-size/2)),y=Math.max(0,Math.min(ink.height-size,a[1]-size/2));
+        object.nodes=ManualAxis.anchors([[x,y],[x+size,y+size]]);
+      } else if(object.type==="line" && ManualAxis.distance(a,b)<3)object.nodes=ManualAxis.anchors([a,[a[0]+(a[0]>ink.width-140?-140:140),a[1]]]);
+      if(ManualAxis.validVector(object,ink.width,ink.height)){history.push(object);future.length=0;axisSelected=object.id;axisNode=0;selectMode("axis-edit");}
     }
   }
   if (active) {
@@ -782,12 +846,33 @@ ink.addEventListener("pointercancel", finish);
 ink.addEventListener("lostpointercapture", finish);
 ink.addEventListener("dblclick", () => {if(axisDraft)completeAxis();});
 for(const [id,value]of [["manual-trough","trough"],["manual-ridge","ridge"],["axis-edit","axis-edit"]])byId(id).addEventListener("click",()=>selectMode(value));
+for(const [id,value]of vectorModeButtons)byId(id).addEventListener("click",()=>selectMode(value));
+byId("shape-type").addEventListener("change",()=>updateAxisControls());
+byId("weather-picker").replaceChildren(...ManualAxis.weather.map(item=>{
+  const button=document.createElement("button");button.type="button";button.textContent=item.glyph;button.title=item.label;button.setAttribute("aria-label",item.label);button.dataset.weather=item.id;
+  button.addEventListener("click",()=>{weatherId=item.id;selectMode("emoji");});return button;
+}));
+function changeVectorStyle() {
+  const object=selectedAxis();
+  if(axisDraft?.type==="curve") {axisDraft.style=readVectorStyle("curve");render();return;}
+  if(mode==="axis-edit" && object?.kind==="vector") {
+    const value={...ManualAxis.clone(object),style:readVectorStyle(object.type)};
+    history.push({kind:"vector-edit",id:object.id,value});future.length=0;render();controls();
+  }
+}
+for(const id of ["vector-color","vector-width","vector-opacity","vector-start","vector-end","vector-fill","vector-filled"])byId(id).addEventListener("change",changeVectorStyle);
+byId("vector-size").addEventListener("change",()=>{
+  const object=selectedAxis();if(mode!=="axis-edit" || object?.type!=="emoji")return;
+  const b=ManualAxis.bounds(object),size=Math.max(24,Math.min(Number(byId("vector-size").value)||140,ink.width,ink.height));
+  const x=Math.max(0,Math.min(ink.width-size,b.x+b.width/2-size/2)),y=Math.max(0,Math.min(ink.height-size,b.y+b.height/2-size/2));
+  commitAxisEdit(ManualAxis.anchors([[x,y],[x+size,y+size]]));
+});
 byId("axis-finish").addEventListener("click",()=>completeAxis());
 byId("axis-cancel").addEventListener("click",cancelAxis);
 byId("axis-add-node").addEventListener("click",()=>{axisAdding=!axisAdding;updateAxisControls();});
 byId("axis-remove-node").addEventListener("click",()=>{
   const curve=selectedAxis();
-  if(!curve || curve.nodes.length<=2 || axisNode===null)return;
+  if(!curve || !ManualAxis.isCurve(curve) || curve.nodes.length<=2 || axisNode===null)return;
   const nodes=ManualAxis.copy(curve.nodes);nodes.splice(axisNode,1);axisNode=Math.min(axisNode,nodes.length-1);commitAxisEdit(nodes);
 });
 byId("axis-remove").addEventListener("click",()=>{
@@ -951,8 +1036,8 @@ byId("save").addEventListener("click", () => {
 document.addEventListener("keydown", (event) => {
   if(!byId("manual").hidden && !["INPUT","SELECT","TEXTAREA"].includes(event.target.tagName) && !byId("clear-dialog").open && !byId("share-dialog").open && !byId("overlay-dialog").open) {
     if(event.key==="Enter" && axisDraft && axisDraft.points.length>=2) {event.preventDefault();completeAxis();return;}
-    if(event.key==="Escape" && (axisDraft || axisDrag || mode==="axis-edit")) {axisDrag=null;pointer=null;ink.dataset.dragging="false";axisSelected=axisNode=null;cancelAxis();return;}
-    if((event.key==="Delete" || event.key==="Backspace") && mode==="axis-edit" && selectedAxis()) {event.preventDefault();byId("axis-remove-node").click();return;}
+    if(event.key==="Escape" && (axisDraft || axisDrag || activeVector || mode==="axis-edit")) {activeVector=null;axisDrag=null;pointer=null;ink.dataset.dragging="false";axisSelected=axisNode=null;cancelAxis();return;}
+    if((event.key==="Delete" || event.key==="Backspace") && mode==="axis-edit" && selectedAxis()) {event.preventDefault();byId(ManualAxis.isCurve(selectedAxis()) && axisNode!==null?"axis-remove-node":"axis-remove").click();return;}
   }
   if (!byId("overlay-dialog").open && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z" && !["INPUT", "SELECT"].includes(event.target.tagName)) {
     event.preventDefault(); byId(event.shiftKey ? "redo" : "undo").click();
@@ -1013,7 +1098,7 @@ function shareMessage(message) {
 }
 function captureShared() {
   return {
-    version:2,chart:ChartShare.identity(currentSelection),drawing:ChartShare.currentDrawing(captureDrawing()),
+    version:3,chart:ChartShare.identity(currentSelection),drawing:ChartShare.currentDrawing(captureDrawing()),
     view:{fit:fitView,zoom:fitView ? 1 : zoomFactor,x:viewport.scrollLeft/Math.max(1,viewport.scrollWidth-viewport.clientWidth),y:viewport.scrollTop/Math.max(1,viewport.scrollHeight-viewport.clientHeight)}
   };
 }
@@ -1085,6 +1170,7 @@ async function loadSelection(retry = false, shared = null) {
   const selected = ChartCatalog.selection(catalog, byId("chart-select").value, byId("source-select").value, Number(byId("page-select").value));
   currentSelection = selected; ready = false; paper.hidden = true; paper.dataset.ready = "false";
   active = pointer = pan = null;
+  activeVector=null;
   axisDraft=axisPreview=axisSelected=axisNode=axisDrag=null;axisAdding=false;
   geographyMask = geographyBase = geography = satelliteImage = elevationData = terrainImage = symbols = windBands = candidates = isotherms = lowLevel = dynamics = trial = null;
   temperatureLegends();
