@@ -68,7 +68,39 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
   }
   recent++;
 }
-assert.equal(recent,61);assert.equal(analyses,13);assert.equal(maps,57);
+assert.equal(recent,61);assert.equal(analyses,19);assert.equal(maps,57);
+let surfaces=0;
+for(const p of catalog.products.filter(p=>["FXFE502","FXFE504","FXFE507"].includes(p.code)))for(const v of p.variants){
+  const selected=ChartCatalog.selection(catalog,p.id,v.id,1),raw=fs.readFileSync(path.join(root,v.analysis_path));
+  assert.equal(crypto.createHash("sha256").update(raw).digest("hex"),v.analysis_sha256);
+  const data=snapshot.validate(JSON.parse(raw),selected,"bousai-wx-lab.github.io");
+  assert.equal(data.surface_forecast,true);
+  assert.deepEqual(snapshot.displayScales(data).map(s=>s.pressure_hpa),[500,0]);
+  const upper=data.panels.filter(p=>p.pressure_hpa===500),lower=data.panels.filter(p=>p.pressure_hpa===0);
+  assert.ok(upper.every(p=>p.troughs.length && p.ridges.length && p.positive_vorticity_rectangles.length));
+  assert.ok(lower.every(q=>q.precipitation_bands.length && q.accumulation_hours===(p.code==="FXFE507"?24:12) && q.accumulation_start_hour===q.forecast_hour-q.accumulation_hours && q.levels.length===0));
+  assert.ok(data.symbols.some(s=>s.letter==="L")&&data.symbols.some(s=>s.letter==="H"));
+  for(const mutate of [
+    d=>d.panels.at(-1).accumulation_hours=p.code==="FXFE507"?12:24,
+    d=>d.panels.at(-1).accumulation_start_hour++,
+    d=>d.panels.at(-1).precipitation_bands[0].threshold=3,
+    d=>d.panels.at(-1).precipitation_bands[0].color="#ff0000",
+    d=>d.panels.at(-1).precipitation_bands[0].rings[0][0]=[0,0],
+    d=>d.panels[0].precipitation_bands=d.panels.at(-1).precipitation_bands,
+    d=>d.panels.at(-1).troughs=d.panels[0].troughs
+  ]){const bad=structuredClone(data);mutate(bad);assert.throws(()=>snapshot.validate(bad,selected,"localhost"));}
+  surfaces++;
+}
+assert.equal(surfaces,12);
+// Rainfall examples read from the original 12-hour FXFE502 source:
+// dry inland area, light rain west of Japan, intense tropical cyclone rain,
+// and a rain region clipped by the western map frame.
+const rainPanel=read("assets/analysis/fxfe502-12-20261005-surface.json").panels[2];
+const rainAt=point=>rainPanel.precipitation_bands.filter(b=>b.rings.reduce((odd,r)=>odd!==inRing(r,point),false)).at(-1)?.threshold??null;
+assert.equal(rainAt([500,1000]),null,"Dry area must retain the land/water background");
+assert.equal(rainAt([660,1140]),0,"Light precipitation must use the first cyan band");
+assert.equal(rainAt([840,1380]),50,"Rain beyond the last 50-mm contour must use the darkest blue");
+assert.equal(rainAt([100,1300]),0,"An open rain region at the map edge must remain filled on its wet side");
 const lowLevel=require("../low-level.js");
 // Legacy source band colors must not override the palette shown in the legend.
 // Use the actual FEAS source and a 700hPa panel with missing intermediate bands.
@@ -84,6 +116,9 @@ assert.deepEqual(fillColors,["#173f8a"],"Missing intermediate bands must not shi
 fillColors.length=0;
 snapshot.drawFills(fillCtx,{width:100,height:100,panels:[{pressure_hpa:300,bounds:[0,0,100,100],wind_bands:[{threshold:40,color:ChartAnalysis.windPalette[0],rings:sparse700.cold_bands[0].rings}]}]},{wind:true});
 assert.deepEqual(fillColors,[ChartAnalysis.windPalette[0]],"Temperature palette changes must preserve the wind palette");
+fillColors.length=0;
+snapshot.drawFills(fillCtx,{width:2048,height:1600,panels:[rainPanel]},{precipitation:true});
+assert.deepEqual(fillColors,rainPanel.precipitation_bands.map(b=>snapshot.precipitationColors[b.threshold/10]),"Rain rendering and the legend must use the same threshold colors");
 function inRing(r,[x,y]){
   let hit=false;
   for(let i=0,j=r.length-1;i<r.length;j=i++){

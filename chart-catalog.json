@@ -1271,7 +1271,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_12.pdf",
           "source_sha256": "e1bc3282beef88ba8321ee9db45efd4f2c5930ada1b0ae31c9c45dba0e118488",
           "retrieved_at": "2026-10-04T22:29:55.531550+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -1281,7 +1281,9 @@
               "image_path": "assets/charts/fxfe502-12-20261005-e1bc3282beef-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fxfe502-12-20261005-surface.json",
+          "analysis_sha256": "36a2f807cdd1d08fd842af186ea3683a8ca41bd773fc920bc49d39ab2349787b"
         },
         {
           "id": "fxfe502-00-20261005",
@@ -1289,7 +1291,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe502_00.pdf",
           "source_sha256": "e606ca79eafc1e8acbf3a7b8500569e8a3039ee4f1c68205eb99c5666393e3af",
           "retrieved_at": "2026-10-04T22:29:55.497425+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -1299,7 +1301,9 @@
               "image_path": "assets/charts/fxfe502-00-20261005-e606ca79eafc-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fxfe502-00-20261005-surface.json",
+          "analysis_sha256": "2e020548b43d89fb463c2e4dcd261931272977e1d038c7afa38642cb306c80c1"
         },
         {
           "id": "fxfe502-00",
@@ -1316,7 +1320,9 @@
               "height": 1624
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fxfe502-00-surface.json",
+          "analysis_sha256": "107beebd154e60dd0559b6f2f2cb5a104932c2ad884d073b4f260d74a1618fe8"
         },
         {
           "id": "fxfe502-12",
@@ -1333,7 +1339,9 @@
               "height": 1624
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fxfe502-12-surface.json",
+          "analysis_sha256": "2309328f68c0b2c964218a7ff50d4fb7ed953e4cda4aa9ab1eae1dc49f6703fa"
         }
       ]
     },
@@ -1351,7 +1359,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe504_12.pdf",
           "source_sha256": "d192f755a156c199d17559902586b6abfee5b7bfa03a4d48cdd8cf7918a6b3ff",
           "retrieved_at": "2026-10-04T22:29:55.577149+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -1361,7 +1369,9 @@
               "image_path": "assets/charts/fxfe504-12-20261005-d192f755a156-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fxfe504-12-20261005-surface.json",
+          "analysis_sha256": "53c668efa62be710e9e0fca38fc737f247ec3fd8d8018bd2db6b4376a23204a3"
         },
         {
           "id": "fxfe504-00-20261005",
@@ -1369,7 +1379,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe504_00.pdf",
           "source_sha256": "03af4eadc09ec7b1051772dedbf7e3a3bc88b76c8cc0833551644a7f6cb01ec7",
           "retrieved_at": "2026-10-04T22:29:55.636043+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -1379,7 +1389,9 @@
               "image_path": "assets/charts/fxfe504-00-20261005-03af4eadc09e-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fxfe504-00-20261005-surface.json",
+          "analysis_sha256": "93d84ada5ec2dda13cefff929993e75a056b22c36650189dbe96088e0e9f543b"
         },
         {
           "id": "fxfe504-00",
@@ -1396,7 +1408,9 @@
               "height": 1624
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fxfe504-00-surface.json",
+          "analysis_sha256": "4f7c8e9db12e6b94fb8976eb687a8d71f990f0d44a9161e7e2509ae99734461b"
         },
         {
           "id": "fxfe504-12",
@@ -1413,7 +1427,9 @@
               "height": 1624
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fxfe504-12-surface.json",
+          "analysis_sha256": "6bf02ebf0413bbee9016c9532093d378d1a8a310c9cbebcaf84374a40681df3b"
         }
       ]
     },
@@ -1431,7 +1447,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe507_12.pdf",
           "source_sha256": "99bd54e086e91f075d3c6da7d22ae3f51d23dc49c5e9f8de132a349e691f88da",
           "retrieved_at": "2026-10-04T22:29:55.584155+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -1441,7 +1457,9 @@
               "image_path": "assets/charts/fxfe507-12-20261005-99bd54e086e9-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fxfe507-12-20261005-surface.json",
+          "analysis_sha256": "b17ae2322712f57da83b76e4b67ee647e59e23a39a05a03ecfc3264ead856b40"
         },
         {
           "id": "fxfe507-00-20261005",
@@ -1449,7 +1467,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxfe507_00.pdf",
           "source_sha256": "35066ad4bfa6a406dfc30ca1dc8bde515af4a4bab5ed0cda420c4feadbb4531f",
           "retrieved_at": "2026-10-04T22:29:55.624610+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -1459,7 +1477,9 @@
               "image_path": "assets/charts/fxfe507-00-20261005-35066ad4bfa6-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fxfe507-00-20261005-surface.json",
+          "analysis_sha256": "c11a362df56dd0ffb6f0f64d96d4e3ea80b6c14dc78d45df22b248562541e3cc"
         },
         {
           "id": "fxfe507-00",
@@ -1476,7 +1496,9 @@
               "height": 3101
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fxfe507-00-surface.json",
+          "analysis_sha256": "01bce88f54d98d01e21ac1eb335b053489a18d0769747ad4ddb4d38fdd9e7bdb"
         },
         {
           "id": "fxfe507-12",
@@ -1493,7 +1515,9 @@
               "height": 3101
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fxfe507-12-surface.json",
+          "analysis_sha256": "500baabc76e22efa3618110d76e65ecfe8792f1a8dfcb65e7160332b58eb0730"
         }
       ]
     },

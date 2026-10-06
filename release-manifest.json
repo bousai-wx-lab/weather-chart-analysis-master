@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-06T00:54:40.011087+00:00",
+  "generated_at": "2026-10-06T02:28:18.659304+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 8494,
-      "sha256": "211751a551bdbb92fa2146f8553af262cc5a2913e919ef243fb5f675bb444e7a",
+      "bytes": 9040,
+      "sha256": "01f1e9659723c2842c47476160b0e15c4c9a2eea40f62d1e8e4939218c2fb51e",
       "mime_type": "application/octet-stream"
     },
     {
@@ -47,8 +47,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 83776,
-      "sha256": "195f666384686c99d8ad09a927c9691985234239d85469c9f5076a25e75f0113",
+      "bytes": 87480,
+      "sha256": "aff1f9cd164bbe4811cf910a97bb852a5b6692b0e50c1b96b0831e2e01f3d6f4",
       "mime_type": "text/javascript"
     },
     {
@@ -91,6 +91,78 @@
       "path": "assets/analysis/feas50-12-20261005.json",
       "bytes": 278261,
       "sha256": "d3194aa50fcf16263af5ef9efb113be013a12db1f7285c6204c1cd5cd68d4ce9",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe502-00-20261005-surface.json",
+      "bytes": 604780,
+      "sha256": "2e020548b43d89fb463c2e4dcd261931272977e1d038c7afa38642cb306c80c1",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe502-00-surface.json",
+      "bytes": 631818,
+      "sha256": "107beebd154e60dd0559b6f2f2cb5a104932c2ad884d073b4f260d74a1618fe8",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe502-12-20261005-surface.json",
+      "bytes": 570480,
+      "sha256": "36a2f807cdd1d08fd842af186ea3683a8ca41bd773fc920bc49d39ab2349787b",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe502-12-surface.json",
+      "bytes": 611133,
+      "sha256": "2309328f68c0b2c964218a7ff50d4fb7ed953e4cda4aa9ab1eae1dc49f6703fa",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe504-00-20261005-surface.json",
+      "bytes": 506917,
+      "sha256": "93d84ada5ec2dda13cefff929993e75a056b22c36650189dbe96088e0e9f543b",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe504-00-surface.json",
+      "bytes": 580296,
+      "sha256": "4f7c8e9db12e6b94fb8976eb687a8d71f990f0d44a9161e7e2509ae99734461b",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe504-12-20261005-surface.json",
+      "bytes": 541118,
+      "sha256": "53c668efa62be710e9e0fca38fc737f247ec3fd8d8018bd2db6b4376a23204a3",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe504-12-surface.json",
+      "bytes": 596716,
+      "sha256": "6bf02ebf0413bbee9016c9532093d378d1a8a310c9cbebcaf84374a40681df3b",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe507-00-20261005-surface.json",
+      "bytes": 331012,
+      "sha256": "c11a362df56dd0ffb6f0f64d96d4e3ea80b6c14dc78d45df22b248562541e3cc",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe507-00-surface.json",
+      "bytes": 362931,
+      "sha256": "01bce88f54d98d01e21ac1eb335b053489a18d0769747ad4ddb4d38fdd9e7bdb",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe507-12-20261005-surface.json",
+      "bytes": 302368,
+      "sha256": "b17ae2322712f57da83b76e4b67ee647e59e23a39a05a03ecfc3264ead856b40",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/fxfe507-12-surface.json",
+      "bytes": 351712,
+      "sha256": "500baabc76e22efa3618110d76e65ecfe8792f1a8dfcb65e7160332b58eb0730",
       "mime_type": "application/json"
     },
     {
@@ -1025,8 +1097,8 @@
     },
     {
       "path": "catalog.js",
-      "bytes": 4727,
-      "sha256": "d8b69339d06584c86bdbf581a0d305baee5e3d7da0f769bfb382439ff535b9ab",
+      "bytes": 4757,
+      "sha256": "9ff3e4b4600e4a776550485965824a2d1235a5f868481325080ee9eb5036937d",
       "mime_type": "text/javascript"
     },
     {
@@ -1037,8 +1109,8 @@
     },
     {
       "path": "chart-catalog.json",
-      "bytes": 105818,
-      "sha256": "4357635fdf04229e8f266ac4a394b8351dfbc410dff50cf621f169828e177864",
+      "bytes": 108056,
+      "sha256": "49944f0ed9c11d6273f9d74879ad8be7420027dddcea859b6bf8376d52ab5984",
       "mime_type": "application/json"
     },
     {
@@ -1091,8 +1163,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 27088,
-      "sha256": "eb63ff4d33eef2bc43ac7bb56f3bd8ae79d2bd48dd74547478dd815075820d57",
+      "bytes": 27814,
+      "sha256": "facde3849ee9a262ec808094e74d6061b78f6cee40ff4f340df0c3f6f7472406",
       "mime_type": "text/html"
     },
     {
@@ -1121,8 +1193,8 @@
     },
     {
       "path": "release-allowlist.json",
-      "bytes": 54615,
-      "sha256": "b65b7e2675a1876d3ad94a2137b3dc9a7bc6ae2b2ba04ff669ed89c698e32a13",
+      "bytes": 55947,
+      "sha256": "eaca1fa26d9b7d5b3522d1194174d35bf3b4ee0aef3408f5055db104862ddec0",
       "mime_type": "application/json"
     },
     {
@@ -1181,8 +1253,8 @@
     },
     {
       "path": "scripts/test_snapshot_analysis.js",
-      "bytes": 11348,
-      "sha256": "184e9f72c4f179f3c6bf0cb0405893a223331b7481c7c45bda0956f0120a5357",
+      "bytes": 14119,
+      "sha256": "e9a95052324695a0aa6251ea27c554f2b3aa765f0bc5696298366d68a5b8b986",
       "mime_type": "text/javascript"
     },
     {
@@ -1193,8 +1265,8 @@
     },
     {
       "path": "snapshot-analysis.js",
-      "bytes": 14588,
-      "sha256": "516eb9f83e0727fa8a36863f06e6dbf60ff9167a443884181e63d79f2f0ab592",
+      "bytes": 17320,
+      "sha256": "efefcab549fee92e179d1d3696ee8404ce7f74c653aae589387bb78e3737d531",
       "mime_type": "text/javascript"
     },
     {

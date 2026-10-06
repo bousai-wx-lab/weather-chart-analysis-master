@@ -203,7 +203,19 @@
     "assets/analysis/fxfe577-12-20261005-colors.json",
     "assets/analysis/fxfe577-00-20261005-colors.json",
     "assets/analysis/fxfe577-00-colors.json",
-    "assets/analysis/fxfe577-12-colors.json"
+    "assets/analysis/fxfe577-12-colors.json",
+    "assets/analysis/fxfe502-12-20261005-surface.json",
+    "assets/analysis/fxfe502-00-20261005-surface.json",
+    "assets/analysis/fxfe502-00-surface.json",
+    "assets/analysis/fxfe502-12-surface.json",
+    "assets/analysis/fxfe504-12-20261005-surface.json",
+    "assets/analysis/fxfe504-00-20261005-surface.json",
+    "assets/analysis/fxfe504-00-surface.json",
+    "assets/analysis/fxfe504-12-surface.json",
+    "assets/analysis/fxfe507-12-20261005-surface.json",
+    "assets/analysis/fxfe507-00-20261005-surface.json",
+    "assets/analysis/fxfe507-00-surface.json",
+    "assets/analysis/fxfe507-12-surface.json"
   ],
   "allowed_external_hosts": [
     "assets.science.nasa.gov",
@@ -1664,6 +1676,18 @@
     "assets/analysis/fxfe5784-12-colors.json": 415328,
     "assets/analysis/fxfe5782-12-20261005-colors.json": 416744,
     "assets/analysis/fxfe5782-00-20261005-colors.json": 407730,
-    "assets/analysis/fxfe577-12-colors.json": 201536
+    "assets/analysis/fxfe577-12-colors.json": 201536,
+    "assets/analysis/fxfe502-12-20261005-surface.json": 570480,
+    "assets/analysis/fxfe502-00-20261005-surface.json": 604780,
+    "assets/analysis/fxfe502-00-surface.json": 631818,
+    "assets/analysis/fxfe502-12-surface.json": 611133,
+    "assets/analysis/fxfe504-12-20261005-surface.json": 541118,
+    "assets/analysis/fxfe504-00-20261005-surface.json": 506917,
+    "assets/analysis/fxfe504-00-surface.json": 580296,
+    "assets/analysis/fxfe504-12-surface.json": 596716,
+    "assets/analysis/fxfe507-12-20261005-surface.json": 302368,
+    "assets/analysis/fxfe507-00-20261005-surface.json": 331012,
+    "assets/analysis/fxfe507-00-surface.json": 362931,
+    "assets/analysis/fxfe507-12-surface.json": 351712
   }
 }

@@ -4,6 +4,8 @@ const SnapshotAnalysis = (() => {
   const localHost = hostname => ["127.0.0.1", "localhost", "[::1]", "::1"].includes(hostname);
   const hash = /^[a-f0-9]{64}$/;
   const analysisPath = /^(local-collection|assets)\/analysis\/[a-z0-9-]+\.json$/;
+  const precipitationColors=["#bceefa","#91dbf4","#60c2eb","#329fdc","#147fc0","#0861a8"];
+  const precipitationLabels=["0–10 mm","10–20 mm","20–30 mm","30–40 mm","40–50 mm","50 mm以上"];
   function merge(base, snapshot, hostname) {
     if (!localHost(hostname)) throw Error("Local collection unavailable on this host");
     ChartCatalog.validate(snapshot, {local:true});
@@ -27,13 +29,29 @@ const SnapshotAnalysis = (() => {
        data.source_sha256!==selected.variant.source_sha256 || data.image_sha256!==selected.page.image_sha256 ||
        data.width!==selected.page.width || data.height!==selected.page.height || !Array.isArray(data.panels) ||
        !Array.isArray(data.symbols))throw Error("Trial analysis source mismatch");
+    const surfaceHours={FXFE502:[12,24,12,24],FXFE504:[36,48,36,48],FXFE507:[72,72]}[data.product];
     const forecastHours={FXFE5782:[12,24,12,24],FXFE5784:[36,48,36,48],FXFE577:[72,72]}[data.product];
-    const expected=forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
+    const expected=surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
     if(!expected || data.panels.length!==expected.length || (forecastHours && data.color_only!==true))throw Error("Unsupported trial product");
+    if(Boolean(surfaceHours)!==Boolean(data.surface_forecast))throw Error("Invalid surface forecast product");
     const point=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&p[0]>=-5&&p[1]>=-5&&p[0]<=data.width+5&&p[1]<=data.height+5;
     const line=p=>Array.isArray(p)&&p.length>=2&&p.length<=10000&&p.every(point);
     for(const [i,p] of data.panels.entries()) {
       if(p.pressure_hpa!==expected[i] || p.bounds?.length!==4 || !point(p.bounds.slice(0,2)) || !point(p.bounds.slice(2)) || p.bounds[0]>=p.bounds[2] || p.bounds[1]>=p.bounds[3] || !Array.isArray(p.levels) || !Array.isArray(p.troughs) || !Array.isArray(p.ridges))throw Error("Invalid trial panel");
+      if(surfaceHours){
+        const within=q=>point(q)&&q[0]>=p.bounds[0]-.25&&q[1]>=p.bounds[1]-.25&&q[0]<=p.bounds[2]+.25&&q[1]<=p.bounds[3]+.25;
+        if(p.forecast_hour!==surfaceHours[i] || p.levels.length || p.wet_rectangles?.length || p.ascent_rectangles?.length || p.cold_bands?.length || p.wind_bands?.length || p.jet_guides?.length)throw Error("Invalid surface forecast layers");
+        if(p.pressure_hpa===500){
+          if(!p.positive_vorticity_rectangles?.length || p.precipitation_bands?.length)throw Error("Invalid forecast vorticity plane");
+          if(p.positive_vorticity_rectangles.some(r=>!within(r.slice(0,2))||!within(r.slice(2))) || [...p.troughs,...p.ridges].some(a=>!a.points.every(within)))throw Error("500hPa forecast outside panel");
+        }else{
+          const accumulationHours=data.product==="FXFE507"?24:12;
+          if(p.troughs.length || p.ridges.length || p.positive_vorticity_rectangles?.length || p.precipitation_unit!=="mm" || p.accumulation_hours!==accumulationHours || p.accumulation_start_hour!==p.forecast_hour-accumulationHours || p.accumulation_end_hour!==p.forecast_hour)throw Error("Invalid precipitation period or plane");
+          const bands=p.precipitation_bands,trace=p.precipitation_trace;
+          if(!bands?.length || bands[0].threshold!==0 || bands.some((b,j)=>b.threshold%10 || b.threshold<0 || b.threshold>50 || (j&&b.threshold<=bands[j-1].threshold) || b.color!==precipitationColors[b.threshold/10] || !b.rings?.length || b.rings.some(r=>!line(r)||!r.every(within))) || trace?.method!=="native_short_dash_contours" || trace.interval_mm!==10 || trace.maximum_contour_mm!==50)throw Error("Invalid native precipitation contours");
+        }
+        if(data.panels.slice(0,i).some(q=>Math.min(p.bounds[2],q.bounds[2])>Math.max(p.bounds[0],q.bounds[0])&&Math.min(p.bounds[3],q.bounds[3])>Math.max(p.bounds[1],q.bounds[1])))throw Error("Overlapping surface forecast panels");
+      }else if(p.precipitation_bands?.length)throw Error("Unsupported precipitation product");
       if(forecastHours) {
         const inPanel=q=>point(q)&&q[0]>=p.bounds[0]-.25&&q[1]>=p.bounds[1]-.25&&q[0]<=p.bounds[2]+.25&&q[1]<=p.bounds[3]+.25;
         if(p.forecast_hour!==forecastHours[i] || p.temperature_interval_c!==(p.pressure_hpa===850?3:6) || p.temperature_label_interval_c!==6 || p.troughs.length || p.ridges.length || p.positive_vorticity_rectangles?.length || p.wind_bands?.length || p.jet_guides?.length)throw Error("Invalid forecast color layer");
@@ -87,8 +105,8 @@ const SnapshotAnalysis = (() => {
   // Drawing still uses each panel's own coordinates and colors.
   function displayScales(data) {
     const all=scales(data);
-    if(!data.color_only)return all;
-    return [500,850].map(pressure=>{
+    if(!data.color_only&&!data.surface_forecast)return all;
+    return [500,data.surface_forecast?0:850].map(pressure=>{
       const entries=all.filter(s=>s.pressure_hpa===pressure),colors=new Map(entries.flatMap(s=>s.values.map((v,i)=>[v,s.colors[i]])));
       const values=[...colors.keys()].sort((a,b)=>a-b);
       return {pressure_hpa:pressure,values,colors:values.map(v=>colors.get(v)),dash:[],opacity:.5};
@@ -154,10 +172,11 @@ const SnapshotAnalysis = (() => {
       // so stored legacy colors cannot disagree with the UI and PNG legends.
       if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity,band=>low.coldColors[p.cold_thresholds?.indexOf(band.threshold)]);
       if(on.wind && p.pressure_hpa===300)paintBands(p.wind_bands,1);
+      if(on.precipitation && p.pressure_hpa===0)paintBands(p.precipitation_bands,.45,band=>precipitationColors[band.threshold/10]);
       for(const [key,color,active] of [["wet_rectangles","#269ed2",on.wet],["positive_vorticity_rectangles","#ec6ca5",on.vorticity],["ascent_rectangles","#a3d84b",on.ascent]])if(active){ctx.save();ctx.globalAlpha=.3;ctx.fillStyle=color;for(const [x,y,xx,yy] of p[key]||[])ctx.fillRect(x,y,xx-x,yy-y);ctx.restore();}
       ctx.restore();
     }
   }
-  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills};
+  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills,precipitationColors,precipitationLabels};
 })();
 if(typeof module!=="undefined")module.exports=SnapshotAnalysis;
