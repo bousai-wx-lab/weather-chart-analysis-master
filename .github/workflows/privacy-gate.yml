@@ -44,6 +44,8 @@ jobs:
       - name: Verify JavaScript syntax
         run: |
           node --check app.js
+          node --check chart-view.js
+          node scripts/test_chart_view.js
           node --check share-state.js
           node scripts/test_share_state.js
           node --check analysis.js

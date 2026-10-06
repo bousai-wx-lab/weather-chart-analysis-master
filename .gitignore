@@ -5,6 +5,8 @@
 !styles.css
 !app.js
 !share-state.js
+!chart-view.js
+!scripts/test_chart_view.js
 !scripts/test_share_state.js
 !analysis.js
 !low-level.js

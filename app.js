@@ -81,6 +81,7 @@ let chartLabel = "AUPQ35";
 let exportUrl = null;
 let zoomFactor = 1;
 let fitView = true;
+let rowView = null, rowFrames = null;
 let catalog = null;
 let currentSelection = null;
 let loadingError = "";
@@ -331,6 +332,11 @@ function controls() {
   byId("jet").setAttribute("aria-pressed", String(Boolean(showJet && candidates)));
   byId("zoom-in").disabled = !ready || (!fitView && zoomFactor >= 4);
   byId("zoom-out").disabled = !ready || (!fitView && zoomFactor <= 0.25);
+  for (const [id,row] of [["fit-upper",0],["fit-lower",1]]) {
+    byId(id).disabled = !ready || featuresLoading || !rowFrames;
+    byId(id).setAttribute("aria-pressed",String(rowView === row));
+  }
+  byId("fit").setAttribute("aria-pressed",String(fitView));
   paper.dataset.strokes = String(history.length);
   paper.dataset.trough = String(Boolean(showTrough && candidates));
   paper.dataset.ridge = String(Boolean(showRidge && candidates));
@@ -567,17 +573,24 @@ function fit(anchor) {
   const focus = anchor || { x: viewRect.left + viewport.clientWidth / 2, y: viewRect.top + viewport.clientHeight / 2 };
   const center = { x: (focus.x - oldRect.left) / oldRect.width, y: (focus.y - oldRect.top) / oldRect.height };
   const size = viewSize();
-  const width = fitView ? Math.min(size.width, size.height * ink.width / ink.height) : size.width * zoomFactor;
+  const frame = rowView === null ? null : rowFrames?.[rowView];
+  const width = Math.floor((frame ? ChartView.fittedWidth(frame,ink.width,size) : fitView ? Math.min(size.width, size.height * ink.width / ink.height) : size.width * zoomFactor)+1e-7);
   paper.style.width = `${Math.floor(width)}px`;
   paper.style.height = `${Math.floor(width) * ink.height / ink.width}px`;
   if (fitView) { viewport.scrollTop = 0; viewport.scrollLeft = 0; zoomFactor = Math.floor(width) / size.width; }
+  else if (frame) {
+    zoomFactor = Math.floor(width)/size.width;
+    const rect = paper.getBoundingClientRect();
+    viewport.scrollLeft += rect.left+(frame[0]+frame[2])/2*rect.width/ink.width-focus.x;
+    viewport.scrollTop += rect.top+(frame[1]+frame[3])/2*rect.height/ink.height-focus.y;
+  }
   else { const rect = paper.getBoundingClientRect(); viewport.scrollLeft += rect.left + center.x * rect.width - focus.x; viewport.scrollTop += rect.top + center.y * rect.height - focus.y; }
   updateZoomLabel();
   controls();
 }
 function setZoom(factor, anchor) {
   if (!ready || pointer !== null) return;
-  zoomFactor = Math.max(0.25, Math.min(4, factor)); fitView = false; fit(anchor);
+  zoomFactor = Math.max(0.25, Math.min(4, factor)); fitView = false; rowView = null; fit(anchor);
 }
 function zoomBy(direction) {
   if (!ready || pointer !== null) return;
@@ -585,7 +598,11 @@ function zoomBy(direction) {
 }
 byId("zoom-in").addEventListener("click", () => zoomBy(1));
 byId("zoom-out").addEventListener("click", () => zoomBy(-1));
-byId("fit").addEventListener("click", () => { fitView = true; fit(); });
+byId("fit").addEventListener("click", () => { fitView = true; rowView = null; fit(); });
+for (const [id,row] of [["fit-upper",0],["fit-lower",1]]) byId(id).addEventListener("click", () => {
+  if (!ready || featuresLoading || !rowFrames || pointer !== null) return;
+  fitView = false; rowView = row; fit();
+});
 viewport.addEventListener("wheel", (event) => {
   if (!ready || pointer !== null || !event.deltaY) return;
   event.preventDefault();
@@ -623,6 +640,7 @@ ink.addEventListener("pointerdown", (event) => {
   ink.setPointerCapture(pointer);
   ink.dataset.dragging = "true";
   if (mode === "move") {
+    rowView = null; controls();
     pan = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
   } else {
     active = { kind: mode, color, width: Number(byId("width").value) * ink.width / ink.getBoundingClientRect().width, opacity: Number(byId("opacity").value), points: [point(event)] };
@@ -671,7 +689,7 @@ byId("clear-dialog").addEventListener("close", () => {
   if (byId("clear-dialog").returnValue === "clear") { history.push({ kind: "clear" }); future.length = 0; render(); controls(); }
 });
 byId("zoom").addEventListener("change", (event) => {
-  if (event.target.value === "fit") { fitView = true; fit(); }
+  if (event.target.value === "fit") { fitView = true; rowView = null; fit(); }
   else if (event.target.value !== "custom") setZoom(Number(event.target.value));
 });
 new ResizeObserver(() => fit()).observe(viewport);
@@ -955,7 +973,7 @@ async function loadSelection(retry = false, shared = null) {
   showTemperature500 = state?.showTemperature500 ?? true;
   geographyStyle = state?.geographyStyle || defaultGeographyStyle; geographyOpacity = state?.geographyOpacity ?? 0.4;
   byId("geography-opacity").value = String(Math.round(geographyOpacity * 100));
-  fitView = true;
+  fitView = true; rowView = rowFrames = null;
   if (exportUrl) { URL.revokeObjectURL(exportUrl); exportUrl = null; }
   byId("export-link").hidden = true; byId("export-link").removeAttribute("href");
   byId("chart-retry").hidden = true;
@@ -992,7 +1010,7 @@ async function loadSelection(retry = false, shared = null) {
           history.length = future.length = 0; overlayState = []; render(); drawOverlays(); controls();
           shareMessage("共有リンクの重ね合わせを確認できないため、手描きの復元を停止しました。");
         } else {
-          fitView = shared.view.fit; zoomFactor = shared.view.zoom; fit();
+          fitView = shared.view.fit; rowView = null; zoomFactor = shared.view.zoom; fit();
           viewport.scrollLeft = shared.view.x * Math.max(0,viewport.scrollWidth-viewport.clientWidth);
           viewport.scrollTop = shared.view.y * Math.max(0,viewport.scrollHeight-viewport.clientHeight);
           shareMessage([geographyError,terrainError,symbolError,temperatureError,analysisError,overlayError].some(Boolean) || geographyStyle !== shared.drawing.geographyStyle ? "共有された図は開きましたが、解析の一部を復元できませんでした。" : "共有された天気図・解析・手描きを復元しました。");
@@ -1009,6 +1027,8 @@ async function loadGeographyAtlas(selected,revision,signal) {
   try {
     const atlas = selected.page.image_path.startsWith("local-collection/") ? {schema_version:1,coast_source:{license:"Public domain"},selections:localCollection.geography} : await fetchJSON("geography-catalog.json",signal);
     const data=GeographyAtlas.validate(atlas,selected);
+    if(revision!==loadRevision)return;
+    rowFrames=ChartView.rows(selected,data);
     if(!data.panels.length){byId("chart-note").textContent="自動更新なし。手描きでの解析を使えます。解析・予想の日時は原図内を確認してください。";return;}
     const mask=await checkedImage(data.mask.path,data.mask.sha256,data.mask.width,data.mask.height,signal);
     if(revision!==loadRevision)return;
@@ -1182,6 +1202,7 @@ async function loadFeatures(selected, revision, signal) {
         const checked = ChartGeography.validate(await fetchJSON("land-sea.json", signal), data);
         if (!current()) return;
         geography = checked;
+        rowFrames = ChartView.rows(selected,{width:selected.page.width,height:selected.page.height,panels:checked.panels});
         try { panelRegistration = ChartAnalysis.validatePanelRegistration(checked,data); }
         catch { overlayError = "重ね合わせの位置を確認できません。各気圧面の解析は使えます。"; }
         if (terrainImage) for (const style of ChartGeography.patterns.filter(p => p.terrain !== undefined)) ChartGeography.preview(byId("geography-patterns").querySelector(`[data-pattern="${style.id}"] canvas`), style.id, null, terrainImage, geography);

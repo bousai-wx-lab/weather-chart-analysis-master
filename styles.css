@@ -70,10 +70,10 @@ button:hover:not(:disabled) { background: #f0f5fb; }
 button:disabled { color: #97a1af; cursor: default; background: #f7f8fa; }
 button[aria-pressed='true'] { border-color: #1e4e83; background: #eaf2fc; box-shadow: inset 0 0 0 1px #1e4e83; }
 button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible, a:focus-visible, #viewport:focus-visible { outline: 3px solid #6ba6df; outline-offset: 2px; }
-.view { flex-wrap: wrap; }
-#zoom { flex: 1; min-width: 75px; }
-#zoom-in, #zoom-out { width: 35px; font-weight: 700; font-size: 18px; }
-#fit { margin: 0; white-space: nowrap; }
+.panel-actions .view { display: grid; grid-template-columns: 28px minmax(58px,1fr) 28px repeat(3,36px); gap: 4px; }
+.panel-actions .view button, .panel-actions .view select { box-sizing: border-box; min-width: 0; min-height: 32px; height: 32px; padding: 4px 3px; font-size: 11px; line-height: 1.2; white-space: nowrap; }
+.panel-actions .view #zoom-in, .panel-actions .view #zoom-out { width: 28px; font-weight: 700; font-size: 18px; }
+#fit, #fit-upper, #fit-lower { margin: 0; }
 .gesture-note { font-size: 11px; line-height: 1.6; color: #68778b; margin: 8px 0 0; }
 .palette { flex-wrap: wrap; gap: 6px; }
 .swatch { min-width: 32px; padding: 4px 6px; color: #fff; font-weight: 700; }
@@ -153,7 +153,7 @@ dialog::backdrop { background: #23334b55; } dialog p { margin: 0 0 14px; } dialo
   #control-panel { position: absolute; left: 0; top: 0; bottom: 0; z-index: 4; width: min(280px, calc(100% - 50px)); box-shadow: 3px 0 14px #24324733; }
   .viewer { grid-column: 1; }
   button, select { min-height: 40px; } #panel-close { width: 40px; } .panel-heading { height: 48px; }
-  #zoom-in, #zoom-out { width: 40px; } #viewport { padding: 8px; }
+  #viewport { padding: 8px; }
   #status { bottom: 12px; right: 12px; font-size: 9px; }
   #overlay-dialog { padding: 14px; }
   footer { font-size: 9px; padding: 3px 8px; }

@@ -8,7 +8,7 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=395a7076de5bdecb">
+  <link rel="stylesheet" href="styles.css?v=81f527aeaf295ee1">
   <script src="analysis.js?v=c29e1167372baa26" defer></script>
   <script src="geography.js?v=8efbf1eb5570ec04" defer></script>
   <script src="catalog.js?v=5d05b51e947a0758" defer></script>
@@ -17,7 +17,8 @@
   <script src="dynamics.js?v=e6b3307d3f75d036" defer></script>
   <script src="snapshot-analysis.js?v=a4822d85e6972d25" defer></script>
   <script src="share-state.js?v=552322210ece16f2" defer></script>
-  <script src="app.js?v=5e42a30a7ce07a85" defer></script>
+  <script src="chart-view.js?v=a90b4ff142d435b7" defer></script>
+  <script src="app.js?v=4038e1efc4c80839" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -145,7 +146,7 @@
     </section>
     </div>
     <div class="panel-actions" aria-label="表示と保存">
-      <div class="group view"><button type="button" id="zoom-out" aria-label="天気図を縮小" disabled>−</button><select id="zoom" aria-label="天気図の表示倍率"><option value="fit">全体</option><option value="0.25">25%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option><option value="4">400%</option><option value="custom" id="custom-zoom" hidden>倍率</option></select><button type="button" id="zoom-in" aria-label="天気図を拡大" disabled>＋</button><button type="button" id="fit">全体</button></div>
+      <div class="group view"><button type="button" id="zoom-out" aria-label="天気図を縮小" disabled>−</button><select id="zoom" aria-label="天気図の表示倍率"><option value="fit">全体</option><option value="0.25">25%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option><option value="4">400%</option><option value="custom" id="custom-zoom" hidden>倍率</option></select><button type="button" id="zoom-in" aria-label="天気図を拡大" disabled>＋</button><button type="button" id="fit" aria-pressed="true">全体</button><button type="button" id="fit-upper" aria-label="天気図の上段を拡大" title="上段の図を枠に合わせて表示（3段以上では最上段）" aria-pressed="false" disabled>上段</button><button type="button" id="fit-lower" aria-label="天気図の下段を拡大" title="下段の図を枠に合わせて表示（3段以上では最下段）" aria-pressed="false" disabled>下段</button></div>
       <div class="group export-section"><button type="button" id="share" disabled>共有リンクコピー</button><button type="button" id="save" class="save" disabled>PNG保存</button><a id="export-link" download="aupq35-colored.png" hidden>書き出したPNG</a></div>
       <p id="share-message" role="status" aria-live="polite" hidden></p>
       <p class="gesture-note">ホイールで拡大 · ドラッグで移動</p>
