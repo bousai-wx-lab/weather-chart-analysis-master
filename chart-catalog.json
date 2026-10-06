@@ -2074,7 +2074,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fxjp854_12.pdf",
           "source_sha256": "e4664b0c5f82d43b57ce000dee82e8f8a97783a7c4d89aec365c66d4725a3f27",
           "retrieved_at": "2026-10-04T22:29:55.850144+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -2084,7 +2084,9 @@
               "image_path": "assets/charts/fxjp854-12-20261005-e4664b0c5f82-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fxjp854-12-20261005-equivalent.json",
+          "analysis_sha256": "ab9ef251bbf7321a6ebc386eded1fb14c2cd494da9b5afc01caff04d5a17d638"
         },
         {
           "id": "fxjp854-00-20261005",

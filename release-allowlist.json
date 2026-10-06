@@ -237,7 +237,8 @@
     "assets/analysis/feas524-12-20261005-forecast.json",
     "assets/analysis/feas524-12-forecast.json",
     "assets/analysis/feas526-12-20261005-forecast.json",
-    "assets/analysis/feas526-12-forecast.json"
+    "assets/analysis/feas526-12-forecast.json",
+    "assets/analysis/fxjp854-12-20261005-equivalent.json"
   ],
   "allowed_external_hosts": [
     "assets.science.nasa.gov",
@@ -1732,6 +1733,7 @@
     "assets/analysis/feas524-12-20261005-forecast.json": 295193,
     "assets/analysis/feas524-12-forecast.json": 284051,
     "assets/analysis/feas526-12-20261005-forecast.json": 293846,
-    "assets/analysis/feas526-12-forecast.json": 296414
+    "assets/analysis/feas526-12-forecast.json": 296414,
+    "assets/analysis/fxjp854-12-20261005-equivalent.json": 1734224
   }
 }

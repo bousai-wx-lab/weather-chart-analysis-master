@@ -68,7 +68,22 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
   }
   recent++;
 }
-assert.equal(recent,61);assert.equal(analyses,30);assert.equal(maps,57);
+assert.equal(recent,61);assert.equal(analyses,31);assert.equal(maps,57);
+// Source-read FXJP854 checks: a cool closed island in the southern map,
+// its warmer surroundings, and the hot tropical-cyclone core.
+const eqSelected=ChartCatalog.selection(catalog,"fxjp854","fxjp854-12-20261005",1);
+const eq=read(eqSelected.variant.analysis_path);
+assert.equal(snapshot.equivalentColor(260),"#173f8a");
+assert.equal(snapshot.equivalentColor(370),"#991b1b");
+assert.equal(snapshot.equivalentColor(250),snapshot.equivalentColor(260));
+assert.equal(snapshot.equivalentColor(380),snapshot.equivalentColor(370));
+const eqAt=point=>eq.panels[0].equivalent_bands.filter(b=>b.rings.reduce((odd,r)=>odd!==inRing(r,point),false)).at(-1)?.threshold_k;
+assert.equal(eqAt([520,950]),330);
+assert.equal(eqAt([660,960]),345);
+assert.ok(eqAt([930,880])>=370);
+for(const mutate of [d=>d.unit="degC",d=>d.range_k[1]=380,d=>d.panels[0].forecast_hour=36,d=>d.panels[0].equivalent_bands[0].rings[0][0]=[0,0],d=>d.panels[0].equivalent_levels[0].lines[0].source_paths.push(d.panels[0].equivalent_levels[0].lines[0].source_paths[0]),d=>d.panels[0].equivalent_bands[0].side_agreement=.8]){
+  const bad=structuredClone(eq);mutate(bad);assert.throws(()=>snapshot.validate(bad,eqSelected,"bousai-wx-lab.github.io"));
+}
 let surfaces=0;
 for(const p of catalog.products.filter(p=>["FXFE502","FXFE504","FXFE507"].includes(p.code)))for(const v of p.variants){
   const selected=ChartCatalog.selection(catalog,p.id,v.id,1),raw=fs.readFileSync(path.join(root,v.analysis_path));

@@ -11,12 +11,12 @@
   <link rel="stylesheet" href="styles.css?v=da140c7c48d5e83e">
   <script src="analysis.js?v=6e210e2a68561306" defer></script>
   <script src="geography.js?v=8efbf1eb5570ec04" defer></script>
-  <script src="catalog.js?v=fec75e892f430e4c" defer></script>
+  <script src="catalog.js?v=5d05b51e947a0758" defer></script>
   <script src="low-level.js?v=3808b1e4be5c1b02" defer></script>
   <script src="geography-atlas.js?v=b5ebd20dcdfe7728" defer></script>
   <script src="dynamics.js?v=ed6bf72e7564c059" defer></script>
-  <script src="snapshot-analysis.js?v=ca0e4b62193f6528" defer></script>
-  <script src="app.js?v=b14288ed1b77815b" defer></script>
+  <script src="snapshot-analysis.js?v=c0eea6b5909119c9" defer></script>
+  <script src="app.js?v=f4815349d23b0e3b" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -57,7 +57,7 @@
       </div>
       <div class="analysis-list-heading"><h2>この図の解析</h2><button type="button" id="active-only" aria-pressed="false">表示中 <span id="layer-count">0</span></button></div>
       <p class="list-help">項目で表示切替 · 詳細で凡例・設定</p>
-      <div class="layer-group" data-layer-group><h3 id="upper-plane">300 hPa <span>上段</span></h3><article class="layer-tool" data-layer="vorticity"><div class="layer-row"><button type="button" id="vorticity" class="layer-toggle" aria-pressed="false" disabled>正渦度の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="vorticity" aria-label="正渦度の色塗りの詳細" aria-expanded="false" aria-controls="detail-vorticity">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-vorticity" class="layer-details" hidden><span class="legend">500hPa · ピンク · 濃さ30%</span></div></article>
+      <div class="layer-group" data-layer-group><h3 id="upper-plane">300 hPa <span>上段</span></h3><article class="layer-tool" data-layer="equivalent"><div class="layer-row"><button type="button" id="equivalent" class="layer-toggle" aria-pressed="false" disabled>相当温位の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="equivalent" aria-label="相当温位の色塗りの詳細" aria-expanded="false" aria-controls="detail-equivalent">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-equivalent" class="layer-details" hidden><div id="equivalent-legend" aria-label="相当温位260から370 Kの配色"><div id="equivalent-gradient" style="height:16px;border-radius:3px"></div><div style="display:flex;justify-content:space-between"><span>260 K</span><span>315 K</span><span>370 K</span></div></div><label>濃さ <output id="equivalent-opacity-value">45%</output><input id="equivalent-opacity" type="range" min="0" max="100" step="5" value="45" aria-label="相当温位の濃さ"></label><p class="gesture-note">850hPaの相当温位。原図の3 Kごとの線に沿って、低い値を青、高い値を黄〜赤で塗り分けます。260 K以下・370 K以上は端点色です。各枠の有効時刻を確認してください。</p></div></article><article class="layer-tool" data-layer="vorticity"><div class="layer-row"><button type="button" id="vorticity" class="layer-toggle" aria-pressed="false" disabled>正渦度の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="vorticity" aria-label="正渦度の色塗りの詳細" aria-expanded="false" aria-controls="detail-vorticity">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-vorticity" class="layer-details" hidden><span class="legend">500hPa · ピンク · 濃さ30%</span></div></article>
       <article class="layer-tool" data-layer="temperature">
         <div class="layer-row"><button type="button" id="temperature" class="layer-toggle" aria-pressed="false" disabled>気温線</button><button type="button" class="layer-detail-button" data-layer-detail="temperature" aria-label="気温線の詳細" aria-expanded="false" aria-controls="detail-temperature">詳細 <span aria-hidden="true">⌄</span></button></div>
         <div id="detail-temperature" class="layer-details" hidden><div id="temperature-legend" class="temperature-legend" aria-label="300hPaの気温線。暖かいほど薄い青、冷たいほど濃い紫"></div><p class="gesture-note">−27〜−51℃の全5段階。原図の同じ気温の数字を滑らかにつなぐ補助線です。</p></div>

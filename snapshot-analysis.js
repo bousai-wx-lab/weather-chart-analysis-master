@@ -7,6 +7,14 @@ const SnapshotAnalysis = (() => {
   const precipitationColors=["#bceefa","#91dbf4","#60c2eb","#329fdc","#147fc0","#0861a8"];
   const precipitationLabels=["0–10 mm","10–20 mm","20–30 mm","30–40 mm","40–50 mm","50 mm以上"];
   const feasHours={FEAS502:24,FEAS504:48,FEAS507:72,FEAS509:96,FEAS512:120,FEAS514:144,FEAS516:168,FEAS519:192,FEAS521:216,FEAS524:240,FEAS526:264};
+  const equivalentStops=[[260,"#173f8a"],[280,"#3485d4"],[300,"#7acbef"],[315,"#eef4d3"],[330,"#ffd166"],[350,"#ef7046"],[370,"#991b1b"]];
+  function equivalentColor(value) {
+    const v=Math.max(260,Math.min(370,value));
+    const i=Math.min(equivalentStops.length-2,equivalentStops.findIndex((s,j)=>j<equivalentStops.length-1&&v<=equivalentStops[j+1][0]));
+    const [a,ca]=equivalentStops[i],[b,cb]=equivalentStops[i+1],f=(v-a)/(b-a);
+    const rgb=c=>c.slice(1).match(/../g).map(s=>parseInt(s,16));
+    return "#"+rgb(ca).map((c,j)=>Math.round(c+(rgb(cb)[j]-c)*f).toString(16).padStart(2,"0")).join("");
+  }
   function merge(base, snapshot, hostname) {
     if (!localHost(hostname)) throw Error("Local collection unavailable on this host");
     ChartCatalog.validate(snapshot, {local:true});
@@ -33,7 +41,9 @@ const SnapshotAnalysis = (() => {
     const surfaceHours={FXFE502:[12,24,12,24],FXFE504:[36,48,36,48],FXFE507:[72,72]}[data.product];
     const forecastHours={FXFE5782:[12,24,12,24],FXFE5784:[36,48,36,48],FXFE577:[72,72]}[data.product];
     const feasHour=feasHours[data.product];
-    const expected=feasHour?[500,850]:surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
+    const equivalent=data.product==="FXJP854";
+    if(equivalent!==Boolean(data.equivalent_temperature))throw Error("Invalid equivalent temperature product");
+    const expected=equivalent?[850,850,850,850]:feasHour?[500,850]:surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
     if(!expected || data.panels.length!==expected.length || (forecastHours && data.color_only!==true))throw Error("Unsupported trial product");
     if(Boolean(surfaceHours)!==Boolean(data.surface_forecast))throw Error("Invalid surface forecast product");
     if(Boolean(feasHour)!==Boolean(data.feas_forecast))throw Error("Invalid FEAS forecast product");
@@ -41,6 +51,20 @@ const SnapshotAnalysis = (() => {
     const line=p=>Array.isArray(p)&&p.length>=2&&p.length<=10000&&p.every(point);
     for(const [i,p] of data.panels.entries()) {
       if(p.pressure_hpa!==expected[i] || p.bounds?.length!==4 || !point(p.bounds.slice(0,2)) || !point(p.bounds.slice(2)) || p.bounds[0]>=p.bounds[2] || p.bounds[1]>=p.bounds[3] || !Array.isArray(p.levels) || !Array.isArray(p.troughs) || !Array.isArray(p.ridges))throw Error("Invalid trial panel");
+      if(equivalent) {
+        const within=q=>point(q)&&q[0]>=p.bounds[0]-.02&&q[0]<=p.bounds[2]+.02&&q[1]>=p.bounds[1]-.02&&q[1]<=p.bounds[3]+.02;
+        if(data.unit!=="K" || JSON.stringify(data.range_k)!=="[260,370]" || p.forecast_hour!==[12,24,36,48][i] || p.levels.length || p.troughs.length || p.ridges.length || ["cold_bands","wet_rectangles","ascent_rectangles","positive_vorticity_rectangles","wind_bands","precipitation_bands"].some(k=>p[k]?.length))throw Error("Invalid equivalent temperature plane");
+        const trace=p.equivalent_trace,levels=p.equivalent_levels,bands=p.equivalent_bands;
+        if(trace?.method!=="native_solid_contours" || trace.interval_k!==3 || trace.label_interval_k!==6 || !levels?.length || bands?.length!==levels.length)throw Error("Missing equivalent contours");
+        const seen=new Set();
+        for(const [j,level]of levels.entries()){
+          const band=bands[j];
+          if(!Number.isFinite(level.value_k)||level.value_k<260||level.value_k>400||level.value_k%3||(j&&level.value_k!==levels[j-1].value_k+3)||!level.lines?.length||band.threshold_k!==level.value_k||band.color_value_k!==Math.min(370,level.value_k+1.5)||band.side_agreement<=.9||band.side_agreement>1||!band.rings?.length||band.rings.some(r=>!line(r)||!r.every(within)))throw Error("Invalid equivalent band");
+          for(const ln of level.lines){if(!line(ln.points)||!ln.points.every(within)||typeof ln.closed!=="boolean"||!ln.source_paths?.length)throw Error("Invalid equivalent source contour");for(const id of ln.source_paths){if(!Number.isInteger(id)||id<0||seen.has(id))throw Error("Repeated equivalent source path");seen.add(id);}}
+        }
+        if(levels.reduce((n,l)=>n+l.lines.length,0)!==trace.source_contours||!trace.labels?.length||trace.labels.length!==trace.labels_read||trace.labels.some(l=>!Number.isFinite(l.value_k)||l.value_k%6||!point(l.point)))throw Error("Invalid equivalent source trace");
+        if(data.panels.slice(0,i).some(q=>Math.min(p.bounds[2],q.bounds[2])>Math.max(p.bounds[0],q.bounds[0])&&Math.min(p.bounds[3],q.bounds[3])>Math.max(p.bounds[1],q.bounds[1])))throw Error("Overlapping equivalent panels");
+      } else if(p.equivalent_levels||p.equivalent_bands)throw Error("Unsupported equivalent product");
       if(feasHour){
         const within=q=>point(q)&&q[0]>=p.bounds[0]-.25&&q[1]>=p.bounds[1]-.25&&q[0]<=p.bounds[2]+.25&&q[1]<=p.bounds[3]+.25;
         if(p.forecast_hour!==feasHour || p.wet_rectangles?.length || p.ascent_rectangles?.length || p.wind_bands?.length || p.jet_guides?.length || p.precipitation_bands?.length || p.axis_pressure_hpa===0)throw Error("Invalid FEAS forecast layers");
@@ -115,6 +139,7 @@ const SnapshotAnalysis = (() => {
   // Both forecast hours share a toggle and legend for their pressure level.
   // Drawing still uses each panel's own coordinates and colors.
   function displayScales(data) {
+    if(data.equivalent_temperature)return [0,1].map(()=>({pressure_hpa:850,values:[],colors:[],dash:[],opacity:.5}));
     const all=scales(data);
     if(!data.color_only&&!data.surface_forecast)return all;
     return [500,data.surface_forecast?0:850].map(pressure=>{
@@ -179,6 +204,10 @@ const SnapshotAnalysis = (() => {
       ctx.save();ctx.globalAlpha=opacity;ctx.drawImage(canvas,0,0);ctx.restore();
     };
     for(const p of data.panels){ctx.save();const [l,t,r,b]=p.bounds;ctx.beginPath();ctx.rect(l,t,r-l,b-t);ctx.clip();
+      if(on.equivalent && data.equivalent_temperature){
+        const frame=[[l,t],[r,t],[r,b],[l,b]];
+        paintBands([{color:equivalentColor(p.equivalent_levels[0].value_k-1.5),rings:[frame]},...p.equivalent_bands.map(b=>({...b,color:equivalentColor(b.color_value_k)}))],on.equivalentOpacity??.45);
+      }
       // Source bands own the geometry; the shared palette owns display colors
       // so stored legacy colors cannot disagree with the UI and PNG legends.
       if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity,band=>low.coldColors[p.cold_thresholds?.indexOf(band.threshold)]);
@@ -188,6 +217,6 @@ const SnapshotAnalysis = (() => {
       ctx.restore();
     }
   }
-  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills,precipitationColors,precipitationLabels};
+  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills,precipitationColors,precipitationLabels,equivalentColor,equivalentStops};
 })();
 if(typeof module!=="undefined")module.exports=SnapshotAnalysis;
