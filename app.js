@@ -862,7 +862,7 @@ function shareMessage(message) {
 }
 function captureShared() {
   return {
-    version:1,chart:ChartShare.identity(currentSelection),drawing:captureDrawing(),
+    version:1,chart:ChartShare.identity(currentSelection),drawing:ChartShare.currentDrawing(captureDrawing()),
     view:{fit:fitView,zoom:fitView ? 1 : zoomFactor,x:viewport.scrollLeft/Math.max(1,viewport.scrollWidth-viewport.clientWidth),y:viewport.scrollTop/Math.max(1,viewport.scrollHeight-viewport.clientHeight)}
   };
 }

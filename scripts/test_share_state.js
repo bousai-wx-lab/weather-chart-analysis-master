@@ -17,6 +17,10 @@ const mutate = fn => { const bad=clone(state);fn(bad);assert.throws(() => Share.
   const fragment = await Share.encode(state);
   assert.ok(fragment.startsWith("#share=1.d."));
   assert.deepEqual(await Share.decode(fragment),state);
+  const visible = Share.currentDrawing(drawing);
+  assert.deepEqual(visible.history,drawing.history.slice(1));assert.deepEqual(visible.future,[]);
+  const cleared = Share.currentDrawing({...drawing,history:[...drawing.history,{kind:"clear"}]});
+  assert.deepEqual(cleared.history,[]);assert.deepEqual(cleared.future,[]);
   Share.bind(state,selected,["elevation-relief"]);
   assert.equal(await Share.decode("#other"),null);
   mutate(s => s.version=2);

@@ -47,6 +47,10 @@ const ChartShare = (() => {
   function identity(selected) {
     return {product:selected.product.id,variant:selected.variant.id,page:selected.page.number,source:selected.variant.source_sha256,image:selected.page.image_sha256,width:selected.page.width,height:selected.page.height,analysis:selected.variant.analysis_sha256 || null};
   }
+  function currentDrawing(drawing) {
+    const lastClear = drawing.history.map(stroke => stroke.kind).lastIndexOf("clear");
+    return {...drawing,history:drawing.history.slice(lastClear+1),future:[]};
+  }
   function bind(value, selected, styles) {
     validate(value);
     const expected = identity(selected);
@@ -107,6 +111,6 @@ const ChartShare = (() => {
       invalid();
     }
   }
-  return {flags,opacities,maxFragment,identity,validate,bind,encode,decode};
+  return {flags,opacities,maxFragment,identity,currentDrawing,validate,bind,encode,decode};
 })();
 if (typeof module !== "undefined") module.exports = ChartShare;
