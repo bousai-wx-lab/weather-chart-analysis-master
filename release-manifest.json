@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-06T04:26:48.725339+00:00",
+  "generated_at": "2026-10-06T04:29:42.799331+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
