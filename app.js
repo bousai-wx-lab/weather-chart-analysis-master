@@ -955,7 +955,7 @@ byId("save").addEventListener("click", () => {
   ctx.globalCompositeOperation = "multiply"; ctx.drawImage(overlayLayer, 0, 0); ctx.drawImage(ink, 0, 0); ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = "#243247"; ctx.font = "24px sans-serif";
   ctx.fillText(`出典：気象庁 ${selected.product.code}（画像化） / ${chartLabel}`, 26, ink.height + 38, output.width - 52);
-  ctx.fillText(trial?.product==="AUPA20"?`200hPaジェット軸：${showJet?"原図の矢印を赤で着色":"表示なし"} / 手描き：利用者`:`解析案：${showTrough700 && (lowLevel || isFeas()) ? (isFeas()?"地上トラフ ":"700hPaトラフ ") : ""}${showTrough ? (lowLevel?"850hPaトラフ ":"500hPaトラフ ") : ""}${showRidge700 && (lowLevel || isFeas()) ? (isFeas()?"地上リッジ ":"700hPaリッジ ") : ""}${showRidge ? (lowLevel?"850hPaリッジ ":"500hPaリッジ ") : ""}${showJet ? "300hPa強風軸" : ""}${!showTrough700 && !showRidge700 && !showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
+  ctx.fillText(trial?.product==="AUPA20"?`200hPaジェット軸：${showJet?"原図の矢印を白縁付きの赤で着色":"表示なし"} / 手描き：利用者`:`解析案：${showTrough700 && (lowLevel || isFeas()) ? (isFeas()?"地上トラフ ":"700hPaトラフ ") : ""}${showTrough ? (lowLevel?"850hPaトラフ ":"500hPaトラフ ") : ""}${showRidge700 && (lowLevel || isFeas()) ? (isFeas()?"地上リッジ ":"700hPaリッジ ") : ""}${showRidge ? (lowLevel?"850hPaリッジ ":"500hPaリッジ ") : ""}${showJet ? "300hPa強風軸（白縁付きの赤）" : ""}${!showTrough700 && !showRidge700 && !showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
   if (showSymbols && symbols) for (const [index, letter] of ["L", "H", "C", "W"].entries()) {
     ctx.fillStyle = ChartAnalysis.symbolPalette[letter]; ctx.fillText(letter, 1610 + index * 90, ink.height + 76);
   }
@@ -976,8 +976,8 @@ byId("save").addEventListener("click", () => {
     for(const [i,v] of coloringRules.coldThresholds[850].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+297,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+319);}
   }
   if(trial?.product==="AUPA20"){
-    ctx.fillText(`圏界面の気圧：${showTropopause?"黄色→黄緑→水色→青→紫・濃さ50%":"表示なし"} / 境界50hPa間隔・数値100hPa間隔`,26,ink.height+280,output.width-52);
-    for(const [i,v]of [100,150,200,250,300,350,400].entries()){const x=26+i*(output.width-52)/7;ctx.save();ctx.globalAlpha=coloringRules.tropopauseOpacity;ctx.fillStyle=SnapshotAnalysis.tropopauseColor(v);ctx.fillRect(x,ink.height+305,32,24);ctx.restore();ctx.fillText(`${v} hPa`,x+40,ink.height+327);}
+    ctx.fillText(`圏界面の気圧：${showTropopause?"150hPa未満は無色・ピンク→赤紫→紫・濃さ35%":"表示なし"} / 境界50hPa間隔・数値100hPa間隔`,26,ink.height+280,output.width-52);
+    for(const [i,item]of SnapshotAnalysis.tropopauseLegend().entries()){const x=26+i*(output.width-52)/7;ctx.save();if(item.color){ctx.globalAlpha=coloringRules.tropopauseOpacity;ctx.fillStyle=item.color;ctx.fillRect(x,ink.height+305,32,24);}else{ctx.strokeStyle="#cbd5e1";ctx.strokeRect(x,ink.height+305,32,24);}ctx.restore();ctx.fillText(item.label,x+40,ink.height+327,(output.width-52)/7-46);}
     ctx.fillText("気圧が低いほど圏界面は高い位置にあります。",26,ink.height+371,output.width-52);
   }
   if(trial?.equivalent_temperature){
@@ -1330,13 +1330,13 @@ function trialAvailable(id) {
 function trialLegends() {
   const nativeJet=trial.product==="AUPA20";
   byId("jet").textContent=nativeJet?"ジェット軸":"強風軸";
-  byId("detail-jet").querySelector(".legend").textContent=`赤い矢印 · ${nativeJet?200:300}hPa`;
-  byId("detail-jet").querySelector("p").textContent=nativeJet?"原図の200hPaジェット軸を赤く着色します。矢印は風の流れの向きです。":"各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。";
-  jetLayer.setAttribute("aria-label",nativeJet?"原図の200hPaジェット軸を赤で着色":"300hPaの強風帯をたどる赤い矢印");
+  byId("detail-jet").querySelector(".legend").textContent=`白縁付きの赤い矢印 · ${nativeJet?200:300}hPa`;
+  byId("detail-jet").querySelector("p").textContent=nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色します。矢印は風の流れの向きです。":"各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。";
+  jetLayer.setAttribute("aria-label",nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色":"300hPaの強風帯をたどる白縁付きの赤い矢印");
   temperatureLayer.setAttribute("aria-label",nativeJet?"200hPaの同じ気温の数字をつなぐ等温線":"原図の等温線の着色");
   const common=document.querySelector('[data-layer="symbols"]').parentElement.querySelector("h3 span");common.textContent=trial.panels.length===1?"図全体":"上段・下段";
   byId("tropopause-legend").replaceChildren();
-  for(const v of [100,150,200,250,300,350,400]){const entry=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=SnapshotAnalysis.tropopauseColor(v);swatch.style.opacity=String(coloringRules.tropopauseOpacity);entry.append(swatch,`${v} hPa`);byId("tropopause-legend").append(entry);}
+  for(const item of SnapshotAnalysis.tropopauseLegend()){const entry=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=item.color||"transparent";swatch.style.opacity=String(item.color?coloringRules.tropopauseOpacity:1);if(!item.color)swatch.style.border="1px solid #cbd5e1";entry.append(swatch,item.label);byId("tropopause-legend").append(entry);}
 
   if(trial.equivalent_temperature){
     byId("upper-plane").replaceChildren("850 hPa ");byId("lower-plane").replaceChildren("850 hPa ");

@@ -196,20 +196,28 @@ const SnapshotAnalysis = (() => {
     ctx.clip("evenodd");
   }
   function tropopauseColor(value) {
+    if(value<rules.tropopauseMinimum)return null;
     const stops=rules.tropopauseStops,v=Math.max(stops[0][0],Math.min(stops.at(-1)[0],value));
     const i=Math.min(stops.length-2,stops.findIndex((s,j)=>j<stops.length-1&&v<=stops[j+1][0]));
     return chart.mixColor(stops[i][1],stops[i+1][1],(v-stops[i][0])/(stops[i+1][0]-stops[i][0]));
   }
+  function tropopauseLegend() {
+    return [{value:rules.tropopauseMinimum-50,label:`${rules.tropopauseMinimum} hPa未満（無色）`,color:null},...rules.tropopauseStops.map(([value,color],i,a)=>({value,color,label:i<a.length-1?`${value}–${a[i+1][0]} hPa`:`${value} hPa以上`}))];
+  }
   function drawNativeJets(ctx,data) {
-    for(const p of data.panels)if(p.native_jet_strokes?.length){ctx.save();clipPanel(ctx,p);ctx.strokeStyle=rules.axes.trough;ctx.lineJoin=ctx.lineCap="round";
-      for(const st of p.native_jet_strokes){ctx.lineWidth=st.width_px+1;ctx.beginPath();ctx.moveTo(...st.points[0]);for(const q of st.points.slice(1))ctx.lineTo(...q);ctx.stroke();}ctx.restore();}
+    for(const p of data.panels)if(p.native_jet_strokes?.length){ctx.save();clipPanel(ctx,p);ctx.lineJoin=ctx.lineCap="round";
+      for(const [color,extra] of [[rules.jetOutline.color,rules.jetOutline.width],[rules.axes.trough,0]]){ctx.strokeStyle=color;
+        for(const st of p.native_jet_strokes){ctx.lineWidth=st.width_px+1+extra;ctx.beginPath();ctx.moveTo(...st.points[0]);for(const q of st.points.slice(1))ctx.lineTo(...q);ctx.stroke();}
+      }ctx.restore();}
   }
   function drawTropopause(ctx,data) {
     for(const p of data.panels)if(p.tropopause_bands?.length){ctx.save();clipPanel(ctx,p);
       const canvas=ctx.canvas.ownerDocument.createElement("canvas");canvas.width=data.width;canvas.height=data.height;const c=canvas.getContext("2d");
-      const [l,t,r,b]=p.bounds;c.fillStyle=tropopauseColor(p.tropopause_bands[0].threshold-50);c.fillRect(l,t,r-l,b-t);
-      for(const band of p.tropopause_bands){c.fillStyle=tropopauseColor(band.threshold);c.beginPath();for(const ring of band.rings){c.moveTo(...ring[0]);for(const q of ring.slice(1))c.lineTo(...q);c.closePath();}c.fill("evenodd");}
-      ctx.globalAlpha=rules.tropopauseOpacity;ctx.drawImage(canvas,0,0);ctx.restore();}
+      for(const band of p.tropopause_bands){const color=tropopauseColor(band.threshold);if(!color)continue;c.fillStyle=color;c.beginPath();for(const ring of band.rings){c.moveTo(...ring[0]);for(const q of ring.slice(1))c.lineTo(...q);c.closePath();}c.fill("evenodd");}
+      ctx.globalAlpha=rules.tropopauseOpacity;ctx.drawImage(canvas,0,0);
+      ctx.globalAlpha=rules.tropopauseBoundary.opacity;ctx.strokeStyle=rules.tropopauseBoundary.color;ctx.lineWidth=rules.tropopauseBoundary.width;ctx.lineJoin=ctx.lineCap="round";
+      for(const level of p.tropopause_levels)for(const line of level.lines){ctx.beginPath();ctx.moveTo(...line.points[0]);for(const q of line.points.slice(1))ctx.lineTo(...q);if(line.closed)ctx.closePath();ctx.stroke();}
+      ctx.restore();}
   }
   function drawTemperature(ctx,data,enabled) {
     for(const [i,p] of data.panels.entries()) {
@@ -249,6 +257,6 @@ const SnapshotAnalysis = (() => {
       ctx.restore();
     }
   }
-  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills,drawNativeJets,drawTropopause,tropopauseColor,precipitationColors,precipitationLabels,equivalentColor,equivalentStops};
+  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills,drawNativeJets,drawTropopause,tropopauseColor,tropopauseLegend,precipitationColors,precipitationLabels,equivalentColor,equivalentStops};
 })();
 if(typeof module!=="undefined")module.exports=SnapshotAnalysis;

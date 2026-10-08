@@ -221,8 +221,8 @@ assert.ok(strongAxes[2].segments.at(-1).end[0]>1900,"main branch flows into the 
 const drawCalls=[];
 const jetCtx={save(){},restore(){},beginPath(){},rect(){},clip(){},moveTo(){},lineTo(){},stroke(){drawCalls.push(['stroke',this.strokeStyle]);},bezierCurveTo(){drawCalls.push(['curve']);}};
 analysis.drawJetAxes(jetCtx,strongAxes,wind.bounds);
-assert.equal(drawCalls.filter(c=>c[0]==='stroke').length,6,"one smooth shaft and one arrowhead per branch");
-assert.ok(drawCalls.filter(c=>c[0]==='stroke').every(c=>c[1]==='#f02020'),"all axes and arrowheads use the same red");
+assert.equal(drawCalls.filter(c=>c[0]==='stroke'&&c[1]==='#f02020').length,6,"one red smooth shaft and one arrowhead per branch");
+assert.equal(drawCalls.filter(c=>c[0]==='stroke'&&c[1]==='#ffffff').length,6,"white underlay covers both shafts and arrowheads");
 console.log(`WIND_AXES_OK strongest_strip=checked shifted_maximum=checked no_height_only_axis=checked source_binding=checked branches=3 smooth_samples=${curveSamples} directions=checked arrows=checked`);
 
 const geography = require("../geography.js");

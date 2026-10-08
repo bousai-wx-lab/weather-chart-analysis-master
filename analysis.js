@@ -12,8 +12,10 @@ const ChartAnalysis = (() => {
     vorticity: Object.freeze({color:"#ec6ca5",opacity:.3}),
     ascent: Object.freeze({color:"#a3d84b",opacity:.3}),
     axes: Object.freeze({trough:"#ef2323",ridge:"#2563eb",opacity:1,width:4}),
-    tropopauseOpacity: .5,
-    tropopauseStops: Object.freeze([[100,"#facc15"],[150,"#a3e635"],[200,"#22d3ee"],[250,"#0ea5e9"],[300,"#2563eb"],[350,"#7c3aed"],[400,"#3b0764"]].map(Object.freeze)),
+    jetOutline: Object.freeze({color:"#ffffff",width:4}),
+    tropopauseMinimum: 150, tropopauseOpacity: .35,
+    tropopauseBoundary: Object.freeze({color:"#7e22ce",width:1.5,opacity:.7}),
+    tropopauseStops: Object.freeze([[150,"#f8bbd0"],[200,"#ec4899"],[250,"#c026d3"],[300,"#9333ea"],[350,"#6b21a8"],[400,"#3b0764"]].map(Object.freeze)),
     precipitationOpacity: .45,
     precipitationColors: Object.freeze(["#bceefa","#91dbf4","#60c2eb","#329fdc","#147fc0","#0861a8"]),
     equivalentOpacity: .45,
@@ -183,16 +185,19 @@ const ChartAnalysis = (() => {
     ctx.save();
     ctx.globalAlpha = opacity;
     ctx.beginPath(); ctx.rect(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1]); ctx.clip();
-    ctx.strokeStyle = "#f02020"; ctx.lineWidth = 10; ctx.lineCap = "round"; ctx.lineJoin = "round";
-    for (const axis of axes) {
-      ctx.beginPath(); ctx.moveTo(...axis.segments[0].start);
-      for (const segment of axis.segments) ctx.bezierCurveTo(...segment.c1, ...segment.c2, ...segment.end);
-      ctx.stroke();
-      const last = axis.segments.at(-1), tip = last.end;
-      const dx = tip[0] - last.c2[0], dy = tip[1] - last.c2[1], length = Math.hypot(dx, dy);
-      const tx = dx / length, ty = dy / length;
-      ctx.beginPath(); ctx.moveTo(tip[0] - 30 * tx - 16 * ty, tip[1] - 30 * ty + 16 * tx);
-      ctx.lineTo(...tip); ctx.lineTo(tip[0] - 30 * tx + 16 * ty, tip[1] - 30 * ty - 16 * tx); ctx.stroke();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    for (const [color,width] of [[coloringRules.jetOutline.color,10+coloringRules.jetOutline.width],["#f02020",10]]) {
+      ctx.strokeStyle=color;ctx.lineWidth=width;
+      for (const axis of axes) {
+        ctx.beginPath(); ctx.moveTo(...axis.segments[0].start);
+        for (const segment of axis.segments) ctx.bezierCurveTo(...segment.c1, ...segment.c2, ...segment.end);
+        ctx.stroke();
+        const last = axis.segments.at(-1), tip = last.end;
+        const dx = tip[0] - last.c2[0], dy = tip[1] - last.c2[1], length = Math.hypot(dx, dy);
+        const tx = dx / length, ty = dy / length;
+        ctx.beginPath(); ctx.moveTo(tip[0] - 30 * tx - 16 * ty, tip[1] - 30 * ty + 16 * tx);
+        ctx.lineTo(...tip); ctx.lineTo(tip[0] - 30 * tx + 16 * ty, tip[1] - 30 * ty - 16 * tx); ctx.stroke();
+      }
     }
     ctx.restore();
   }
