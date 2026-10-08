@@ -191,10 +191,15 @@ for (const change of [
 ]) { const bad = structuredClone(guides); change(bad); assert.throws(() => analysis.validateJetGuides(bad, chart, wind)); }
 const rectangle = (y0, y1) => [[[0,y0],[400,y0],[400,y1],[0,y1]]];
 const syntheticWind = { bounds:[0,0,400,400], bands:[{min_kt:40,rings:rectangle(120,280)},{min_kt:60,rings:rectangle(150,260)},{min_kt:80,rings:rectangle(210,230)}] };
-const syntheticGuide = { axes:[{search_radius_px:90,points:[[50,200],[150,200],[250,200],[350,200]]}] };
-for (const center of analysis.jets(syntheticWind,syntheticGuide)[0].centers) assert.equal(center.point[1],220,"known fastest strip, not the wider surrounding band's center");
+const syntheticGuide = { axes:[{search_radius_px:90,points:[[50,220],[150,220],[250,220],[350,220]]}] };
+assert.deepEqual(analysis.strongestCenter(syntheticWind,[200,200],[0,1],90).point,[200,220],"the transverse profile independently locates the true peak");
+for (const center of analysis.jets(syntheticWind,syntheticGuide)[0].centers) assert.equal(center.point[1],220,"reviewed convex-peak representatives define the curve");
 const shiftedWind = structuredClone(syntheticWind); shiftedWind.bands[2].rings = rectangle(180,200);
-for (const center of analysis.jets(shiftedWind,syntheticGuide)[0].centers) assert.equal(center.point[1],190,"moving the wind maximum moves the axis with an unchanged guide");
+assert.deepEqual(analysis.strongestCenter(shiftedWind,[200,200],[0,1],90).point,[200,190],"changed source peaks remain observable for review");
+assert.deepEqual(analysis.jets(shiftedWind,syntheticGuide)[0].segments.map(s=>[s.start,s.c1,s.c2,s.end]),analysis.jets(syntheticWind,syntheticGuide)[0].segments.map(s=>[s.start,s.c1,s.c2,s.end]),"changes in width or interval must not pull a reviewed broad curve into local wiggles");
+const wavyWind=structuredClone(syntheticWind);
+wavyWind.bands[2].rings=[[[0,210],[100,215],[200,205],[300,215],[400,210],[400,230],[300,235],[200,225],[100,235],[0,230]]];
+assert.deepEqual(analysis.jets(wavyWind,syntheticGuide)[0].segments,analysis.jets(syntheticWind,syntheticGuide)[0].segments,"small wind-band edge changes must not create new drawing bends");
 assert.equal(analysis.jets({...syntheticWind,bands:[]},syntheticGuide).length,0,"missing wind must not produce an axis by copying the guide");
 const adjacentPeak=structuredClone(syntheticWind);
 adjacentPeak.bands.push({min_kt:120,rings:rectangle(155,170)});
@@ -202,8 +207,10 @@ assert.equal(analysis.strongestCenter(adjacentPeak,[200,220],[0,1],90).min_kt,80
 assert.equal(analysis.strongestCenter({bounds:[0,0,400,400],bands:[{min_kt:80,rings:rectangle(0,400)}]},[200,200],[0,1],90),null,"Search-window edges do not establish a wind peak");
 const islands=[[[0,210],[150,210],[150,230],[0,230]],[[250,210],[400,210],[400,230],[250,230]]];
 const gapWind={bounds:[0,0,400,400],bands:[{min_kt:40,rings:islands},{min_kt:80,rings:islands}]};
-const disconnected=analysis.jets(gapWind,syntheticGuide);
-assert.ok(disconnected.length>0);
+const gapGuide={axes:[{search_radius_px:90,points:[[50,220],[100,220],[200,220],[300,220],[350,220]]}]};
+const disconnected=analysis.jets(gapWind,gapGuide);
+assert.equal(disconnected.length,2,"retain both confirmed runs, including the shorter independent interval");
+assert.deepEqual(disconnected.map(a=>a.run_index),[0,1]);
 for(const axis of disconnected)for(const segment of axis.segments)for(let j=0;j<=100;j++){
  const t=j/100,u=1-t,p=[0,1].map(k=>u*u*u*segment.start[k]+3*u*u*t*segment.c1[k]+3*u*t*t*segment.c2[k]+t*t*t*segment.end[k]);
  assert.ok(inRegion(p,islands),"Supported endpoints must not authorize a bridge through a weak-wind gap");
@@ -213,7 +220,7 @@ assert.equal(strongAxes.length,3,"three separate downwind branches on the review
 const bezier = (s,t) => [0,1].map(i => (1-t)**3*s.start[i]+3*(1-t)**2*t*s.c1[i]+3*(1-t)*t*t*s.c2[i]+t**3*s.end[i]);
 let curveSamples = 0;
 for (const axis of strongAxes) {
-  for (const center of axis.centers) assert.equal(intervalAt(center.point),center.min_kt,"center must lie in the selected strongest wind interval");
+  for (const center of axis.centers) assert.equal(intervalAt(center.point),center.min_kt,"representative must report its actual source wind interval");
   for (const [index, s] of axis.segments.entries()) {
     if (index) {
       const before = axis.segments[index-1];

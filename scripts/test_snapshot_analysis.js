@@ -67,9 +67,25 @@ for(const [product,pressure]of [["fupa252",250],["fupa302",300],["fupa402",400],
   }
   for(const change of [x=>x.source_sha256="0".repeat(64),x=>x.panels[0].forecast_hour=48,x=>x.panels[0].pressure_hpa=850,x=>x.panels[0].tropopause_bands=[],x=>x.panels[0].levels[0].lines[0].points[0]=[0,0],...(pressure===500?[x=>x.panels[0].troughs[0].contour_crossings=[],x=>x.panels[0].ridges[0].control_points.pop()]:[x=>x.panels[0].wind_bands[0].threshold=20,x=>x.panels[0].jet_guides[0].points[0]=[0,0]])]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));}
 }
+// Teacher case: four distinct flows, sparse NW convex representatives and both central branches.
+{
+ const d=read("assets/analysis/fupa302-12-20261005.json"),j=snapshot.jetAxes(d);
+ assert.equal(j.length,4);assert.deepEqual(j.map(a=>a.guide_index),[0,1,2,3]);
+ const nw=j[1];assert.ok(nw.segments.length<=3,"a broad convex lobe must not be interpolated through dozens of noisy transverse centers");
+ for(const seg of nw.segments)for(let i=1;i<=100;i++){
+  const at=t=>[0,1].map(k=>(1-t)**3*seg.start[k]+3*(1-t)**2*t*seg.c1[k]+3*(1-t)*t*t*seg.c2[k]+t**3*seg.end[k]);
+  const a=at((i-1)/100),b=at(i/100);assert.ok(b[0]>=a[0]&&b[1]>=a[1],"the NW convex flow advances smoothly southeast without the former zigzag");
+ }
+ assert.ok(j[2].segments.at(-1).end[1]>j[2].segments[0].start[1]);
+ assert.ok(j[3].segments.at(-1).end[0]>j[3].segments[0].start[0]);
+}
 function checkJetSupport(panel,jets){
-  assert.ok(jets.length>0 && jets.length<=panel.jet_guides.length,"Only supported flows are drawn; a guide is not a required arrow");
-  assert.equal(new Set(jets.map(a=>a.guide_index)).size,jets.length);
+  assert.equal(jets.length,panel.jet_guides.length,"each source-reviewed flow is retained, including short independent branches");
+  assert.equal(new Set(jets.map(a=>a.guide_index+":"+a.run_index)).size,jets.length);
+  for(const axis of jets){
+    assert.equal(axis.segments.length,panel.jet_guides[axis.guide_index].points.length-1,"all reviewed broad segments retain whole-curve support");
+    for(let i=1;i<axis.segments.length;i++)for(const k of [0,1])assert.ok(Math.abs((axis.segments[i-1].end[k]-axis.segments[i-1].c2[k])-(axis.segments[i].c1[k]-axis.segments[i].start[k]))<1e-7,"shared tangents prevent corners at representative joins");
+  }
   for(const axis of jets)for(const s of axis.segments)for(let j=0;j<=100;j++){
     const t=j/100,u=1-t,q=[0,1].map(k=>u*u*u*s.start[k]+3*u*u*t*s.c1[k]+3*u*t*t*s.c2[k]+t*t*t*s.end[k]);
     assert.ok(inBands(q,panel.wind_bands.filter(b=>b.threshold>=s.min_kt)),"The entire curve retains its wind-peak support, including between anchors");

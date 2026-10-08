@@ -189,65 +189,26 @@ const ChartAnalysis = (() => {
     const at = (s,t) => [0,1].map(k => (1-t)**3*s.start[k]+3*(1-t)**2*t*s.c1[k]+3*(1-t)*t*t*s.c2[k]+t**3*s.end[k]);
     const length = (a,b) => Math.hypot(a[0]-b[0],a[1]-b[1]);
     const within = q => q[0]>=wind.bounds[0] && q[0]<=wind.bounds[2] && q[1]>=wind.bounds[1] && q[1]<=wind.bounds[3];
-    const supported = (q,min) => within(q) && wind.bands.some(b => b.min_kt>=min && inside(q,b.rings));
-    const simplify = (points,left=0,right=points.length-1) => {
-      if(right<=left)return [left];
-      const a=points[left].point,b=points[right].point,dx=b[0]-a[0],dy=b[1]-a[1],size=dx*dx+dy*dy;
-      let maximum=12,index=-1;
-      for(let i=left+1;i<right;i++) {
-        const p=points[i].point,t=size?Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/size)):0;
-        const error=Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);
-        if(error>maximum){maximum=error;index=i;}
-      }
-      return index<0?[left,right]:[...simplify(points,left,index).slice(0,-1),...simplify(points,index,right)];
-    };
+    const grade = q => within(q)?Math.max(0,...wind.bands.filter(b=>inside(q,b.rings)).map(b=>b.min_kt)):0;
     for (const [guide_index,guide] of guides.axes.entries()) {
-      let centers=[],confirmed=[];
+      // These are sparse, source-reviewed convex-peak representatives. Dense
+      // transverse measurements are evidence; they must not move the curve or
+      // turn changes in band width / interval into small repeated bends.
+      let segments=[],centers=[],run_index=0;
       const finish = () => {
-        let run=[],runCenters=[],distance=0;
-        const indices=centers.length?simplify(centers):[],anchors=indices.map(i=>centers[i]);
-        const endRun = () => {
-          // An isolated point or a fragment shorter than its arrowhead is not an axis.
-          if(distance>=40 && run.length)confirmed.push({segments:run,centers:runCenters,guide_index,distance});
-          run=[];runCenters=[];distance=0;
-        };
-        for (const [i,s] of smoothCurve(anchors.map(c=>c.point)).entries()) {
-          const min=Math.min(...centers.slice(indices[i],indices[i+1]+1).map(c=>c.min_kt));
-          const steps=Math.max(16,Math.ceil((length(s.start,s.c1)+length(s.c1,s.c2)+length(s.c2,s.end))/3));
-          let checked=null;
-          // Reduce overshoot without moving the wind-maximum endpoints. Every
-          // curve must stay in at least the weaker of its two peak intervals.
-          for(const factor of [1,.5,.2,.05]) {
-            const curve={...s,c1:s.c1.map((v,k)=>s.start[k]+factor*(v-s.start[k])),c2:s.c2.map((v,k)=>s.end[k]+factor*(v-s.end[k])),min_kt:min};
-            if(Array.from({length:steps+1},(_,j)=>supported(at(curve,j/steps),min)).every(Boolean)){checked=curve;break;}
-          }
-          if(!checked){endRun();continue;}
-          if(!run.length)runCenters.push(anchors[i]);
-          run.push(checked);runCenters.push(anchors[i+1]);distance+=length(s.start,s.end);
-        }
-        endRun();centers=[];
+        if(segments.length)axes.push({segments,centers,guide_index,run_index:run_index++});
+        segments=[];centers=[];
       };
-      const sample = (s,t) => {
-        const point=at(s,t),u=1-t;
-        const [dx,dy]=[0,1].map(k=>3*u*u*(s.c1[k]-s.start[k])+6*u*t*(s.c2[k]-s.c1[k])+3*t*t*(s.end[k]-s.c2[k]));
-        const size=Math.hypot(dx,dy);
-        const center=size?strongestCenter(wind,point,[-dy/size,dx/size],guide.search_radius_px,guide.max_offset_px??guide.search_radius_px):null;
-        if(!center){finish();return;}
-        if(!centers.length || length(center.point,centers.at(-1).point)>=2)centers.push(center);
-      };
-      // The guide identifies a flow, rather than a sparse set of points to join.
-      // Re-read its transverse wind peaks along the full route before drawing.
-      const route=smoothCurve(guide.points);
-      for(const s of route) {
-        const steps=Math.ceil((length(s.start,s.c1)+length(s.c1,s.c2)+length(s.c2,s.end))/24);
-        for(let j=0;j<steps;j++)sample(s,j/steps);
+      for(const s of smoothCurve(guide.points)) {
+        const steps=Math.max(16,Math.ceil((length(s.start,s.c1)+length(s.c1,s.c2)+length(s.c2,s.end))/3));
+        const min=Math.min(...Array.from({length:steps+1},(_,j)=>grade(at(s,j/steps))));
+        // Never pull handles independently to squeeze a curve into a band:
+        // that breaks its shared tangents. Unsupported intervals stay empty.
+        if(min<40){finish();continue;}
+        if(!segments.length)centers.push({point:s.start,min_kt:grade(s.start)});
+        segments.push({...s,min_kt:min});centers.push({point:s.end,min_kt:grade(s.end)});
       }
-      if(route.length)sample(route.at(-1),1);
       finish();
-      // One reviewed flow contributes its main continuous supported interval.
-      // Small detached fragments do not imply a connection across a gap.
-      confirmed.sort((a,b)=>b.distance-a.distance);
-      if(confirmed.length){const {distance,...axis}=confirmed[0];axes.push(axis);}
     }
     return axes;
   }
