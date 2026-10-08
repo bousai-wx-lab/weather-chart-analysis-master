@@ -43,7 +43,7 @@ const SnapshotAnalysis = (() => {
     const feasHour=feasHours[data.product];
     const equivalent=data.product==="FXJP854";
     if(equivalent!==Boolean(data.equivalent_temperature))throw Error("Invalid equivalent temperature product");
-    const expected=equivalent?[850,850,850,850]:feasHour?[500,850]:surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPA20:[200],AUPA25:[250],AUPN30:[300],AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
+    const expected=equivalent?[850,850,850,850]:feasHour?[500,850]:surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPA20:[200],AUPA25:[250],AUPN30:[300],FUPA252:[250],FUPA302:[300],FUPA402:[400],FUPA502:[500],AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
     if(!expected || data.panels.length!==expected.length || (forecastHours && data.color_only!==true))throw Error("Unsupported trial product");
     if(Boolean(surfaceHours)!==Boolean(data.surface_forecast))throw Error("Invalid surface forecast product");
     if(Boolean(feasHour)!==Boolean(data.feas_forecast))throw Error("Invalid FEAS forecast product");
@@ -51,6 +51,17 @@ const SnapshotAnalysis = (() => {
     const line=p=>Array.isArray(p)&&p.length>=2&&p.length<=10000&&p.every(point);
     for(const [i,p] of data.panels.entries()) {
       if(p.pressure_hpa!==expected[i] || p.bounds?.length!==4 || !point(p.bounds.slice(0,2)) || !point(p.bounds.slice(2)) || p.bounds[0]>=p.bounds[2] || p.bounds[1]>=p.bounds[3] || !Array.isArray(p.levels) || !Array.isArray(p.troughs) || !Array.isArray(p.ridges))throw Error("Invalid trial panel");
+      if(data.product.startsWith("FUPA")) {
+        const within=q=>point(q)&&q[0]>=p.bounds[0]-.02&&q[1]>=p.bounds[1]-.02&&q[0]<=p.bounds[2]+.02&&q[1]<=p.bounds[3]+.02;
+        if(p.forecast_hour!==24||!p.levels.length||["wet_rectangles","ascent_rectangles","positive_vorticity_rectangles","cold_bands","precipitation_bands"].some(k=>p[k]?.length)||p.levels.some(l=>l.temperature_c%6||l.lines.some(ln=>ln.value_origin!=="printed_stamp_sequence"||!ln.points.every(within)||ln.points.slice(1).some((q,j)=>Math.hypot(q[0]-ln.points[j][0],q[1]-ln.points[j][1])>110.02))))throw Error("Invalid 24-hour upper-air forecast");
+        if(p.pressure_hpa===500) {
+          const trace=p.height_trace,contours=trace?.contours;
+          if(p.wind_bands?.length||p.jet_guides?.length||trace?.method!=="native_solid_height_contours"||!contours?.length||!p.troughs.length||!p.ridges.length||new Set(contours.map(c=>c.id)).size!==contours.length||contours.some(c=>!line(c.points)||!c.points.every(within)||c.source_paths?.length!==1||!Number.isInteger(c.source_paths[0])||c.source_paths[0]<0))throw Error("Invalid forecast height field");
+          for(const axis of [...p.troughs,...p.ridges]) {
+            if(!["line","quadratic_bezier"].includes(axis.control_model)||axis.control_points?.length!==(axis.control_model==="line"?2:3)||!axis.control_points.every(within)||!axis.points?.every(within)||!axis.contour_crossings?.length||new Set(axis.contour_crossings.map(c=>c.contour_id)).size<2||axis.contour_crossings.some(c=>!within(c.point)||!contours.some(h=>h.id===c.contour_id&&h.points.slice(1).some((q,j)=>distanceToSegment(c.point,h.points[j],q)<.03))||!axis.points.slice(1).some((q,j)=>distanceToSegment(c.point,axis.points[j],q)<.03)))throw Error("Forecast axis lacks source-height support");
+          }
+        }
+      }
       if(equivalent) {
         const within=q=>point(q)&&q[0]>=p.bounds[0]-.02&&q[0]<=p.bounds[2]+.02&&q[1]>=p.bounds[1]-.02&&q[1]<=p.bounds[3]+.02;
         if(data.unit!=="K" || JSON.stringify(data.range_k)!=="[260,370]" || p.forecast_hour!==[12,24,36,48][i] || p.levels.length || p.troughs.length || p.ridges.length || ["cold_bands","wet_rectangles","ascent_rectangles","positive_vorticity_rectangles","wind_bands","precipitation_bands"].some(k=>p[k]?.length))throw Error("Invalid equivalent temperature plane");
@@ -113,9 +124,9 @@ const SnapshotAnalysis = (() => {
       for(const key of ["wet_rectangles","positive_vorticity_rectangles","ascent_rectangles"])if(p[key]?.some(r=>r.length!==4||!point(r.slice(0,2))||!point(r.slice(2))||r[0]>=r[2]||r[1]>=r[3]))throw Error("Invalid trial fill");
       for(const key of ["cold_bands","wind_bands"])if(p[key]?.some(b=>!Number.isFinite(b.threshold)||!/^#[a-f0-9]{6}$/i.test(b.color)||!Array.isArray(b.rings)||b.rings.some(r=>!line(r))))throw Error("Invalid trial band");
       if(p.wind_bands?.length) {
-        if(!(p.pressure_hpa===300||data.product==="AUPA20"&&p.pressure_hpa===200||data.product==="AUPA25"&&p.pressure_hpa===250) || p.wind_bands.length!==5 || p.wind_bands.some((b,j)=>b.threshold!==40+j*20 || b.color!==ChartAnalysis.windPalette[j]))throw Error("Invalid upper-level wind intervals");
+        if(!(p.pressure_hpa===300||data.product==="AUPA20"&&p.pressure_hpa===200||["AUPA25","FUPA252"].includes(data.product)&&p.pressure_hpa===250||data.product==="FUPA402"&&p.pressure_hpa===400) || p.wind_bands.length!==5 || p.wind_bands.some((b,j)=>b.threshold!==40+j*20 || b.color!==ChartAnalysis.windPalette[j]))throw Error("Invalid upper-level wind intervals");
       }
-      if(["AUPA25","AUPN30"].includes(data.product)) {
+      if(["AUPA25","AUPN30","FUPA252","FUPA302","FUPA402"].includes(data.product)) {
         const within=q=>point(q)&&q[0]>=p.bounds[0]-.02&&q[1]>=p.bounds[1]-.02&&q[0]<=p.bounds[2]+.02&&q[1]<=p.bounds[3]+.02,trace=p.wind_trace;
         if(p.troughs.length||p.ridges.length||p.wind_bands?.length!==5||trace?.unit!=="kt"||trace.interval!==20||!Number.isFinite(trace.order_fit_cost)||trace.order_fit_cost>2||!Number.isInteger(trace.source_contours)||trace.source_contours<=0||!trace.levels?.length||!trace.labels?.length||trace.labels.some(l=>!Number.isFinite(l.value)||l.value<20||l.value>160||l.value%20||!within(l.point)))throw Error("Invalid upper-air source fields");
         const ids=new Set();
@@ -123,7 +134,7 @@ const SnapshotAnalysis = (() => {
           if(!Number.isFinite(level.speed_kt)||level.speed_kt<20||level.speed_kt>180||level.speed_kt%20||!level.lines?.length)throw Error("Invalid upper-air source isotach");
           for(const ln of level.lines){if(!line(ln.points)||!ln.points.every(within)||typeof ln.closed!=="boolean"||!ln.source_paths?.length)throw Error("Invalid upper-air source contour");for(const id of ln.source_paths){if(!Number.isInteger(id)||id<0||ids.has(id))throw Error("Repeated upper-air source path");ids.add(id);}}
         }
-        if(p.wind_bands.some(b=>!b.rings.length||b.rings.some(r=>!r.every(within)))||!p.levels.length||p.levels.some(l=>l.temperature_c%6||l.lines.some(ln=>ln.value_origin!=="printed_stamp_sequence"||!ln.points.every(within)||ln.points.slice(1).some((q,j)=>Math.hypot(q[0]-ln.points[j][0],q[1]-ln.points[j][1])>110.02))))throw Error("Upper-air field outside frame or stamp sequence");
+        if(p.wind_bands.some(b=>(!data.product.startsWith("FUPA")&&!b.rings.length)||b.rings.some(r=>!r.every(within)))||!p.levels.length||p.levels.some(l=>l.temperature_c%6||l.lines.some(ln=>ln.value_origin!=="printed_stamp_sequence"||!ln.points.every(within)||ln.points.slice(1).some((q,j)=>Math.hypot(q[0]-ln.points[j][0],q[1]-ln.points[j][1])>110.02))))throw Error("Upper-air field outside frame or stamp sequence");
         if(!p.excluded_boxes?.length||p.excluded_boxes.some(b=>b.length!==4||!b.every(Number.isFinite)||b[0]>=b[2]||b[1]>=b[3]))throw Error("Missing upper-air legend masks");
       }
       if(data.product==="AUPA20") {
@@ -140,7 +151,7 @@ const SnapshotAnalysis = (() => {
         if(!p.native_jet_strokes?.length||p.native_jet_strokes.some(st=>!line(st.points)||!st.points.every(within)||st.points.length>3||!Number.isInteger(st.source_path)||st.source_path<0||!Number.isFinite(st.width_px)||st.width_px<=0||st.width_px>8||ids.has(st.source_path)||!ids.add(st.source_path)))throw Error("Invalid native 200hPa jet");
         if(!p.excluded_boxes?.length||p.excluded_boxes.some(b=>b.length!==4||!b.every(Number.isFinite)||b[0]>=b[2]||b[1]>=b[3]))throw Error("Missing map legend masks");
       } else if(p.tropopause_bands||p.tropopause_levels||p.native_jet_strokes)throw Error("Unsupported tropopause product");
-      if(data.product==="AUPQ35" && i===0 || ["AUPA25","AUPN30"].includes(data.product)) {
+      if(data.product==="AUPQ35" && i===0 || ["AUPA25","AUPN30","FUPA252","FUPA302","FUPA402"].includes(data.product)) {
         if(p.troughs.length || p.ridges.length)throw Error("300hPa uses wind and jet axes");
         const wind={...data,pressure_hpa:p.pressure_hpa,unit:"kt",bounds:p.bounds,bands:(p.wind_bands||[]).map(b=>({min_kt:b.threshold,rings:b.rings}))};
         // The parent source/image binding also binds the wind and branch guides.
@@ -173,7 +184,7 @@ const SnapshotAnalysis = (() => {
     return data.color_only ? data.panels.map(p=>enabled[p.pressure_hpa===500?0:1]) : enabled;
   }
   function jetAxes(data) {
-    const p=data.panels.find(p=>[250,300].includes(p.pressure_hpa));
+    const p=data.panels.find(p=>[250,300,400].includes(p.pressure_hpa));
     return p?.jet_guides?.length ? ChartAnalysis.jets({bounds:p.bounds,bands:p.wind_bands.map(b=>({min_kt:b.threshold,rings:b.rings}))},{axes:p.jet_guides}) : [];
   }
   function crosses(a,b) {
@@ -183,6 +194,11 @@ const SnapshotAnalysis = (() => {
       const t=(w[0]*v[1]-w[1]*v[0])/den,s=(w[0]*u[1]-w[1]*u[0])/den;
       if(t>=0&&t<=1&&s>=0&&s<=1)return true;
     }return false;
+  }
+  function distanceToSegment(p,a,b) {
+    const dx=b[0]-a[0],dy=b[1]-a[1],length=dx*dx+dy*dy;
+    const t=length?Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/length)):0;
+    return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);
   }
   // Preserve the already selected trial positions: never re-fit or smooth here.
   function drawAxes(ctx, axes, ridge) {
@@ -237,7 +253,7 @@ const SnapshotAnalysis = (() => {
       clipPanel(ctx,p);
       ctx.beginPath();const [l,t,r,b]=p.bounds;ctx.rect(l,t,r-l,b-t);
       for(const level of p.levels)for(const [x,y,xx,yy] of level.labels)ctx.rect(x-2,y-2,xx-x+4,yy-y+4);ctx.clip("evenodd");
-      for(const [j,level] of p.levels.entries())for(const ln of level.lines){ctx.strokeStyle=scale.colors[j];ctx.beginPath();ctx.moveTo(...ln.points[0]);if(["AUPA20","AUPA25","AUPN30"].includes(data.product))for(const segment of chart.isothermSegments(ln.points,ln.closed))ctx.bezierCurveTo(...segment.c1,...segment.c2,...segment.end);else {for(const q of ln.points.slice(1))ctx.lineTo(...q);if(ln.closed)ctx.closePath();}ctx.stroke();}
+      for(const [j,level] of p.levels.entries())for(const ln of level.lines){ctx.strokeStyle=scale.colors[j];ctx.beginPath();ctx.moveTo(...ln.points[0]);if(["AUPA20","AUPA25","AUPN30","FUPA252","FUPA302","FUPA402","FUPA502"].includes(data.product))for(const segment of chart.isothermSegments(ln.points,ln.closed))ctx.bezierCurveTo(...segment.c1,...segment.c2,...segment.end);else {for(const q of ln.points.slice(1))ctx.lineTo(...q);if(ln.closed)ctx.closePath();}ctx.stroke();}
       ctx.restore();
     }
   }
@@ -262,7 +278,7 @@ const SnapshotAnalysis = (() => {
       // Source bands own the geometry; the shared palette owns display colors
       // so stored legacy colors cannot disagree with the UI and PNG legends.
       if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity??rules.coldOpacity,band=>chart.coldColor(p.pressure_hpa,band.threshold));
-      if(on.wind && [200,250,300].includes(p.pressure_hpa))paintBands(p.wind_bands,1,band=>chart.windPalette[(band.threshold-40)/20]);
+      if(on.wind && [200,250,300,400].includes(p.pressure_hpa))paintBands(p.wind_bands,1,band=>chart.windPalette[(band.threshold-40)/20]);
       if(on.precipitation && p.pressure_hpa===0)paintBands(p.precipitation_bands,rules.precipitationOpacity,band=>precipitationColors[band.threshold/10]);
       for(const [key,style,active] of [["wet_rectangles",rules.wet,on.wet],["positive_vorticity_rectangles",rules.vorticity,on.vorticity],["ascent_rectangles",rules.ascent,on.ascent]])if(active)chart.drawRectangleFill(ctx,p[key],style);
       ctx.restore();

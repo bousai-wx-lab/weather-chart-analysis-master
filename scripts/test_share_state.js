@@ -26,6 +26,12 @@ const mutate = fn => { const bad=clone(state);fn(bad);assert.throws(() => Share.
   assert.deepEqual(await Share.decode(await Share.encode(pnState)),pnState);Share.bind(pnState,pn,["elevation-relief"]);
   pnState.chart.analysis=null;Share.bind(pnState,pn,["elevation-relief"]);
   const wrongPn=clone(pnState);wrongPn.chart.image="0".repeat(64);assert.throws(()=>Share.bind(wrongPn,pn,["elevation-relief"]));
+  for(const product of ["fupa252","fupa302","fupa402","fupa502"]){
+    const forecast=Catalog.selection(catalog,product,`${product}-12-20261005`,1),saved=clone(state);saved.chart=Share.identity(forecast);
+    assert.deepEqual(await Share.decode(await Share.encode(saved)),saved);Share.bind(saved,forecast,["elevation-relief"]);
+    saved.chart.analysis=null;Share.bind(saved,forecast,["elevation-relief"]);
+    const different=clone(saved);different.chart.source="0".repeat(64);assert.throws(()=>Share.bind(different,forecast,["elevation-relief"]));
+  }
   const invalidFlag=clone(aupa);invalidFlag.drawing.showTropopause="false";assert.throws(()=>Share.validate(invalidFlag));
   const fragment = await Share.encode(state);
   assert.ok(fragment.startsWith("#share=1.d."));

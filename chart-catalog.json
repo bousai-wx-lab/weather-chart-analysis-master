@@ -711,7 +711,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa252_12.pdf",
           "source_sha256": "3b35b10378f6c440866d32e8a07984099e4b507251109163c8ec4969c1129f68",
           "retrieved_at": "2026-10-04T22:29:55.263076+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -721,7 +721,9 @@
               "image_path": "assets/charts/fupa252-12-20261005-3b35b10378f6-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fupa252-12-20261005.json",
+          "analysis_sha256": "906a401916d9b213691cd9d719a17f4e04e89127c32c28db03b7e61def36612f"
         },
         {
           "id": "fupa252-00-20261005",
@@ -729,7 +731,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa252_00.pdf",
           "source_sha256": "c2588852af942c69fa3caf2b6db3a14909fa333c1a0c3dae21ebe8b4d168e5af",
           "retrieved_at": "2026-10-04T22:29:55.275468+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -739,7 +741,9 @@
               "image_path": "assets/charts/fupa252-00-20261005-c2588852af94-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fupa252-00-20261005.json",
+          "analysis_sha256": "b3d6435db5b0d4a6eead3228fb3d984432ed36d4872cbf67c20ee38eb8f0ea82"
         },
         {
           "id": "fupa252-00",
@@ -756,7 +760,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fupa252-00.json",
+          "analysis_sha256": "df177f5580d9a915dc891d55bc8e1711e90321a2cc355d096b42b8d9a2bbd0e0"
         },
         {
           "id": "fupa252-12",
@@ -773,7 +779,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fupa252-12.json",
+          "analysis_sha256": "8c2d834c5e9e941ed7b88b933a95c3d29ea01566b06385e7a17267be03efbb8f"
         }
       ]
     },
@@ -791,7 +799,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa302_12.pdf",
           "source_sha256": "236d98498e27acd4bba062640b61b28b4e329228506a45ca59c048c0f46b6810",
           "retrieved_at": "2026-10-04T22:29:55.290107+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -801,7 +809,9 @@
               "image_path": "assets/charts/fupa302-12-20261005-236d98498e27-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fupa302-12-20261005.json",
+          "analysis_sha256": "8c9bb441b9a3c69da6cc448658b592aeb85df9cdd84a988c5b35b8714390dd6b"
         },
         {
           "id": "fupa302-00-20261005",
@@ -809,7 +819,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa302_00.pdf",
           "source_sha256": "afadb98b308eff4a3136a7cbaa2b543821392c8ac4bee926da3a77ed648c3d13",
           "retrieved_at": "2026-10-04T22:29:55.331822+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -819,7 +829,9 @@
               "image_path": "assets/charts/fupa302-00-20261005-afadb98b308e-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fupa302-00-20261005.json",
+          "analysis_sha256": "61efc956ccc0a65a0606dbcaee85421e011f23eb41b392709f923f7447feaf99"
         },
         {
           "id": "fupa302-00",
@@ -836,7 +848,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fupa302-00.json",
+          "analysis_sha256": "ad21be05f278cd521c5dbab246f5d38c44bfa3b0fa28447e90376dcefc5d64b1"
         },
         {
           "id": "fupa302-12",
@@ -853,7 +867,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fupa302-12.json",
+          "analysis_sha256": "bf56e238e260155a449dc82d801e823ea4ef8c05f66e6119265e40604f6a4391"
         }
       ]
     },
@@ -871,7 +887,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa402_12.pdf",
           "source_sha256": "84c77cbd3a7e7dd71cd54f0f9f1c307b777cd0e9d19829105d0654a67540c8b1",
           "retrieved_at": "2026-10-04T22:29:55.339471+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -881,7 +897,9 @@
               "image_path": "assets/charts/fupa402-12-20261005-84c77cbd3a7e-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fupa402-12-20261005.json",
+          "analysis_sha256": "e5b37a90de2bd721345ea390be85890c449206252bef5f3733539a7c6fbd7de2"
         },
         {
           "id": "fupa402-00-20261005",
@@ -889,7 +907,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa402_00.pdf",
           "source_sha256": "9ea7705f64faf9f56928652c3aec4173d46d163ee66a8031467cc7fb7d20554d",
           "retrieved_at": "2026-10-04T22:29:55.361206+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -899,7 +917,9 @@
               "image_path": "assets/charts/fupa402-00-20261005-9ea7705f64fa-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fupa402-00-20261005.json",
+          "analysis_sha256": "61921cd418e37ad50a59c121be3e703d89370b94cb4396e0264fc1c546a0b64e"
         },
         {
           "id": "fupa402-00",
@@ -916,7 +936,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fupa402-00.json",
+          "analysis_sha256": "a9533f668681146ad1c37b74c10a5a26249df557528382163fa0a9a831aa6d56"
         },
         {
           "id": "fupa402-12",
@@ -933,7 +955,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fupa402-12.json",
+          "analysis_sha256": "86fa7bc616e72e92765ecb47f35a65ddd2664cebfae83bf636950c9d6658d8ad"
         }
       ]
     },
@@ -951,7 +975,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa502_12.pdf",
           "source_sha256": "40d20bf204a4e06729157d7e2ec51b20cbad8f42b1090276b4460acf2fa08a2a",
           "retrieved_at": "2026-10-04T22:29:55.361328+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -961,7 +985,9 @@
               "image_path": "assets/charts/fupa502-12-20261005-40d20bf204a4-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fupa502-12-20261005.json",
+          "analysis_sha256": "0665b9b0be652c1d56d4975a1de37c206609731b78d83739ea519e892b85d94f"
         },
         {
           "id": "fupa502-00-20261005",
@@ -969,7 +995,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/fupa502_00.pdf",
           "source_sha256": "0e3c0947fa544a50eef216084ab2cf322788bd31da5e45b1e279dddb55a97dd7",
           "retrieved_at": "2026-10-04T22:29:55.382244+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -979,7 +1005,9 @@
               "image_path": "assets/charts/fupa502-00-20261005-0e3c0947fa54-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/fupa502-00-20261005.json",
+          "analysis_sha256": "2cfc6155be90b49d2361ed977ccd9714e492f37c54f805e6242dfd58ca095664"
         },
         {
           "id": "fupa502-00",
@@ -996,7 +1024,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fupa502-00.json",
+          "analysis_sha256": "0f144eeac97611d646854b2682591e41d7441f0dd1defe7edc3389285990a326"
         },
         {
           "id": "fupa502-12",
@@ -1013,7 +1043,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/fupa502-12.json",
+          "analysis_sha256": "10fbc75267d7a31118e676ca8c9a13c2c401cf4cd2293e4dfbba9400535522e2"
         }
       ]
     },

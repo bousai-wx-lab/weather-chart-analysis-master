@@ -257,7 +257,23 @@
     "assets/analysis/aupn30-12-20261005.json",
     "assets/analysis/aupn30-00-20261005.json",
     "assets/analysis/aupn30-00.json",
-    "assets/analysis/aupn30-12.json"
+    "assets/analysis/aupn30-12.json",
+    "assets/analysis/fupa252-12-20261005.json",
+    "assets/analysis/fupa252-00-20261005.json",
+    "assets/analysis/fupa252-00.json",
+    "assets/analysis/fupa252-12.json",
+    "assets/analysis/fupa302-12-20261005.json",
+    "assets/analysis/fupa302-00-20261005.json",
+    "assets/analysis/fupa302-00.json",
+    "assets/analysis/fupa302-12.json",
+    "assets/analysis/fupa402-12-20261005.json",
+    "assets/analysis/fupa402-00-20261005.json",
+    "assets/analysis/fupa402-00.json",
+    "assets/analysis/fupa402-12.json",
+    "assets/analysis/fupa502-12-20261005.json",
+    "assets/analysis/fupa502-00-20261005.json",
+    "assets/analysis/fupa502-00.json",
+    "assets/analysis/fupa502-12.json"
   ],
   "allowed_external_hosts": [
     "assets.science.nasa.gov",
@@ -1765,6 +1781,22 @@
     "assets/analysis/aupn30-12-20261005.json": 1000000,
     "assets/analysis/aupn30-00-20261005.json": 1000000,
     "assets/analysis/aupn30-00.json": 1000000,
-    "assets/analysis/aupn30-12.json": 1000000
+    "assets/analysis/aupn30-12.json": 1000000,
+    "assets/analysis/fupa252-12-20261005.json": 1000000,
+    "assets/analysis/fupa252-00-20261005.json": 1000000,
+    "assets/analysis/fupa252-00.json": 1000000,
+    "assets/analysis/fupa252-12.json": 1000000,
+    "assets/analysis/fupa302-12-20261005.json": 1000000,
+    "assets/analysis/fupa302-00-20261005.json": 1000000,
+    "assets/analysis/fupa302-00.json": 1000000,
+    "assets/analysis/fupa302-12.json": 1000000,
+    "assets/analysis/fupa402-12-20261005.json": 1000000,
+    "assets/analysis/fupa402-00-20261005.json": 1000000,
+    "assets/analysis/fupa402-00.json": 1000000,
+    "assets/analysis/fupa402-12.json": 1000000,
+    "assets/analysis/fupa502-12-20261005.json": 1000000,
+    "assets/analysis/fupa502-00-20261005.json": 1000000,
+    "assets/analysis/fupa502-00.json": 1000000,
+    "assets/analysis/fupa502-12.json": 1000000
   }
 }

@@ -67,7 +67,7 @@ const ChartShare = (() => {
   function bind(value, selected, styles) {
     validate(value);
     const expected = identity(selected);
-    if (Object.keys(expected).some(k => value.chart[k] !== expected[k] && !(k==="analysis"&&value.chart.analysis===null&&["aupa20","aupa25","aupn30"].includes(selected.product.id)))) throw Error("共有リンクと同じ原図を確認できません。別の天気図には手描きを重ねません。");
+    if (Object.keys(expected).some(k => value.chart[k] !== expected[k] && !(k==="analysis"&&value.chart.analysis===null&&["aupa20","aupa25","aupn30","fupa252","fupa302","fupa402","fupa502"].includes(selected.product.id)))) throw Error("共有リンクと同じ原図を確認できません。別の天気図には手描きを重ねません。");
     if (!styles.includes(value.drawing.geographyStyle) || value.drawing.overlays.some(layer => selected.variant.features !== "reviewed-aupq35" || layer.source_product !== selected.product.code)) invalid();
     return value;
   }
