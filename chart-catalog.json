@@ -723,7 +723,7 @@
           ],
           "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
           "analysis_path": "assets/analysis/fupa252-12-20261005.json",
-          "analysis_sha256": "906a401916d9b213691cd9d719a17f4e04e89127c32c28db03b7e61def36612f"
+          "analysis_sha256": "512c7530f7243a2751dd5a65fc5f7f4339fb332b3e62daa7df040a6ebd45aac9"
         },
         {
           "id": "fupa252-00-20261005",

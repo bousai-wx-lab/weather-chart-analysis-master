@@ -121,6 +121,7 @@ const ChartAnalysis = (() => {
     const [left, top, right, bottom] = wind.bounds;
     for (const axis of data.axes) {
       if (!Number.isFinite(axis.search_radius_px) || axis.search_radius_px < 10 || axis.search_radius_px > 150 || !Array.isArray(axis.points) || axis.points.length < 3 || axis.points.length > 30 || !axis.points.every((p, i) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite) && p[0] >= left && p[0] <= right && p[1] >= top && p[1] <= bottom && (!i || Math.hypot(p[0] - axis.points[i - 1][0], p[1] - axis.points[i - 1][1]) >= 10))) throw new Error("強風軸の流れを確認できません");
+      if(axis.max_offset_px!==undefined && (!Number.isFinite(axis.max_offset_px) || axis.max_offset_px<10 || axis.max_offset_px>axis.search_radius_px))throw new Error("強風軸の流れの範囲を確認できません");
     }
     return data;
   }
@@ -133,13 +134,14 @@ const ChartAnalysis = (() => {
     }
     return found;
   }
-  function strongestCenter(wind, point, normal, radius) {
+  function strongestCenter(wind, point, normal, radius, maxOffset=radius) {
     const cross = (a, b) => a[0] * b[1] - a[1] * b[0];
     const at = (t) => [point[0] + normal[0] * t, point[1] + normal[1] * t];
     const inBounds = ([x, y]) => x >= wind.bounds[0] && y >= wind.bounds[1] && x <= wind.bounds[2] && y <= wind.bounds[3];
-    // Intersect each threshold polygon with a section across the reviewed flow.
-    // The highest occupied interval wins, not the closest-spaced height lines.
-    for (const band of [...wind.bands].reverse()) {
+    // Read the transverse wind profile. A stronger *different* flow elsewhere
+    // in the search window must not pull this route away from its local peak.
+    const fields=[],breaks=[-radius,radius];
+    for (const band of wind.bands) {
       const hits = [-radius, radius];
       for (const ring of band.rings) for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
         const a = ring[j], b = ring[i], edge = [b[0] - a[0], b[1] - a[1]], delta = [a[0] - point[0], a[1] - point[1]];
@@ -152,14 +154,27 @@ const ChartAnalysis = (() => {
       const intervals = [];
       for (let i = 1; i < hits.length; i++) {
         const mid = (hits[i - 1] + hits[i]) / 2;
-        if (hits[i] - hits[i - 1] >= 4 && inBounds(at(mid)) && inside(at(mid), band.rings)) intervals.push(mid);
+        if (hits[i] - hits[i - 1] >= 4 && inBounds(at(mid)) && inside(at(mid), band.rings)) intervals.push({mid,left:hits[i-1],right:hits[i]});
       }
-      if (intervals.length) {
-        const offset = intervals.sort((a, b) => Math.abs(a) - Math.abs(b))[0];
-        return { point: at(offset), min_kt: band.min_kt };
-      }
+      for(const interval of intervals)breaks.push(interval.left,interval.right);
+      fields.push({min_kt:band.min_kt,intervals});
     }
-    return null;
+    const ordered=[...new Set(breaks)].sort((a,b)=>a-b),profile=[];
+    for(let i=1;i<ordered.length;i++) {
+      const left=ordered[i-1],right=ordered[i],mid=(left+right)/2;
+      if(right-left<1e-6)continue;
+      const value=Math.max(0,...fields.filter(f=>f.intervals.some(s=>s.left<=mid && mid<=s.right)).map(f=>f.min_kt));
+      if(profile.at(-1)?.value===value)profile.at(-1).right=right;
+      else profile.push({left,right,value});
+    }
+    const peaks=profile.filter((s,i)=>s.value>=40 && s.right-s.left>=4 && (!i || s.value>profile[i-1].value) && (i===profile.length-1 || s.value>profile[i+1].value));
+    const distance=s=>s.left<=0 && s.right>=0?0:Math.min(Math.abs(s.left),Math.abs(s.right));
+    peaks.sort((a,b)=>distance(a)-distance(b) || Math.abs(a.left+a.right)-Math.abs(b.left+b.right));
+    const peak=peaks[0];
+    // Search-window edges are not isotachs. Both sides of the selected peak
+    // must be observed; an uncertain section is left empty.
+    if(!peak || peak.left<=-radius+1e-6 || peak.right>=radius-1e-6 || Math.abs((peak.left+peak.right)/2)>maxOffset)return null;
+    return {point:at((peak.left+peak.right)/2),min_kt:peak.value};
   }
   function smoothCurve(points) {
     // Cubic Hermite interpolation, expressed as Bézier segments. A shared
@@ -171,15 +186,68 @@ const ChartAnalysis = (() => {
   }
   function jets(wind, guides) {
     const axes = [];
-    for (const guide of guides.axes) {
-      const centers = guide.points.map((point, i) => {
-        const before = guide.points[Math.max(0, i - 1)], after = guide.points[Math.min(guide.points.length - 1, i + 1)];
-        const dx = after[0] - before[0], dy = after[1] - before[1], length = Math.hypot(dx, dy);
-        return strongestCenter(wind, point, [-dy / length, dx / length], guide.search_radius_px);
-      });
-      // Missing wind support does not get replaced with the guide itself.
-      if (centers.some((p) => !p)) continue;
-      axes.push({ segments: smoothCurve(centers.map((p) => p.point)), centers });
+    const at = (s,t) => [0,1].map(k => (1-t)**3*s.start[k]+3*(1-t)**2*t*s.c1[k]+3*(1-t)*t*t*s.c2[k]+t**3*s.end[k]);
+    const length = (a,b) => Math.hypot(a[0]-b[0],a[1]-b[1]);
+    const within = q => q[0]>=wind.bounds[0] && q[0]<=wind.bounds[2] && q[1]>=wind.bounds[1] && q[1]<=wind.bounds[3];
+    const supported = (q,min) => within(q) && wind.bands.some(b => b.min_kt>=min && inside(q,b.rings));
+    const simplify = (points,left=0,right=points.length-1) => {
+      if(right<=left)return [left];
+      const a=points[left].point,b=points[right].point,dx=b[0]-a[0],dy=b[1]-a[1],size=dx*dx+dy*dy;
+      let maximum=12,index=-1;
+      for(let i=left+1;i<right;i++) {
+        const p=points[i].point,t=size?Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/size)):0;
+        const error=Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);
+        if(error>maximum){maximum=error;index=i;}
+      }
+      return index<0?[left,right]:[...simplify(points,left,index).slice(0,-1),...simplify(points,index,right)];
+    };
+    for (const [guide_index,guide] of guides.axes.entries()) {
+      let centers=[],confirmed=[];
+      const finish = () => {
+        let run=[],runCenters=[],distance=0;
+        const indices=centers.length?simplify(centers):[],anchors=indices.map(i=>centers[i]);
+        const endRun = () => {
+          // An isolated point or a fragment shorter than its arrowhead is not an axis.
+          if(distance>=40 && run.length)confirmed.push({segments:run,centers:runCenters,guide_index,distance});
+          run=[];runCenters=[];distance=0;
+        };
+        for (const [i,s] of smoothCurve(anchors.map(c=>c.point)).entries()) {
+          const min=Math.min(...centers.slice(indices[i],indices[i+1]+1).map(c=>c.min_kt));
+          const steps=Math.max(16,Math.ceil((length(s.start,s.c1)+length(s.c1,s.c2)+length(s.c2,s.end))/3));
+          let checked=null;
+          // Reduce overshoot without moving the wind-maximum endpoints. Every
+          // curve must stay in at least the weaker of its two peak intervals.
+          for(const factor of [1,.5,.2,.05]) {
+            const curve={...s,c1:s.c1.map((v,k)=>s.start[k]+factor*(v-s.start[k])),c2:s.c2.map((v,k)=>s.end[k]+factor*(v-s.end[k])),min_kt:min};
+            if(Array.from({length:steps+1},(_,j)=>supported(at(curve,j/steps),min)).every(Boolean)){checked=curve;break;}
+          }
+          if(!checked){endRun();continue;}
+          if(!run.length)runCenters.push(anchors[i]);
+          run.push(checked);runCenters.push(anchors[i+1]);distance+=length(s.start,s.end);
+        }
+        endRun();centers=[];
+      };
+      const sample = (s,t) => {
+        const point=at(s,t),u=1-t;
+        const [dx,dy]=[0,1].map(k=>3*u*u*(s.c1[k]-s.start[k])+6*u*t*(s.c2[k]-s.c1[k])+3*t*t*(s.end[k]-s.c2[k]));
+        const size=Math.hypot(dx,dy);
+        const center=size?strongestCenter(wind,point,[-dy/size,dx/size],guide.search_radius_px,guide.max_offset_px??guide.search_radius_px):null;
+        if(!center){finish();return;}
+        if(!centers.length || length(center.point,centers.at(-1).point)>=2)centers.push(center);
+      };
+      // The guide identifies a flow, rather than a sparse set of points to join.
+      // Re-read its transverse wind peaks along the full route before drawing.
+      const route=smoothCurve(guide.points);
+      for(const s of route) {
+        const steps=Math.ceil((length(s.start,s.c1)+length(s.c1,s.c2)+length(s.c2,s.end))/24);
+        for(let j=0;j<steps;j++)sample(s,j/steps);
+      }
+      if(route.length)sample(route.at(-1),1);
+      finish();
+      // One reviewed flow contributes its main continuous supported interval.
+      // Small detached fragments do not imply a connection across a gap.
+      confirmed.sort((a,b)=>b.distance-a.distance);
+      if(confirmed.length){const {distance,...axis}=confirmed[0];axes.push(axis);}
     }
     return axes;
   }

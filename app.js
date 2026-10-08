@@ -1331,7 +1331,7 @@ function trialLegends() {
   const nativeJet=trial.product==="AUPA20",upper=["AUPA20","AUPA25","FUPA252"].includes(trial.product),spotTemperatures=upper||["AUPN30","FUPA302","FUPA402","FUPA502"].includes(trial.product),jetPressure=trial.product.startsWith("FUPA")||upper?trial.panels[0].pressure_hpa:300;
   byId("jet").textContent=upper?"ジェット軸":"強風軸";
   byId("detail-jet").querySelector(".legend").textContent=`白縁付きの赤い矢印 · ${jetPressure}hPa`;
-  byId("detail-jet").querySelector("p").textContent=nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色します。矢印は風の流れの向きです。":"各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。";
+  byId("detail-jet").querySelector("p").textContent=nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色します。矢印は風の流れの向きです。":"等風速線の局所的なピークを風向に沿って追います。ピークの位置を確認できない所は描かず、別の流れへつなぎません。";
   jetLayer.setAttribute("aria-label",nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色":`${jetPressure}hPaの強風帯をたどる白縁付きの赤い矢印`);
   temperatureLayer.setAttribute("aria-label",spotTemperatures?`${jetPressure}hPaの同じ気温の数字をつなぐ等温線`:"原図の等温線の着色");
   const common=document.querySelector('[data-layer="symbols"]').parentElement.querySelector("h3 span");common.textContent=trial.panels.length===1?"図全体":"上段・下段";

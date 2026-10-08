@@ -33,7 +33,7 @@ for(const v of catalog.products.find(p=>p.id==="aupa25").variants){
   assert.equal(data.panels.length,1);assert.equal(panel.pressure_hpa,250);
   assert.equal(panel.tropopause_bands,undefined);assert.equal(panel.native_jet_strokes,undefined);
   assert.deepEqual(panel.wind_bands.map(b=>b.threshold),[40,60,80,100,120]);
-  assert.equal(jets.length,panel.jet_guides.length);assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)));
+  checkJetSupport(panel,jets);assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)));
   assert.deepEqual([...new Set(data.symbols.map(s=>s.letter))].sort(),["C","H","L","W"]);
   assert.equal(snapshot.displayScales(data)[0].pressure_hpa,250);
   for(const value of panel.levels.map(l=>l.temperature_c))assert.equal(ChartAnalysis.temperatureColor(250,value),ChartAnalysis.temperatureColor(200,value));
@@ -45,7 +45,7 @@ for(const v of catalog.products.find(p=>p.id==="aupn30").variants){
   assert.equal(data.panels.length,1);assert.equal(panel.pressure_hpa,300);
   assert.equal(panel.tropopause_bands,undefined);assert.equal(panel.native_jet_strokes,undefined);
   assert.deepEqual(panel.wind_bands.map(b=>b.threshold),[40,60,80,100,120]);
-  assert.equal(jets.length,panel.jet_guides.length);assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)));
+  checkJetSupport(panel,jets);assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)));
   assert.deepEqual([...new Set(data.symbols.map(s=>s.letter))].sort(),["C","H","L","W"]);
   assert.equal(snapshot.displayScales(data)[0].pressure_hpa,300);
   for(const value of panel.levels.map(l=>l.temperature_c))assert.equal(ChartAnalysis.temperatureColor(300,value),ChartAnalysis.isothermScales[0].colors[Math.max(0,Math.min(4,Math.round((-value-27)/6)))]);
@@ -61,11 +61,19 @@ for(const [product,pressure]of [["fupa252",250],["fupa302",300],["fupa402",400],
   else{
     assert.deepEqual(panel.wind_bands.map(b=>b.threshold),[40,60,80,100,120]);
     assert.equal(panel.wind_trace.levels[0].speed_kt,20);
-    const jets=snapshot.jetAxes(data);assert.equal(jets.length,panel.jet_guides.length);assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)));
+    const jets=snapshot.jetAxes(data);checkJetSupport(panel,jets);assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)));
     assert.equal(inBands([250,1450],panel.wind_bands),false,"weak southern winds stay uncolored");
     assert.ok(inBands([1100,1070],panel.wind_bands),"main strong-wind region stays colored");
   }
   for(const change of [x=>x.source_sha256="0".repeat(64),x=>x.panels[0].forecast_hour=48,x=>x.panels[0].pressure_hpa=850,x=>x.panels[0].tropopause_bands=[],x=>x.panels[0].levels[0].lines[0].points[0]=[0,0],...(pressure===500?[x=>x.panels[0].troughs[0].contour_crossings=[],x=>x.panels[0].ridges[0].control_points.pop()]:[x=>x.panels[0].wind_bands[0].threshold=20,x=>x.panels[0].jet_guides[0].points[0]=[0,0]])]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));}
+}
+function checkJetSupport(panel,jets){
+  assert.ok(jets.length>0 && jets.length<=panel.jet_guides.length,"Only supported flows are drawn; a guide is not a required arrow");
+  assert.equal(new Set(jets.map(a=>a.guide_index)).size,jets.length);
+  for(const axis of jets)for(const s of axis.segments)for(let j=0;j<=100;j++){
+    const t=j/100,u=1-t,q=[0,1].map(k=>u*u*u*s.start[k]+3*u*u*t*s.c1[k]+3*u*t*t*s.c2[k]+t*t*t*s.end[k]);
+    assert.ok(inBands(q,panel.wind_bands.filter(b=>b.threshold>=s.min_kt)),"The entire curve retains its wind-peak support, including between anchors");
+  }
 }
 function inBands(p,bands){return bands.some(b=>b.rings.reduce((odd,r)=>odd!==inRing(r,p),false));}
 let recent=0,analyses=0,maps=0;
@@ -98,8 +106,8 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
     if(data.product==="AUPQ35") {
       const upper=data.panels[0],jets=snapshot.jetAxes(data);
       assert.equal(upper.troughs.length+upper.ridges.length,0);
-      assert.equal(jets.length,upper.jet_guides.length);
-      assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)&&j.segments.length>=2));
+      checkJetSupport(upper,jets);
+      assert.ok(jets.every(j=>j.centers.every(c=>c.min_kt>=40)&&j.segments.length>=1));
       assert.deepEqual(upper.wind_bands.map(b=>b.threshold),[40,60,80,100,120]);
       const contains=([x,y],rings)=>rings.reduce((odd,ring)=>ring.reduce((hit,a,i)=>{
         const b=ring[(i+1)%ring.length];

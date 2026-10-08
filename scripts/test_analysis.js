@@ -196,6 +196,18 @@ for (const center of analysis.jets(syntheticWind,syntheticGuide)[0].centers) ass
 const shiftedWind = structuredClone(syntheticWind); shiftedWind.bands[2].rings = rectangle(180,200);
 for (const center of analysis.jets(shiftedWind,syntheticGuide)[0].centers) assert.equal(center.point[1],190,"moving the wind maximum moves the axis with an unchanged guide");
 assert.equal(analysis.jets({...syntheticWind,bands:[]},syntheticGuide).length,0,"missing wind must not produce an axis by copying the guide");
+const adjacentPeak=structuredClone(syntheticWind);
+adjacentPeak.bands.push({min_kt:120,rings:rectangle(155,170)});
+assert.equal(analysis.strongestCenter(adjacentPeak,[200,220],[0,1],90).min_kt,80,"A separate stronger jet cannot displace this flow's nearer local maximum");
+assert.equal(analysis.strongestCenter({bounds:[0,0,400,400],bands:[{min_kt:80,rings:rectangle(0,400)}]},[200,200],[0,1],90),null,"Search-window edges do not establish a wind peak");
+const islands=[[[0,210],[150,210],[150,230],[0,230]],[[250,210],[400,210],[400,230],[250,230]]];
+const gapWind={bounds:[0,0,400,400],bands:[{min_kt:40,rings:islands},{min_kt:80,rings:islands}]};
+const disconnected=analysis.jets(gapWind,syntheticGuide);
+assert.ok(disconnected.length>0);
+for(const axis of disconnected)for(const segment of axis.segments)for(let j=0;j<=100;j++){
+ const t=j/100,u=1-t,p=[0,1].map(k=>u*u*u*segment.start[k]+3*u*u*t*segment.c1[k]+3*u*t*t*segment.c2[k]+t*t*t*segment.end[k]);
+ assert.ok(inRegion(p,islands),"Supported endpoints must not authorize a bridge through a weak-wind gap");
+}
 const strongAxes = analysis.analyze(actual,wind,guides).jets;
 assert.equal(strongAxes.length,3,"three separate downwind branches on the reviewed chart");
 const bezier = (s,t) => [0,1].map(i => (1-t)**3*s.start[i]+3*(1-t)**2*t*s.c1[i]+3*(1-t)*t*t*s.c2[i]+t**3*s.end[i]);
