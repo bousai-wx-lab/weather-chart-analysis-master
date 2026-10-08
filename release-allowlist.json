@@ -249,7 +249,11 @@
     "share-state.js",
     "scripts/test_manual_axis.js",
     "scripts/test_share_state.js",
-    "scripts/test_drawing_tools.js"
+    "scripts/test_drawing_tools.js",
+    "assets/analysis/aupa25-00-20261005.json",
+    "assets/analysis/aupa25-00.json",
+    "assets/analysis/aupa25-12-20261005.json",
+    "assets/analysis/aupa25-12.json"
   ],
   "allowed_external_hosts": [
     "assets.science.nasa.gov",
@@ -1749,6 +1753,10 @@
     "assets/analysis/aupa20-00.json": 1000000,
     "assets/analysis/aupa20-00-20261005.json": 1000000,
     "assets/analysis/aupa20-12.json": 1000000,
-    "assets/analysis/aupa20-12-20261005.json": 1000000
+    "assets/analysis/aupa20-12-20261005.json": 1000000,
+    "assets/analysis/aupa25-12-20261005.json": 1000000,
+    "assets/analysis/aupa25-00-20261005.json": 1000000,
+    "assets/analysis/aupa25-00.json": 1000000,
+    "assets/analysis/aupa25-12.json": 1000000
   }
 }

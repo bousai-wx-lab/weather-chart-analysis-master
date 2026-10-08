@@ -43,7 +43,7 @@ const SnapshotAnalysis = (() => {
     const feasHour=feasHours[data.product];
     const equivalent=data.product==="FXJP854";
     if(equivalent!==Boolean(data.equivalent_temperature))throw Error("Invalid equivalent temperature product");
-    const expected=equivalent?[850,850,850,850]:feasHour?[500,850]:surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPA20:[200],AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
+    const expected=equivalent?[850,850,850,850]:feasHour?[500,850]:surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPA20:[200],AUPA25:[250],AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
     if(!expected || data.panels.length!==expected.length || (forecastHours && data.color_only!==true))throw Error("Unsupported trial product");
     if(Boolean(surfaceHours)!==Boolean(data.surface_forecast))throw Error("Invalid surface forecast product");
     if(Boolean(feasHour)!==Boolean(data.feas_forecast))throw Error("Invalid FEAS forecast product");
@@ -113,7 +113,18 @@ const SnapshotAnalysis = (() => {
       for(const key of ["wet_rectangles","positive_vorticity_rectangles","ascent_rectangles"])if(p[key]?.some(r=>r.length!==4||!point(r.slice(0,2))||!point(r.slice(2))||r[0]>=r[2]||r[1]>=r[3]))throw Error("Invalid trial fill");
       for(const key of ["cold_bands","wind_bands"])if(p[key]?.some(b=>!Number.isFinite(b.threshold)||!/^#[a-f0-9]{6}$/i.test(b.color)||!Array.isArray(b.rings)||b.rings.some(r=>!line(r))))throw Error("Invalid trial band");
       if(p.wind_bands?.length) {
-        if(!(p.pressure_hpa===300||data.product==="AUPA20"&&p.pressure_hpa===200) || p.wind_bands.length!==5 || p.wind_bands.some((b,j)=>b.threshold!==40+j*20 || b.color!==ChartAnalysis.windPalette[j]))throw Error("Invalid 300hPa wind intervals");
+        if(!(p.pressure_hpa===300||data.product==="AUPA20"&&p.pressure_hpa===200||data.product==="AUPA25"&&p.pressure_hpa===250) || p.wind_bands.length!==5 || p.wind_bands.some((b,j)=>b.threshold!==40+j*20 || b.color!==ChartAnalysis.windPalette[j]))throw Error("Invalid upper-level wind intervals");
+      }
+      if(data.product==="AUPA25") {
+        const within=q=>point(q)&&q[0]>=p.bounds[0]-.02&&q[1]>=p.bounds[1]-.02&&q[0]<=p.bounds[2]+.02&&q[1]<=p.bounds[3]+.02,trace=p.wind_trace;
+        if(p.troughs.length||p.ridges.length||p.wind_bands?.length!==5||trace?.unit!=="kt"||trace.interval!==20||!Number.isFinite(trace.order_fit_cost)||trace.order_fit_cost>2||!Number.isInteger(trace.source_contours)||trace.source_contours<=0||!trace.levels?.length||!trace.labels?.length||trace.labels.some(l=>!Number.isFinite(l.value)||l.value<20||l.value>160||l.value%20||!within(l.point)))throw Error("Invalid AUPA25 source fields");
+        const ids=new Set();
+        for(const level of trace.levels){
+          if(!Number.isFinite(level.speed_kt)||level.speed_kt<20||level.speed_kt>180||level.speed_kt%20||!level.lines?.length)throw Error("Invalid 250hPa source isotach");
+          for(const ln of level.lines){if(!line(ln.points)||!ln.points.every(within)||typeof ln.closed!=="boolean"||!ln.source_paths?.length)throw Error("Invalid 250hPa source contour");for(const id of ln.source_paths){if(!Number.isInteger(id)||id<0||ids.has(id))throw Error("Repeated 250hPa source path");ids.add(id);}}
+        }
+        if(p.wind_bands.some(b=>!b.rings.length||b.rings.some(r=>!r.every(within)))||!p.levels.length||p.levels.some(l=>l.temperature_c%6||l.lines.some(ln=>ln.value_origin!=="printed_stamp_sequence"||!ln.points.every(within)||ln.points.slice(1).some((q,j)=>Math.hypot(q[0]-ln.points[j][0],q[1]-ln.points[j][1])>110.02))))throw Error("250hPa field outside frame or stamp sequence");
+        if(!p.excluded_boxes?.length||p.excluded_boxes.some(b=>b.length!==4||!b.every(Number.isFinite)||b[0]>=b[2]||b[1]>=b[3]))throw Error("Missing 250hPa legend masks");
       }
       if(data.product==="AUPA20") {
         const trace=p.tropopause_trace,levels=p.tropopause_levels,bands=p.tropopause_bands;
@@ -129,12 +140,12 @@ const SnapshotAnalysis = (() => {
         if(!p.native_jet_strokes?.length||p.native_jet_strokes.some(st=>!line(st.points)||!st.points.every(within)||st.points.length>3||!Number.isInteger(st.source_path)||st.source_path<0||!Number.isFinite(st.width_px)||st.width_px<=0||st.width_px>8||ids.has(st.source_path)||!ids.add(st.source_path)))throw Error("Invalid native 200hPa jet");
         if(!p.excluded_boxes?.length||p.excluded_boxes.some(b=>b.length!==4||!b.every(Number.isFinite)||b[0]>=b[2]||b[1]>=b[3]))throw Error("Missing map legend masks");
       } else if(p.tropopause_bands||p.tropopause_levels||p.native_jet_strokes)throw Error("Unsupported tropopause product");
-      if(data.product==="AUPQ35" && i===0) {
+      if(data.product==="AUPQ35" && i===0 || data.product==="AUPA25") {
         if(p.troughs.length || p.ridges.length)throw Error("300hPa uses wind and jet axes");
-        const wind={...data,pressure_hpa:300,unit:"kt",bounds:p.bounds,bands:(p.wind_bands||[]).map(b=>({min_kt:b.threshold,rings:b.rings}))};
+        const wind={...data,pressure_hpa:p.pressure_hpa,unit:"kt",bounds:p.bounds,bands:(p.wind_bands||[]).map(b=>({min_kt:b.threshold,rings:b.rings}))};
         // The parent source/image binding also binds the wind and branch guides.
-        ChartAnalysis.validateWindBands(wind,data);
-        ChartAnalysis.validateJetGuides({...data,pressure_hpa:300,axes:p.jet_guides},data,wind);
+        if(p.pressure_hpa===300)ChartAnalysis.validateWindBands(wind,data);
+        ChartAnalysis.validateJetGuides({...data,pressure_hpa:p.pressure_hpa,axes:p.jet_guides},data,wind);
       } else if(p.jet_guides?.length)throw Error("Jet axes must use 300hPa wind");
       if(p.ascent_rectangles && p.vertical_velocity_pressure_hpa!==700)throw Error("Ascent must be 700hPa");
       if(data.product==="FEAS50" && i===1 && p.axis_pressure_hpa!==0)throw Error("FEAS axes must use surface pressure");
@@ -162,7 +173,7 @@ const SnapshotAnalysis = (() => {
     return data.color_only ? data.panels.map(p=>enabled[p.pressure_hpa===500?0:1]) : enabled;
   }
   function jetAxes(data) {
-    const p=data.panels.find(p=>p.pressure_hpa===300);
+    const p=data.panels.find(p=>[250,300].includes(p.pressure_hpa));
     return p?.jet_guides?.length ? ChartAnalysis.jets({bounds:p.bounds,bands:p.wind_bands.map(b=>({min_kt:b.threshold,rings:b.rings}))},{axes:p.jet_guides}) : [];
   }
   function crosses(a,b) {
@@ -226,7 +237,7 @@ const SnapshotAnalysis = (() => {
       clipPanel(ctx,p);
       ctx.beginPath();const [l,t,r,b]=p.bounds;ctx.rect(l,t,r-l,b-t);
       for(const level of p.levels)for(const [x,y,xx,yy] of level.labels)ctx.rect(x-2,y-2,xx-x+4,yy-y+4);ctx.clip("evenodd");
-      for(const [j,level] of p.levels.entries())for(const ln of level.lines){ctx.strokeStyle=scale.colors[j];ctx.beginPath();ctx.moveTo(...ln.points[0]);if(data.product==="AUPA20")for(const segment of chart.isothermSegments(ln.points,ln.closed))ctx.bezierCurveTo(...segment.c1,...segment.c2,...segment.end);else {for(const q of ln.points.slice(1))ctx.lineTo(...q);if(ln.closed)ctx.closePath();}ctx.stroke();}
+      for(const [j,level] of p.levels.entries())for(const ln of level.lines){ctx.strokeStyle=scale.colors[j];ctx.beginPath();ctx.moveTo(...ln.points[0]);if(["AUPA20","AUPA25"].includes(data.product))for(const segment of chart.isothermSegments(ln.points,ln.closed))ctx.bezierCurveTo(...segment.c1,...segment.c2,...segment.end);else {for(const q of ln.points.slice(1))ctx.lineTo(...q);if(ln.closed)ctx.closePath();}ctx.stroke();}
       ctx.restore();
     }
   }
@@ -251,7 +262,7 @@ const SnapshotAnalysis = (() => {
       // Source bands own the geometry; the shared palette owns display colors
       // so stored legacy colors cannot disagree with the UI and PNG legends.
       if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity??rules.coldOpacity,band=>chart.coldColor(p.pressure_hpa,band.threshold));
-      if(on.wind && [200,300].includes(p.pressure_hpa))paintBands(p.wind_bands,1,band=>chart.windPalette[(band.threshold-40)/20]);
+      if(on.wind && [200,250,300].includes(p.pressure_hpa))paintBands(p.wind_bands,1,band=>chart.windPalette[(band.threshold-40)/20]);
       if(on.precipitation && p.pressure_hpa===0)paintBands(p.precipitation_bands,rules.precipitationOpacity,band=>precipitationColors[band.threshold/10]);
       for(const [key,style,active] of [["wet_rectangles",rules.wet,on.wet],["positive_vorticity_rectangles",rules.vorticity,on.vorticity],["ascent_rectangles",rules.ascent,on.ascent]])if(active)chart.drawRectangleFill(ctx,p[key],style);
       ctx.restore();

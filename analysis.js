@@ -26,7 +26,7 @@ const ChartAnalysis = (() => {
     return "#"+rgb(a).map((v,j)=>Math.round(v+(rgb(b)[j]-v)*f).toString(16).padStart(2,"0")).join("");
   }
   function temperatureColor(pressure,value) {
-    if(pressure===200)return mixColor("#a0d8fa","#4c1d95",Math.max(0,Math.min(1,(-value-42)/24)));
+    if([200,250].includes(pressure))return mixColor("#a0d8fa","#4c1d95",Math.max(0,Math.min(1,(-value-42)/24)));
     if(pressure===300 || pressure===500){
       const scale=isothermScales.find(s=>s.pressure_hpa===pressure);
       const i=Math.max(0,Math.min(scale.colors.length-1,Math.round((-value-(pressure===300?27:3))/(pressure===300?6:3))));
@@ -115,7 +115,7 @@ const ChartAnalysis = (() => {
     ctx.restore();
   }
   function validateJetGuides(data, chart, wind) {
-    if (data.schema_version !== 1 || data.source_sha256 !== chart.source_sha256 || data.image_sha256 !== chart.image_sha256 || data.observation_time !== chart.observation_time || data.width !== chart.width || data.height !== chart.height || data.pressure_hpa !== 300 || !Array.isArray(data.axes) || !data.axes.length || data.axes.length > 6) throw new Error("強風軸の資料が原図と一致しません");
+    if (data.schema_version !== 1 || data.source_sha256 !== chart.source_sha256 || data.image_sha256 !== chart.image_sha256 || data.observation_time !== chart.observation_time || data.width !== chart.width || data.height !== chart.height || ![250,300].includes(data.pressure_hpa) || data.pressure_hpa !== wind.pressure_hpa || !Array.isArray(data.axes) || !data.axes.length || data.axes.length > 6) throw new Error("強風軸の資料が原図と一致しません");
     const [left, top, right, bottom] = wind.bounds;
     for (const axis of data.axes) {
       if (!Number.isFinite(axis.search_radius_px) || axis.search_radius_px < 10 || axis.search_radius_px > 150 || !Array.isArray(axis.points) || axis.points.length < 3 || axis.points.length > 30 || !axis.points.every((p, i) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite) && p[0] >= left && p[0] <= right && p[1] >= top && p[1] <= bottom && (!i || Math.hypot(p[0] - axis.points[i - 1][0], p[1] - axis.points[i - 1][1]) >= 10))) throw new Error("強風軸の流れを確認できません");

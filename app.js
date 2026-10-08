@@ -290,7 +290,7 @@ function controls() {
   byId("equivalent").disabled=true;byId("equivalent").setAttribute("aria-pressed","false");
   byId("equivalent-opacity-value").textContent=`${Math.round(equivalentOpacity*100)}%`;
   byId("precipitation").disabled=true;byId("precipitation").setAttribute("aria-pressed","false");
-  windLayer.setAttribute("aria-label",trial?.product==="AUPA20"?"200hPa等風速線に沿った緑色の塗り分け":trial?.equivalent_temperature?"850hPaの相当温位を260〜370 Kの寒色から暖色で塗り分け":trial?.feas_forecast?"上段500hPaの正渦度と、下段850hPaの寒気・暖気を色分け":trial?.surface_forecast?"上段500hPaの正渦度と、下段地上の降水量を色分け":"300hPa等風速線に沿った緑色の塗り分け");
+  windLayer.setAttribute("aria-label",["AUPA20","AUPA25"].includes(trial?.product)?`${trial.panels[0].pressure_hpa}hPa等風速線に沿った緑色の塗り分け`:trial?.equivalent_temperature?"850hPaの相当温位を260〜370 Kの寒色から暖色で塗り分け":trial?.feas_forecast?"上段500hPaの正渦度と、下段850hPaの寒気・暖気を色分け":trial?.surface_forecast?"上段500hPaの正渦度と、下段地上の降水量を色分け":"300hPa等風速線に沿った緑色の塗り分け");
   const afterClear = history.slice(history.map((s) => s.kind).lastIndexOf("clear") + 1);
   const paintCount = afterClear.filter((s) => s.kind === "paint").length;
   const axisCount = ManualAxis.resolved(history).size;
@@ -955,12 +955,12 @@ byId("save").addEventListener("click", () => {
   ctx.globalCompositeOperation = "multiply"; ctx.drawImage(overlayLayer, 0, 0); ctx.drawImage(ink, 0, 0); ctx.globalCompositeOperation = "source-over";
   ctx.fillStyle = "#243247"; ctx.font = "24px sans-serif";
   ctx.fillText(`出典：気象庁 ${selected.product.code}（画像化） / ${chartLabel}`, 26, ink.height + 38, output.width - 52);
-  ctx.fillText(trial?.product==="AUPA20"?`200hPaジェット軸：${showJet?"原図の矢印を白縁付きの赤で着色":"表示なし"} / 手描き：利用者`:`解析案：${showTrough700 && (lowLevel || isFeas()) ? (isFeas()?"地上トラフ ":"700hPaトラフ ") : ""}${showTrough ? (lowLevel?"850hPaトラフ ":"500hPaトラフ ") : ""}${showRidge700 && (lowLevel || isFeas()) ? (isFeas()?"地上リッジ ":"700hPaリッジ ") : ""}${showRidge ? (lowLevel?"850hPaリッジ ":"500hPaリッジ ") : ""}${showJet ? "300hPa強風軸（白縁付きの赤）" : ""}${!showTrough700 && !showRidge700 && !showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
+  ctx.fillText(trial?.product==="AUPA20"?`200hPaジェット軸：${showJet?"原図の矢印を白縁付きの赤で着色":"表示なし"} / 手描き：利用者`:`解析案：${showTrough700 && (lowLevel || isFeas()) ? (isFeas()?"地上トラフ ":"700hPaトラフ ") : ""}${showTrough ? (lowLevel?"850hPaトラフ ":"500hPaトラフ ") : ""}${showRidge700 && (lowLevel || isFeas()) ? (isFeas()?"地上リッジ ":"700hPaリッジ ") : ""}${showRidge ? (lowLevel?"850hPaリッジ ":"500hPaリッジ ") : ""}${showJet ? `${trial?.panels[0].pressure_hpa||300}hPa強風軸（白縁付きの赤）` : ""}${!showTrough700 && !showRidge700 && !showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
   if (showSymbols && symbols) for (const [index, letter] of ["L", "H", "C", "W"].entries()) {
     ctx.fillStyle = ChartAnalysis.symbolPalette[letter]; ctx.fillText(letter, 1610 + index * 90, ink.height + 76);
   }
   ctx.fillStyle = "#243247";
-  ctx.font = "22px sans-serif"; ctx.fillText(trial?.surface_forecast ? "上段：500hPa高度・渦度 / 下段：地上気圧・風・降水量" : showWind ? `風速（${trial?.product==="AUPA20"?200:300}hPa）` : "風速の色塗り：表示なし", 26, ink.height + 116);
+  ctx.font = "22px sans-serif"; ctx.fillText(trial?.surface_forecast ? "上段：500hPa高度・渦度 / 下段：地上気圧・風・降水量" : showWind ? `風速（${trial?.panels[0].pressure_hpa||300}hPa）` : "風速の色塗り：表示なし", 26, ink.height + 116);
   if (showWind && windBands) for (const [index, color] of ChartAnalysis.windPalette.entries()) {
     const x = 230 + index * 260;
     ctx.fillStyle = color; ctx.fillRect(x, ink.height + 95, 32, 24);
@@ -1303,7 +1303,7 @@ const isFeasSelection = selected => selected.variant.features === "reviewed-feas
 const trialMain = () => trial.panels[trial.product === "AUPQ35" || trial.product === "AUPQ78" ? 1 : 0];
 const trialOther = () => trial.surface_forecast?trial.panels.find(p=>p.pressure_hpa===0):trial.panels[trial.product === "AUPQ35" || trial.product === "AUPQ78" ? 0 : 1];
 function trialPlane(id) {
-  if(trial.product==="AUPA20"&&["wind","jet"].includes(id))return "200hPa";
+  if(["AUPA20","AUPA25"].includes(trial.product)&&["wind","jet"].includes(id))return `${trial.panels[0].pressure_hpa}hPa`;
   if(["trough","ridge"].includes(id))return `${trialMain().pressure_hpa}hPa`;
   if(["trough700","ridge700"].includes(id))return trialOther()?.axis_pressure_hpa===0?"地上気圧":`${trialOther()?.pressure_hpa}hPa`;
   if(id==="temperature")return `${temperatureScales()[0].pressure_hpa}hPa`;
@@ -1328,12 +1328,12 @@ function trialAvailable(id) {
     symbols:trial.symbols.length>0,geography:Boolean(geography)}[id];
 }
 function trialLegends() {
-  const nativeJet=trial.product==="AUPA20";
-  byId("jet").textContent=nativeJet?"ジェット軸":"強風軸";
-  byId("detail-jet").querySelector(".legend").textContent=`白縁付きの赤い矢印 · ${nativeJet?200:300}hPa`;
+  const nativeJet=trial.product==="AUPA20",upper=["AUPA20","AUPA25"].includes(trial.product),jetPressure=upper?trial.panels[0].pressure_hpa:300;
+  byId("jet").textContent=upper?"ジェット軸":"強風軸";
+  byId("detail-jet").querySelector(".legend").textContent=`白縁付きの赤い矢印 · ${jetPressure}hPa`;
   byId("detail-jet").querySelector("p").textContent=nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色します。矢印は風の流れの向きです。":"各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。";
-  jetLayer.setAttribute("aria-label",nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色":"300hPaの強風帯をたどる白縁付きの赤い矢印");
-  temperatureLayer.setAttribute("aria-label",nativeJet?"200hPaの同じ気温の数字をつなぐ等温線":"原図の等温線の着色");
+  jetLayer.setAttribute("aria-label",nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色":`${jetPressure}hPaの強風帯をたどる白縁付きの赤い矢印`);
+  temperatureLayer.setAttribute("aria-label",upper?`${jetPressure}hPaの同じ気温の数字をつなぐ等温線`:"原図の等温線の着色");
   const common=document.querySelector('[data-layer="symbols"]').parentElement.querySelector("h3 span");common.textContent=trial.panels.length===1?"図全体":"上段・下段";
   byId("tropopause-legend").replaceChildren();
   for(const item of SnapshotAnalysis.tropopauseLegend()){const entry=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=item.color||"transparent";swatch.style.opacity=String(item.color?coloringRules.tropopauseOpacity:1);if(!item.color)swatch.style.border="1px solid #cbd5e1";entry.append(swatch,item.label);byId("tropopause-legend").append(entry);}
@@ -1358,7 +1358,7 @@ function trialLegends() {
     const heading=byId(i?"lower-plane":"upper-plane"),pos=document.createElement("span");pos.textContent=trial.panels.length===1?"":i?"下段":"上段";
     heading.replaceChildren(trial.surface_forecast?(i?"地上 ":"500 hPa "):trial.color_only?(i?"850 / 700 hPa ":"500 / 700 hPa "):(trial.product==="FEAS50"||trial.feas_forecast)&&i?"地上 / 850 hPa ":trial.product==="AXFE578"&&i?"850 / 700 hPa ":`${scale.pressure_hpa} hPa `,pos);
     legend.setAttribute("aria-label",`${scale.pressure_hpa}hPaの気温線`);
-    byId(`detail-${id}`).querySelector("p").textContent=nativeJet?"原図の同じ気温の数字をつなぐ補助線です。数字の間隔が大きい場所はつなぎません。":"原図の等温線を半透明の色線で表示します。";
+    byId(`detail-${id}`).querySelector("p").textContent=upper?"原図の同じ気温の数字をつなぐ補助線です。数字の間隔が大きい場所はつなぎません。":"原図の等温線を半透明の色線で表示します。";
     document.querySelector(`[data-layer-detail="${id}"]`).setAttribute("aria-label",`${scale.pressure_hpa}hPaの気温線の詳細`);
   }
   if(trial.color_only)byId("upper-plane").parentElement.append(document.querySelector('[data-layer="wet"]'));
