@@ -976,7 +976,7 @@ byId("save").addEventListener("click", () => {
     for(const [i,v] of coloringRules.coldThresholds[850].entries()) {const x=420+i*285;ctx.save();ctx.globalAlpha=coldOpacity;ctx.fillStyle=LowLevelAnalysis.coldColors[i];ctx.fillRect(x,ink.height+297,32,24);ctx.restore();ctx.fillText(`${v}℃以下`,x+42,ink.height+319);}
   }
   if(trial?.product==="AUPA20"){
-    ctx.fillText(`圏界面の気圧：${showTropopause?"ピンク・濃さ35%":"表示なし"} / 境界50hPa間隔・数値100hPa間隔`,26,ink.height+280,output.width-52);
+    ctx.fillText(`圏界面の気圧：${showTropopause?"黄色→黄緑→水色→青→紫・濃さ50%":"表示なし"} / 境界50hPa間隔・数値100hPa間隔`,26,ink.height+280,output.width-52);
     for(const [i,v]of [100,150,200,250,300,350,400].entries()){const x=26+i*(output.width-52)/7;ctx.save();ctx.globalAlpha=coloringRules.tropopauseOpacity;ctx.fillStyle=SnapshotAnalysis.tropopauseColor(v);ctx.fillRect(x,ink.height+305,32,24);ctx.restore();ctx.fillText(`${v} hPa`,x+40,ink.height+327);}
     ctx.fillText("気圧が低いほど圏界面は高い位置にあります。",26,ink.height+371,output.width-52);
   }

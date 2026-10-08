@@ -207,8 +207,8 @@ const SnapshotAnalysis = (() => {
   function drawTropopause(ctx,data) {
     for(const p of data.panels)if(p.tropopause_bands?.length){ctx.save();clipPanel(ctx,p);
       const canvas=ctx.canvas.ownerDocument.createElement("canvas");canvas.width=data.width;canvas.height=data.height;const c=canvas.getContext("2d");
-      const [l,t,r,b]=p.bounds;c.fillStyle=tropopauseColor(p.tropopause_bands[0].threshold-25);c.fillRect(l,t,r-l,b-t);
-      for(const band of p.tropopause_bands){c.fillStyle=tropopauseColor(band.threshold+25);c.beginPath();for(const ring of band.rings){c.moveTo(...ring[0]);for(const q of ring.slice(1))c.lineTo(...q);c.closePath();}c.fill("evenodd");}
+      const [l,t,r,b]=p.bounds;c.fillStyle=tropopauseColor(p.tropopause_bands[0].threshold-50);c.fillRect(l,t,r-l,b-t);
+      for(const band of p.tropopause_bands){c.fillStyle=tropopauseColor(band.threshold);c.beginPath();for(const ring of band.rings){c.moveTo(...ring[0]);for(const q of ring.slice(1))c.lineTo(...q);c.closePath();}c.fill("evenodd");}
       ctx.globalAlpha=rules.tropopauseOpacity;ctx.drawImage(canvas,0,0);ctx.restore();}
   }
   function drawTemperature(ctx,data,enabled) {

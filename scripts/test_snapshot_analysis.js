@@ -24,7 +24,7 @@ for(const v of catalog.products.find(p=>p.id==="aupa20").variants){
   assert.equal(snapshot.displayScales(data).length,1);
   for(const change of [x=>x.panels[0].pressure_hpa=300,x=>x.panels[0].tropopause_trace.unit="m",x=>x.panels[0].tropopause_trace.interval=100,x=>x.panels[0].tropopause_levels[1].pressure_hpa+=25,x=>x.panels[0].native_jet_strokes[0].source_path=-1,x=>x.panels[0].native_jet_strokes[0].points[0]=[0,0],x=>x.panels[0].wind_bands[0].threshold=20]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));}
 }
-assert.equal(snapshot.tropopauseColor(100),"#fff0f7");assert.equal(snapshot.tropopauseColor(400),"#b82e76");
+assert.equal(snapshot.tropopauseColor(100),"#facc15");assert.equal(snapshot.tropopauseColor(400),"#3b0764");
 assert.notEqual(snapshot.tropopauseColor(150),snapshot.tropopauseColor(250));
 assert.equal(ChartAnalysis.temperatureColor(200,-42),"#a0d8fa");assert.equal(ChartAnalysis.temperatureColor(200,-66),"#4c1d95");
 let recent=0,analyses=0,maps=0;
