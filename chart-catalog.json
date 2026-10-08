@@ -21,7 +21,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa20_12.pdf",
           "source_sha256": "b5c3063b73aeab4a4bbd20c551ef00af6199b2d9a48d7f0c2d47265a24cf2f42",
           "retrieved_at": "2026-10-04T22:29:55.033370+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -31,7 +31,9 @@
               "image_path": "assets/charts/aupa20-12-20261005-b5c3063b73ae-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/aupa20-12-20261005.json",
+          "analysis_sha256": "2e5a05166f8a191cd573cb36559691b3fea7af5ac4cc81081243bc5694e49435"
         },
         {
           "id": "aupa20-00-20261005",
@@ -39,7 +41,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupa20_00.pdf",
           "source_sha256": "aa6d4731e0053d94c80e34a0733b3141f6036f773ee77028377afb57ef22e246",
           "retrieved_at": "2026-10-04T22:29:55.033996+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -49,7 +51,9 @@
               "image_path": "assets/charts/aupa20-00-20261005-aa6d4731e005-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/aupa20-00-20261005.json",
+          "analysis_sha256": "85eb06f998911745ea5d075ac77f84fb23f7311baabf1335eccd4d25715a4602"
         },
         {
           "id": "aupa20-00",
@@ -66,7 +70,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/aupa20-00.json",
+          "analysis_sha256": "241b92ea098bc31cf6cf9122cb359287b010cf0d6c5cfd6b0292d312c1870009"
         },
         {
           "id": "aupa20-12",
@@ -83,7 +89,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/aupa20-12.json",
+          "analysis_sha256": "84c8fab5b943f1c88a558f7ee3ec771140184d14be596971f35429952b6a9219"
         }
       ]
     },

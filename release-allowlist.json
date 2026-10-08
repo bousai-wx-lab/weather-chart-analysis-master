@@ -10,6 +10,10 @@
     "SECURITY.md",
     "analysis.js",
     "app.js",
+    "assets/analysis/aupa20-00.json",
+    "assets/analysis/aupa20-00-20261005.json",
+    "assets/analysis/aupa20-12.json",
+    "assets/analysis/aupa20-12-20261005.json",
     "assets/analysis/aupq35-00-20261005.json",
     "assets/analysis/aupq35-12-20261005.json",
     "assets/analysis/aupq78-00-20261005.json",
@@ -1741,6 +1745,10 @@
     "assets/analysis/feas524-12-forecast.json": 284051,
     "assets/analysis/feas526-12-20261005-forecast.json": 293846,
     "assets/analysis/feas526-12-forecast.json": 296414,
-    "assets/analysis/fxjp854-12-20261005-equivalent.json": 1734224
+    "assets/analysis/fxjp854-12-20261005-equivalent.json": 1734224,
+    "assets/analysis/aupa20-00.json": 1000000,
+    "assets/analysis/aupa20-00-20261005.json": 1000000,
+    "assets/analysis/aupa20-12.json": 1000000,
+    "assets/analysis/aupa20-12-20261005.json": 1000000
   }
 }

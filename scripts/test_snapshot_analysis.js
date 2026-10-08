@@ -12,6 +12,21 @@ assert.equal(zigzag[0][1],10);assert.equal(zigzag.at(-1)[1],10);
 assert.ok(zigzag.slice(1,-1).every((p,i)=>p[1]===(i%2?4:16)));
 assert.ok(snapshot.crosses([[10,10],[30,30]],[[10,30],[30,10]]));
 assert.equal(snapshot.crosses([[10,10],[30,10]],[[10,30],[30,30]]),false);
+// 200hPa and tropopause have separate units and source geometry on all four inputs.
+for(const v of catalog.products.find(p=>p.id==="aupa20").variants){
+  const selected=ChartCatalog.selection(catalog,"aupa20",v.id,1),data=snapshot.validate(read(v.analysis_path),selected,"bousai-wx-lab.github.io"),panel=data.panels[0];
+  assert.equal(data.panels.length,1);assert.equal(panel.pressure_hpa,200);
+  assert.deepEqual(panel.wind_bands.map(b=>b.threshold),[40,60,80,100,120]);
+  assert.ok(panel.tropopause_levels.some(l=>l.pressure_hpa===150));
+  assert.ok(panel.tropopause_levels.some(l=>l.pressure_hpa===250));
+  assert.deepEqual([...new Set(data.symbols.map(s=>s.letter))].sort(),["C","H","L","W"]);
+  assert.ok(panel.native_jet_strokes.length>50);
+  assert.equal(snapshot.displayScales(data).length,1);
+  for(const change of [x=>x.panels[0].pressure_hpa=300,x=>x.panels[0].tropopause_trace.unit="m",x=>x.panels[0].tropopause_trace.interval=100,x=>x.panels[0].tropopause_levels[1].pressure_hpa+=25,x=>x.panels[0].native_jet_strokes[0].source_path=-1,x=>x.panels[0].native_jet_strokes[0].points[0]=[0,0],x=>x.panels[0].wind_bands[0].threshold=20]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));}
+}
+assert.equal(snapshot.tropopauseColor(100),"#fff0f7");assert.equal(snapshot.tropopauseColor(400),"#b82e76");
+assert.notEqual(snapshot.tropopauseColor(150),snapshot.tropopauseColor(250));
+assert.equal(ChartAnalysis.temperatureColor(200,-42),"#a0d8fa");assert.equal(ChartAnalysis.temperatureColor(200,-66),"#4c1d95");
 let recent=0,analyses=0,maps=0;
 for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-20261005"))for(const page of v.pages){
   const selected=ChartCatalog.selection(catalog,p.id,v.id,page.number);
@@ -68,7 +83,7 @@ for(const p of catalog.products)for(const v of p.variants)if(v.id.endsWith("-202
   }
   recent++;
 }
-assert.equal(recent,61);assert.equal(analyses,31);assert.equal(maps,57);
+assert.equal(recent,61);assert.equal(analyses,33);assert.equal(maps,57);
 // Source-read FXJP854 checks: a cool closed island in the southern map,
 // its warmer surroundings, and the hot tropical-cyclone core.
 const eqSelected=ChartCatalog.selection(catalog,"fxjp854","fxjp854-12-20261005",1);

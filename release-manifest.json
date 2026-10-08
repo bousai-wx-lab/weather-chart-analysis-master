@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-06T23:34:31.367693+00:00",
+  "generated_at": "2026-10-08T00:51:08.006990+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 10280,
-      "sha256": "bf1ec9203a460f3f165e2e150a882d5d694b85bd8b7aa3d6c63d2b8931df6e7b",
+      "bytes": 10426,
+      "sha256": "64d320a50a812a9870a20fb50de337dcd021b4afcea52856af896b6fb270f3d9",
       "mime_type": "application/octet-stream"
     },
     {
@@ -29,8 +29,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 44187,
-      "sha256": "9740973ad24a99802693249e9c92ec41a6daabb4347bb9421debe9fcee0f54cc",
+      "bytes": 45721,
+      "sha256": "bb1436d5b5a365c6519967affba36b263f24d2d38dbaa5da2f287980e4dbe82c",
       "mime_type": "text/markdown"
     },
     {
@@ -41,15 +41,39 @@
     },
     {
       "path": "analysis.js",
-      "bytes": 30410,
-      "sha256": "c29e1167372baa266e5e64a47d93e44398789daf836306173b090542446f6f63",
+      "bytes": 30659,
+      "sha256": "cd39dfb93873d7607f4c8b607c51d14b7ce31aecc1c065745efac7de32b319ab",
       "mime_type": "text/javascript"
     },
     {
       "path": "app.js",
-      "bytes": 114205,
-      "sha256": "cd4c161581405ea01c88fe8d71537dd7e9d0a35211d3e7fb7d98e5bb8834ed00",
+      "bytes": 117999,
+      "sha256": "2ba68139364ee970c164409c469c32e49195c853392cfafbb837ed21822b475c",
       "mime_type": "text/javascript"
+    },
+    {
+      "path": "assets/analysis/aupa20-00-20261005.json",
+      "bytes": 709593,
+      "sha256": "85eb06f998911745ea5d075ac77f84fb23f7311baabf1335eccd4d25715a4602",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/aupa20-00.json",
+      "bytes": 742178,
+      "sha256": "241b92ea098bc31cf6cf9122cb359287b010cf0d6c5cfd6b0292d312c1870009",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/aupa20-12-20261005.json",
+      "bytes": 673957,
+      "sha256": "2e5a05166f8a191cd573cb36559691b3fea7af5ac4cc81081243bc5694e49435",
+      "mime_type": "application/json"
+    },
+    {
+      "path": "assets/analysis/aupa20-12.json",
+      "bytes": 754505,
+      "sha256": "84c8fab5b943f1c88a558f7ee3ec771140184d14be596971f35429952b6a9219",
+      "mime_type": "application/json"
     },
     {
       "path": "assets/analysis/aupq35-00-20261005.json",
@@ -1235,8 +1259,8 @@
     },
     {
       "path": "catalog.js",
-      "bytes": 4922,
-      "sha256": "5d05b51e947a0758142eb352a9916391083df334947165f7fa6243e350b80965",
+      "bytes": 4931,
+      "sha256": "2cc8045edfdb405975155b64067e29d1b2b4ba77c8f03ec84987de87671e8724",
       "mime_type": "text/javascript"
     },
     {
@@ -1247,8 +1271,8 @@
     },
     {
       "path": "chart-catalog.json",
-      "bytes": 112375,
-      "sha256": "2f8cb273a2f63b9a54ad3232571ae9e086af8beaf860d9dc71d15cc2e64d0be1",
+      "bytes": 113085,
+      "sha256": "3e68c528ba6fd8558764ffb8e537dadde1b35f9aa91efafc558f1c7b0680f6af",
       "mime_type": "application/json"
     },
     {
@@ -1307,8 +1331,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 35357,
-      "sha256": "7da7a3e2b3aac51dfe85a09b7aab7189dddca7c513bac3608497b2cf96ecd4b6",
+      "bytes": 36438,
+      "sha256": "2aebb188dc94cb76c476f2700e0e76af502e572831e692dbe1e8a2308582c3f3",
       "mime_type": "text/html"
     },
     {
@@ -1343,8 +1367,8 @@
     },
     {
       "path": "release-allowlist.json",
-      "bytes": 58766,
-      "sha256": "463b1be8371d0d02f3713f862931d04e0357ac5c999306270866ad37e592640f",
+      "bytes": 59142,
+      "sha256": "31b4f956ce4b91501c211842da257caeeaa3310f596322c6b53658fd1c13360e",
       "mime_type": "application/json"
     },
     {
@@ -1421,14 +1445,14 @@
     },
     {
       "path": "scripts/test_share_state.js",
-      "bytes": 4829,
-      "sha256": "dc2056f091f8b5c524fb2301ed8373a7ee906fc4848b763540c021abb26549e7",
+      "bytes": 5505,
+      "sha256": "a712d057ca3c73731efd49f4d8bb7b1552860646b3c9cfa274870f5500d40656",
       "mime_type": "text/javascript"
     },
     {
       "path": "scripts/test_snapshot_analysis.js",
-      "bytes": 21062,
-      "sha256": "bc0f150a80cc857c8106738f54eaaf4a08cca4736eeff24476f3ee2d5417f87c",
+      "bytes": 22649,
+      "sha256": "1e6e44c3118eea3bfeb058afccfbb4d51461007dfaf04a1593f809beb0f8ffe8",
       "mime_type": "text/javascript"
     },
     {
@@ -1439,20 +1463,20 @@
     },
     {
       "path": "share-state.js",
-      "bytes": 8715,
-      "sha256": "9869b76f6611cc0d04b4864ddf20080c72e98fb40369607d5dcd7a48bcf2a957",
+      "bytes": 8934,
+      "sha256": "6c6ad0f4b3694dfd3960075b4538c0f4c2ee37e40d21553242062139e3f041d4",
       "mime_type": "text/javascript"
     },
     {
       "path": "snapshot-analysis.js",
-      "bytes": 22191,
-      "sha256": "a4822d85e6972d257e3f859e4142f9de38c40cdd342c2aa07d1d3e382d717cc5",
+      "bytes": 26662,
+      "sha256": "4dd928fb00d1073e304400ba0ccf4a8d93ffb8dd7a515bd1ff168876466da61a",
       "mime_type": "text/javascript"
     },
     {
       "path": "styles.css",
-      "bytes": 24980,
-      "sha256": "d53f8da131e7913864d5f6f97b6dfcad7792980d66620cc623c98d7d648d75fc",
+      "bytes": 25033,
+      "sha256": "b13778119695d6d37a4a145acc2515f1fddfbbfa69f8c106f248298911ca54b5",
       "mime_type": "text/css"
     },
     {

@@ -12,6 +12,8 @@ const ChartAnalysis = (() => {
     vorticity: Object.freeze({color:"#ec6ca5",opacity:.3}),
     ascent: Object.freeze({color:"#a3d84b",opacity:.3}),
     axes: Object.freeze({trough:"#ef2323",ridge:"#2563eb",opacity:1,width:4}),
+    tropopauseOpacity: .35,
+    tropopauseStops: Object.freeze([[100,"#fff0f7"],[200,"#f9b4d3"],[300,"#ec6ca5"],[400,"#b82e76"]].map(Object.freeze)),
     precipitationOpacity: .45,
     precipitationColors: Object.freeze(["#bceefa","#91dbf4","#60c2eb","#329fdc","#147fc0","#0861a8"]),
     equivalentOpacity: .45,
@@ -22,6 +24,7 @@ const ChartAnalysis = (() => {
     return "#"+rgb(a).map((v,j)=>Math.round(v+(rgb(b)[j]-v)*f).toString(16).padStart(2,"0")).join("");
   }
   function temperatureColor(pressure,value) {
+    if(pressure===200)return mixColor("#a0d8fa","#4c1d95",Math.max(0,Math.min(1,(-value-42)/24)));
     if(pressure===300 || pressure===500){
       const scale=isothermScales.find(s=>s.pressure_hpa===pressure);
       const i=Math.max(0,Math.min(scale.colors.length-1,Math.round((-value-(pressure===300?27:3))/(pressure===300?6:3))));

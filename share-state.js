@@ -16,8 +16,9 @@ const ChartShare = (() => {
     const c = value.chart, d = value.drawing;
     keys(c,["product","variant","page","source","image","width","height","analysis"]);
     if (![c.product,c.variant].every(v => typeof v === "string" && /^[a-z0-9-]{1,100}$/.test(v)) || !Number.isInteger(c.page) || !number(c.page,1,100) || ![c.source,c.image].every(v => typeof v === "string" && /^[a-f0-9]{64}$/.test(v)) || !(c.analysis === null || (typeof c.analysis === "string" && /^[a-f0-9]{64}$/.test(c.analysis))) || ![c.width,c.height].every(v => Number.isInteger(v) && number(v,200,12288))) invalid();
-    keys(d,["history","future",...flags,...opacities,"geographyStyle","overlayTarget","overlays"]);
-    if (flags.some(k => typeof d[k] !== "boolean") || opacities.some(k => !number(d[k],0,1)) || typeof d.geographyStyle !== "string" || !/^[a-z-]{1,40}$/.test(d.geographyStyle) || ![300,500].includes(d.overlayTarget)) invalid();
+    const extra=Object.hasOwn(d,"showTropopause")?["showTropopause"]:[];
+    keys(d,[...extra,"history","future",...flags,...opacities,"geographyStyle","overlayTarget","overlays"]);
+    if ((extra.length&&typeof d.showTropopause!=="boolean") || flags.some(k => typeof d[k] !== "boolean") || opacities.some(k => !number(d[k],0,1)) || typeof d.geographyStyle !== "string" || !/^[a-z-]{1,40}$/.test(d.geographyStyle) || ![300,500].includes(d.overlayTarget)) invalid();
     let points = 0;
     const axisIds=new Set();
     for (const list of [d.history,d.future]) {
@@ -66,7 +67,7 @@ const ChartShare = (() => {
   function bind(value, selected, styles) {
     validate(value);
     const expected = identity(selected);
-    if (Object.keys(expected).some(k => value.chart[k] !== expected[k])) throw Error("共有リンクと同じ原図を確認できません。別の天気図には手描きを重ねません。");
+    if (Object.keys(expected).some(k => value.chart[k] !== expected[k] && !(k==="analysis"&&value.chart.analysis===null&&selected.product.id==="aupa20"))) throw Error("共有リンクと同じ原図を確認できません。別の天気図には手描きを重ねません。");
     if (!styles.includes(value.drawing.geographyStyle) || value.drawing.overlays.some(layer => selected.variant.features !== "reviewed-aupq35" || layer.source_product !== selected.product.code)) invalid();
     return value;
   }

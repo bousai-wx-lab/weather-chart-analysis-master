@@ -43,7 +43,7 @@ const SnapshotAnalysis = (() => {
     const feasHour=feasHours[data.product];
     const equivalent=data.product==="FXJP854";
     if(equivalent!==Boolean(data.equivalent_temperature))throw Error("Invalid equivalent temperature product");
-    const expected=equivalent?[850,850,850,850]:feasHour?[500,850]:surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
+    const expected=equivalent?[850,850,850,850]:feasHour?[500,850]:surfaceHours ? (surfaceHours.length===4?[500,500,0,0]:[500,0]) : forecastHours ? (forecastHours.length===4?[500,500,850,850]:[500,850]) : {AUPA20:[200],AUPQ35:[300,500],AUPQ78:[700,850],AXFE578:[500,850],FEAS50:[500,850]}[data.product];
     if(!expected || data.panels.length!==expected.length || (forecastHours && data.color_only!==true))throw Error("Unsupported trial product");
     if(Boolean(surfaceHours)!==Boolean(data.surface_forecast))throw Error("Invalid surface forecast product");
     if(Boolean(feasHour)!==Boolean(data.feas_forecast))throw Error("Invalid FEAS forecast product");
@@ -113,8 +113,22 @@ const SnapshotAnalysis = (() => {
       for(const key of ["wet_rectangles","positive_vorticity_rectangles","ascent_rectangles"])if(p[key]?.some(r=>r.length!==4||!point(r.slice(0,2))||!point(r.slice(2))||r[0]>=r[2]||r[1]>=r[3]))throw Error("Invalid trial fill");
       for(const key of ["cold_bands","wind_bands"])if(p[key]?.some(b=>!Number.isFinite(b.threshold)||!/^#[a-f0-9]{6}$/i.test(b.color)||!Array.isArray(b.rings)||b.rings.some(r=>!line(r))))throw Error("Invalid trial band");
       if(p.wind_bands?.length) {
-        if(p.pressure_hpa!==300 || p.wind_bands.length!==5 || p.wind_bands.some((b,j)=>b.threshold!==40+j*20 || b.color!==ChartAnalysis.windPalette[j]))throw Error("Invalid 300hPa wind intervals");
+        if(!(p.pressure_hpa===300||data.product==="AUPA20"&&p.pressure_hpa===200) || p.wind_bands.length!==5 || p.wind_bands.some((b,j)=>b.threshold!==40+j*20 || b.color!==ChartAnalysis.windPalette[j]))throw Error("Invalid 300hPa wind intervals");
       }
+      if(data.product==="AUPA20") {
+        const trace=p.tropopause_trace,levels=p.tropopause_levels,bands=p.tropopause_bands;
+        const within=q=>point(q)&&q[0]>=p.bounds[0]-.02&&q[1]>=p.bounds[1]-.02&&q[0]<=p.bounds[2]+.02&&q[1]<=p.bounds[3]+.02;
+        if(p.pressure_hpa!==200||p.troughs.length||p.ridges.length||p.jet_guides?.length||p.wind_bands?.length!==5||p.wind_trace?.unit!=="kt"||p.wind_trace.interval!==20||!Number.isFinite(p.wind_trace.order_fit_cost)||p.wind_trace.order_fit_cost>2||trace?.unit!=="hPa"||trace.interval!==50||trace.label_interval!==100||!Number.isFinite(trace.order_fit_cost)||(!Number.isInteger(trace.source_contours)||trace.source_contours<=0)||trace.order_fit_cost/trace.source_contours>1||!levels?.length||bands?.length!==levels.length||!trace.labels?.length||trace.labels.some(l=>!Number.isFinite(l.value)||l.value<100||l.value>500||l.value%100||!within(l.point)))throw Error("Invalid AUPA20 source fields");
+        if(p.wind_bands.some(b=>b.rings.some(r=>!r.every(within)))||p.levels.some(l=>l.lines.some(ln=>!ln.points.every(within))))throw Error("AUPA20 field outside frame");
+        const ids=new Set();
+        for(const [j,level] of levels.entries()){
+          const band=bands[j];
+          if(!Number.isFinite(level.pressure_hpa)||level.pressure_hpa<50||level.pressure_hpa>500||level.pressure_hpa%50||(j&&level.pressure_hpa!==levels[j-1].pressure_hpa+50)||!level.lines?.length||band.threshold!==level.pressure_hpa||band.side_agreement<=.95||band.side_agreement>1||!band.rings?.length||band.rings.some(r=>!line(r)||!r.every(within)))throw Error("Invalid tropopause pressure bands");
+          for(const ln of level.lines)if(!line(ln.points)||!ln.points.every(within)||typeof ln.closed!=="boolean"||!ln.source_paths?.length)throw Error("Invalid tropopause contours");
+        }
+        if(!p.native_jet_strokes?.length||p.native_jet_strokes.some(st=>!line(st.points)||!st.points.every(within)||st.points.length>3||!Number.isInteger(st.source_path)||st.source_path<0||!Number.isFinite(st.width_px)||st.width_px<=0||st.width_px>8||ids.has(st.source_path)||!ids.add(st.source_path)))throw Error("Invalid native 200hPa jet");
+        if(!p.excluded_boxes?.length||p.excluded_boxes.some(b=>b.length!==4||!b.every(Number.isFinite)||b[0]>=b[2]||b[1]>=b[3]))throw Error("Missing map legend masks");
+      } else if(p.tropopause_bands||p.tropopause_levels||p.native_jet_strokes)throw Error("Unsupported tropopause product");
       if(data.product==="AUPQ35" && i===0) {
         if(p.troughs.length || p.ridges.length)throw Error("300hPa uses wind and jet axes");
         const wind={...data,pressure_hpa:300,unit:"kt",bounds:p.bounds,bands:(p.wind_bands||[]).map(b=>({min_kt:b.threshold,rings:b.rings}))};
@@ -176,13 +190,35 @@ const SnapshotAnalysis = (() => {
     for(let i=0;i<=count;i++){const at=total*i/count;while(j<points.length-1 && lengths[j]<at)j++;const t=(at-lengths[j-1])/(lengths[j]-lengths[j-1]||1);q.push(points[j].map((v,k)=>points[j-1][k]+t*(v-points[j-1][k])));}
     return [q.map((p,i)=>{const n=normal(q,i),offset=i===0||i===q.length-1?0:i%2?6:-6;return [p[0]+offset*n[0],p[1]+offset*n[1]];})];
   }
+  function clipPanel(ctx,p) {
+    const [l,t,r,b]=p.bounds;ctx.beginPath();ctx.rect(l,t,r-l,b-t);
+    for(const [x,y,xx,yy]of p.excluded_boxes||[])ctx.rect(Math.max(l,x),Math.max(t,y),Math.min(r,xx)-Math.max(l,x),Math.min(b,yy)-Math.max(t,y));
+    ctx.clip("evenodd");
+  }
+  function tropopauseColor(value) {
+    const stops=rules.tropopauseStops,v=Math.max(stops[0][0],Math.min(stops.at(-1)[0],value));
+    const i=Math.min(stops.length-2,stops.findIndex((s,j)=>j<stops.length-1&&v<=stops[j+1][0]));
+    return chart.mixColor(stops[i][1],stops[i+1][1],(v-stops[i][0])/(stops[i+1][0]-stops[i][0]));
+  }
+  function drawNativeJets(ctx,data) {
+    for(const p of data.panels)if(p.native_jet_strokes?.length){ctx.save();clipPanel(ctx,p);ctx.strokeStyle=rules.axes.trough;ctx.lineJoin=ctx.lineCap="round";
+      for(const st of p.native_jet_strokes){ctx.lineWidth=st.width_px+1;ctx.beginPath();ctx.moveTo(...st.points[0]);for(const q of st.points.slice(1))ctx.lineTo(...q);ctx.stroke();}ctx.restore();}
+  }
+  function drawTropopause(ctx,data) {
+    for(const p of data.panels)if(p.tropopause_bands?.length){ctx.save();clipPanel(ctx,p);
+      const canvas=ctx.canvas.ownerDocument.createElement("canvas");canvas.width=data.width;canvas.height=data.height;const c=canvas.getContext("2d");
+      const [l,t,r,b]=p.bounds;c.fillStyle=tropopauseColor(p.tropopause_bands[0].threshold-25);c.fillRect(l,t,r-l,b-t);
+      for(const band of p.tropopause_bands){c.fillStyle=tropopauseColor(band.threshold+25);c.beginPath();for(const ring of band.rings){c.moveTo(...ring[0]);for(const q of ring.slice(1))c.lineTo(...q);c.closePath();}c.fill("evenodd");}
+      ctx.globalAlpha=rules.tropopauseOpacity;ctx.drawImage(canvas,0,0);ctx.restore();}
+  }
   function drawTemperature(ctx,data,enabled) {
     for(const [i,p] of data.panels.entries()) {
       if(!enabled[i])continue;
       const scale=scales(data)[i];ctx.save();ctx.globalAlpha=scale.opacity;ctx.lineWidth=3.5;ctx.lineCap=ctx.lineJoin="round";
+      clipPanel(ctx,p);
       ctx.beginPath();const [l,t,r,b]=p.bounds;ctx.rect(l,t,r-l,b-t);
       for(const level of p.levels)for(const [x,y,xx,yy] of level.labels)ctx.rect(x-2,y-2,xx-x+4,yy-y+4);ctx.clip("evenodd");
-      for(const [j,level] of p.levels.entries())for(const ln of level.lines){ctx.strokeStyle=scale.colors[j];ctx.beginPath();ctx.moveTo(...ln.points[0]);for(const q of ln.points.slice(1))ctx.lineTo(...q);if(ln.closed)ctx.closePath();ctx.stroke();}
+      for(const [j,level] of p.levels.entries())for(const ln of level.lines){ctx.strokeStyle=scale.colors[j];ctx.beginPath();ctx.moveTo(...ln.points[0]);if(data.product==="AUPA20")for(const segment of chart.isothermSegments(ln.points,ln.closed))ctx.bezierCurveTo(...segment.c1,...segment.c2,...segment.end);else {for(const q of ln.points.slice(1))ctx.lineTo(...q);if(ln.closed)ctx.closePath();}ctx.stroke();}
       ctx.restore();
     }
   }
@@ -199,7 +235,7 @@ const SnapshotAnalysis = (() => {
       for(const band of bands||[]){const color=colorFor(band);if(!color)continue;sc.fillStyle=color;sc.beginPath();for(const ring of band.rings){sc.moveTo(...ring[0]);for(const q of ring.slice(1))sc.lineTo(...q);sc.closePath();}sc.fill("evenodd");}
       ctx.save();ctx.globalAlpha=opacity;ctx.drawImage(canvas,0,0);ctx.restore();
     };
-    for(const p of data.panels){ctx.save();const [l,t,r,b]=p.bounds;ctx.beginPath();ctx.rect(l,t,r-l,b-t);ctx.clip();
+    for(const p of data.panels){ctx.save();const [l,t,r,b]=p.bounds;clipPanel(ctx,p);
       if(on.equivalent && data.equivalent_temperature){
         const frame=[[l,t],[r,t],[r,b],[l,b]];
         paintBands([{color:equivalentColor(p.equivalent_levels[0].value_k-1.5),rings:[frame]},...p.equivalent_bands.map(b=>({...b,color:equivalentColor(b.color_value_k)}))],on.equivalentOpacity??rules.equivalentOpacity);
@@ -207,12 +243,12 @@ const SnapshotAnalysis = (() => {
       // Source bands own the geometry; the shared palette owns display colors
       // so stored legacy colors cannot disagree with the UI and PNG legends.
       if(p.pressure_hpa===700?on.cold700:p.pressure_hpa===850&&on.cold850)paintBands(p.cold_bands,on.opacity??rules.coldOpacity,band=>chart.coldColor(p.pressure_hpa,band.threshold));
-      if(on.wind && p.pressure_hpa===300)paintBands(p.wind_bands,1,band=>chart.windPalette[(band.threshold-40)/20]);
+      if(on.wind && [200,300].includes(p.pressure_hpa))paintBands(p.wind_bands,1,band=>chart.windPalette[(band.threshold-40)/20]);
       if(on.precipitation && p.pressure_hpa===0)paintBands(p.precipitation_bands,rules.precipitationOpacity,band=>precipitationColors[band.threshold/10]);
       for(const [key,style,active] of [["wet_rectangles",rules.wet,on.wet],["positive_vorticity_rectangles",rules.vorticity,on.vorticity],["ascent_rectangles",rules.ascent,on.ascent]])if(active)chart.drawRectangleFill(ctx,p[key],style);
       ctx.restore();
     }
   }
-  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills,precipitationColors,precipitationLabels,equivalentColor,equivalentStops};
+  return {localHost,merge,validate,scales,displayScales,temperatureEnabled,jetAxes,crosses,drawAxes,axisSymbol,drawTemperature,drawSymbols,drawFills,drawNativeJets,drawTropopause,tropopauseColor,precipitationColors,precipitationLabels,equivalentColor,equivalentStops};
 })();
 if(typeof module!=="undefined")module.exports=SnapshotAnalysis;

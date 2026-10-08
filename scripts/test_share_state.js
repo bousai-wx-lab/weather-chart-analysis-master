@@ -14,6 +14,11 @@ const drawing = {
 const state = {version:1,chart:Share.identity(selected),drawing,view:{fit:false,zoom:1.375,x:.213,y:.42}};
 const mutate = fn => { const bad=clone(state);fn(bad);assert.throws(() => Share.validate(bad)); };
 (async () => {
+  const upper=Catalog.selection(catalog,"aupa20","aupa20-12-20261005",1),aupa=clone(state);aupa.chart=Share.identity(upper);aupa.drawing.showTropopause=false;
+  assert.deepEqual(await Share.decode(await Share.encode(aupa)),aupa);Share.bind(aupa,upper,["elevation-relief"]);
+  const legacy=clone(aupa);delete legacy.drawing.showTropopause;legacy.chart.analysis=null;Share.bind(legacy,upper,["elevation-relief"]);
+  const otherImage=clone(legacy);otherImage.chart.image="0".repeat(64);assert.throws(()=>Share.bind(otherImage,upper,["elevation-relief"]));
+  const invalidFlag=clone(aupa);invalidFlag.drawing.showTropopause="false";assert.throws(()=>Share.validate(invalidFlag));
   const fragment = await Share.encode(state);
   assert.ok(fragment.startsWith("#share=1.d."));
   assert.deepEqual(await Share.decode(fragment),state);
