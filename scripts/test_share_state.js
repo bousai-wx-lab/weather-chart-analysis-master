@@ -22,6 +22,10 @@ const mutate = fn => { const bad=clone(state);fn(bad);assert.throws(() => Share.
   assert.deepEqual(await Share.decode(await Share.encode(aupa250)),aupa250);Share.bind(aupa250,upper250,["elevation-relief"]);
   aupa250.chart.analysis=null;Share.bind(aupa250,upper250,["elevation-relief"]);
   const wrong250=clone(aupa250);wrong250.chart.source=upper.variant.source_sha256;assert.throws(()=>Share.bind(wrong250,upper250,["elevation-relief"]));
+  const pn=Catalog.selection(catalog,"aupn30","aupn30-12-20261005",1),pnState=clone(aupa);pnState.chart=Share.identity(pn);
+  assert.deepEqual(await Share.decode(await Share.encode(pnState)),pnState);Share.bind(pnState,pn,["elevation-relief"]);
+  pnState.chart.analysis=null;Share.bind(pnState,pn,["elevation-relief"]);
+  const wrongPn=clone(pnState);wrongPn.chart.image="0".repeat(64);assert.throws(()=>Share.bind(wrongPn,pn,["elevation-relief"]));
   const invalidFlag=clone(aupa);invalidFlag.drawing.showTropopause="false";assert.throws(()=>Share.validate(invalidFlag));
   const fragment = await Share.encode(state);
   assert.ok(fragment.startsWith("#share=1.d."));

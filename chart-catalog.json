@@ -197,7 +197,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupn30_12.pdf",
           "source_sha256": "e223ec0ef1b3ec72beb4ddd79bf0c5f72b8f7108464883c4c93bd412e55912d7",
           "retrieved_at": "2026-10-04T22:29:55.092234+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -207,7 +207,9 @@
               "image_path": "assets/charts/aupn30-12-20261005-e223ec0ef1b3-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 12:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/aupn30-12-20261005.json",
+          "analysis_sha256": "9883c326587e601d1193c2161ae582424ab68e848a62173659c7ec7eb0d925b7"
         },
         {
           "id": "aupn30-00-20261005",
@@ -215,7 +217,7 @@
           "source_url": "https://www.jma.go.jp/bosai/numericmap/data/nwpmap/aupn30_00.pdf",
           "source_sha256": "a8b4eb2efc909b500c3c40e5c4f5c9856a50fe93cbfbdc759b56327690b1fed3",
           "retrieved_at": "2026-10-04T22:29:55.034543+00:00",
-          "features": "manual",
+          "features": "experimental-snapshot",
           "pages": [
             {
               "number": 1,
@@ -225,7 +227,9 @@
               "image_path": "assets/charts/aupn30-00-20261005-a8b4eb2efc90-p1.png"
             }
           ],
-          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録"
+          "observation_label": "2026-10-04 00:00 UTC · 10月5日07:30 JST収録",
+          "analysis_path": "assets/analysis/aupn30-00-20261005.json",
+          "analysis_sha256": "0653f7414e2b82eddbdacee359c04b12a2ca102a1b48e832e6ab11bf885775f2"
         },
         {
           "id": "aupn30-00",
@@ -242,7 +246,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/aupn30-00.json",
+          "analysis_sha256": "e939d19d86cc48a16ee42118b956ebaf0cdc4e5ae752d58a0a66e42cc7615bfe"
         },
         {
           "id": "aupn30-12",
@@ -259,7 +265,9 @@
               "height": 1760
             }
           ],
-          "features": "manual"
+          "features": "experimental-snapshot",
+          "analysis_path": "assets/analysis/aupn30-12.json",
+          "analysis_sha256": "50df065173be0576d8008248c99785bf363205a4992b6d089adb7202722f57ce"
         }
       ]
     },

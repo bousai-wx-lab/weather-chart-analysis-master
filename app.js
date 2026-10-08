@@ -1323,17 +1323,17 @@ function trialAvailable(id) {
     cold850:trial.panels.some(p=>p.pressure_hpa===850&&p.cold_thresholds),
     warm850:trial.panels.some(p=>p.pressure_hpa===850&&p.levels.some(l=>LowLevelAnalysis.warmThresholds.includes(l.temperature_c))),
     trough700:trialOther()?.pressure_hpa!==300&&trialOther()?.troughs.length>0,ridge700:trialOther()?.pressure_hpa!==300&&trialOther()?.ridges.length>0,
-    temperature:temperatureScales()[0].pressure_hpa!==300&&temperatureScales()[0].values.length>0,temperature500:temperatureScales()[1]?.values.length>0,
+    temperature:(temperatureScales()[0].pressure_hpa!==300||trial.product==="AUPN30")&&temperatureScales()[0].values.length>0,temperature500:temperatureScales()[1]?.values.length>0,
     wind:some("wind_bands"),jet:Boolean(candidates?.jets.length||some("native_jet_strokes")),trough:trial.surface_forecast?trial.panels.some(p=>p.pressure_hpa===500&&p.troughs.length):trialMain().troughs.length>0,ridge:trial.surface_forecast?trial.panels.some(p=>p.pressure_hpa===500&&p.ridges.length):trialMain().ridges.length>0,
     symbols:trial.symbols.length>0,geography:Boolean(geography)}[id];
 }
 function trialLegends() {
-  const nativeJet=trial.product==="AUPA20",upper=["AUPA20","AUPA25"].includes(trial.product),jetPressure=upper?trial.panels[0].pressure_hpa:300;
+  const nativeJet=trial.product==="AUPA20",upper=["AUPA20","AUPA25"].includes(trial.product),spotTemperatures=upper||trial.product==="AUPN30",jetPressure=upper?trial.panels[0].pressure_hpa:300;
   byId("jet").textContent=upper?"ジェット軸":"強風軸";
   byId("detail-jet").querySelector(".legend").textContent=`白縁付きの赤い矢印 · ${jetPressure}hPa`;
   byId("detail-jet").querySelector("p").textContent=nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色します。矢印は風の流れの向きです。":"各強風帯の最も強い帯の中心をたどります。流れの経路はこの1枚で確認してください。";
   jetLayer.setAttribute("aria-label",nativeJet?"原図の200hPaジェット軸を白縁付きの赤で着色":`${jetPressure}hPaの強風帯をたどる白縁付きの赤い矢印`);
-  temperatureLayer.setAttribute("aria-label",upper?`${jetPressure}hPaの同じ気温の数字をつなぐ等温線`:"原図の等温線の着色");
+  temperatureLayer.setAttribute("aria-label",spotTemperatures?`${jetPressure}hPaの同じ気温の数字をつなぐ等温線`:"原図の等温線の着色");
   const common=document.querySelector('[data-layer="symbols"]').parentElement.querySelector("h3 span");common.textContent=trial.panels.length===1?"図全体":"上段・下段";
   byId("tropopause-legend").replaceChildren();
   for(const item of SnapshotAnalysis.tropopauseLegend()){const entry=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=item.color||"transparent";swatch.style.opacity=String(item.color?coloringRules.tropopauseOpacity:1);if(!item.color)swatch.style.border="1px solid #cbd5e1";entry.append(swatch,item.label);byId("tropopause-legend").append(entry);}
@@ -1358,7 +1358,7 @@ function trialLegends() {
     const heading=byId(i?"lower-plane":"upper-plane"),pos=document.createElement("span");pos.textContent=trial.panels.length===1?"":i?"下段":"上段";
     heading.replaceChildren(trial.surface_forecast?(i?"地上 ":"500 hPa "):trial.color_only?(i?"850 / 700 hPa ":"500 / 700 hPa "):(trial.product==="FEAS50"||trial.feas_forecast)&&i?"地上 / 850 hPa ":trial.product==="AXFE578"&&i?"850 / 700 hPa ":`${scale.pressure_hpa} hPa `,pos);
     legend.setAttribute("aria-label",`${scale.pressure_hpa}hPaの気温線`);
-    byId(`detail-${id}`).querySelector("p").textContent=upper?"原図の同じ気温の数字をつなぐ補助線です。数字の間隔が大きい場所はつなぎません。":"原図の等温線を半透明の色線で表示します。";
+    byId(`detail-${id}`).querySelector("p").textContent=spotTemperatures?"原図の同じ気温の数字をつなぐ補助線です。数字の間隔が大きい場所はつなぎません。":"原図の等温線を半透明の色線で表示します。";
     document.querySelector(`[data-layer-detail="${id}"]`).setAttribute("aria-label",`${scale.pressure_hpa}hPaの気温線の詳細`);
   }
   if(trial.color_only)byId("upper-plane").parentElement.append(document.querySelector('[data-layer="wet"]'));
