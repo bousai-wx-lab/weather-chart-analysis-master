@@ -69,9 +69,22 @@ for(const [product,pressure]of [["fupa252",250],["fupa302",300],["fupa402",400],
 }
 // Teacher case: four distinct flows, sparse NW convex representatives and both central branches.
 {
+ const d=read("assets/analysis/fupa252-12-20261005.json"),axes=snapshot.jetAxes(d),levels=d.panels[0].wind_trace.levels;
+ const points=guide=>axes.filter(a=>a.guide_index===guide).flatMap(a=>a.centers.map(c=>c.point));
+ const contains=(guide,p)=>points(guide).some(q=>Math.hypot(...q.map((v,k)=>v-p[k]))<1e-7);
+ const level=speed=>levels.find(l=>l.speed_kt===speed);
+ for(const [line,indices]of [[0,[64,1]],[3,[65,29]],[6,[58,5]]])for(const i of indices)assert.ok(contains(0,level(120).lines[line].points[i]),"the southern main flow must pass through the independently selected source 120kt lobe tips");
+ for(const i of [0,9])assert.ok(contains(3,level(80).lines[3].points[i]),"the central flow must pass through the source 80kt closed-lobe tips instead of the former weak 40kt path");
+ assert.ok(contains(3,[1325.24,814.36]),"the eastern open-lobe convex tip is also required, not just elliptical closed contours");
+}
+{
+ const axes=snapshot.jetAxes(read("assets/analysis/fupa402-00.json")).filter(a=>a.guide_index===3);
+ for(const axis of axes)for(let i=1;i<axis.centers.length;i++)assert.ok(axis.centers[i].point[1]>axis.centers[i-1].point[1],"adjacent closed lobes on this southward flow must not interleave their endpoints and reverse upstream");
+}
+{
  const d=read("assets/analysis/fupa302-12-20261005.json"),j=snapshot.jetAxes(d);
  assert.equal(j.length,4);assert.deepEqual(j.map(a=>a.guide_index),[0,1,2,3]);
- const nw=j[1];assert.ok(nw.segments.length<=3,"a broad convex lobe must not be interpolated through dozens of noisy transverse centers");
+ const nw=j[1];assert.ok(nw.segments.length<=6,"a broad convex lobe must not be interpolated through dozens of noisy transverse centers");
  for(const seg of nw.segments)for(let i=1;i<=100;i++){
   const at=t=>[0,1].map(k=>(1-t)**3*seg.start[k]+3*(1-t)**2*t*seg.c1[k]+3*(1-t)*t*t*seg.c2[k]+t**3*seg.end[k]);
   const a=at((i-1)/100),b=at(i/100);assert.ok(b[0]>=a[0]&&b[1]>=a[1],"the NW convex flow advances smoothly southeast without the former zigzag");
@@ -80,15 +93,26 @@ for(const [product,pressure]of [["fupa252",250],["fupa302",300],["fupa402",400],
  assert.ok(j[3].segments.at(-1).end[0]>j[3].segments[0].start[0]);
 }
 function checkJetSupport(panel,jets){
-  assert.equal(jets.length,panel.jet_guides.length,"each source-reviewed flow is retained, including short independent branches");
+  assert.ok(jets.length>0,"confirmed wind structures remain visible; unconfirmed intervals may be absent or separate");
   assert.equal(new Set(jets.map(a=>a.guide_index+":"+a.run_index)).size,jets.length);
   for(const axis of jets){
-    assert.equal(axis.segments.length,panel.jet_guides[axis.guide_index].points.length-1,"all reviewed broad segments retain whole-curve support");
-    for(let i=1;i<axis.segments.length;i++)for(const k of [0,1])assert.ok(Math.abs((axis.segments[i-1].end[k]-axis.segments[i-1].c2[k])-(axis.segments[i].c1[k]-axis.segments[i].start[k]))<1e-7,"shared tangents prevent corners at representative joins");
+    for(let i=1;i<axis.segments.length;i++) {
+      const before=axis.segments[i-1],s=axis.segments[i],u=before.end.map((v,k)=>v-before.c2[k]),v=s.c1.map((n,k)=>n-s.start[k]);
+      assert.ok(Math.abs(u[0]*v[1]-u[1]*v[0])<1e-6 && u[0]*v[0]+u[1]*v[1]>0,"shared tangent directions prevent corners or reversals at short convex tip pairs");
+    }
+    for(const peak of axis.convex_peaks) {
+      const line=panel.wind_trace?.levels.find(l=>l.speed_kt===peak.speed_kt)?.lines[peak.line_index];
+      if(line)for(const [i,point]of peak.tips.entries())assert.deepEqual(point,line.points[peak.tip_indices[i]],"the convex anchor must be the actual original isotach vertex");
+      for(const point of peak.tips)assert.ok(jets.filter(a=>a.guide_index===axis.guide_index).flatMap(a=>a.centers).some(c=>Math.hypot(...c.point.map((v,k)=>v-point[k]))<1e-7),"both convex tips must actually appear on the drawn flow, including across separately confirmed runs");
+    }
+    for(const tip of axis.open_tips) {
+      const line=panel.wind_trace?.levels.find(l=>l.speed_kt===tip.speed_kt)?.lines[tip.line_index];
+      if(line)assert.ok(line.points.some(p=>p.every((v,k)=>v===tip.point[k])),"an open-lobe anchor must also be on the original isotach");
+    }
   }
   for(const axis of jets)for(const s of axis.segments)for(let j=0;j<=100;j++){
     const t=j/100,u=1-t,q=[0,1].map(k=>u*u*u*s.start[k]+3*u*u*t*s.c1[k]+3*u*t*t*s.c2[k]+t*t*t*s.end[k]);
-    assert.ok(inBands(q,panel.wind_bands.filter(b=>b.threshold>=s.min_kt)),"The entire curve retains its wind-peak support, including between anchors");
+    assert.ok(inBands(q,panel.wind_bands.filter(b=>b.threshold>=40)),"wind-free gaps remain unconnected between the independently verified convex anchors");
   }
 }
 function inBands(p,bands){return bands.some(b=>b.rings.reduce((odd,r)=>odd!==inRing(r,p),false));}

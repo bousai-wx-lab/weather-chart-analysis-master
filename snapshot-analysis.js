@@ -185,7 +185,7 @@ const SnapshotAnalysis = (() => {
   }
   function jetAxes(data) {
     const p=data.panels.find(p=>[250,300,400].includes(p.pressure_hpa));
-    return p?.jet_guides?.length ? ChartAnalysis.jets({bounds:p.bounds,bands:p.wind_bands.map(b=>({min_kt:b.threshold,rings:b.rings}))},{axes:p.jet_guides}) : [];
+    return p?.jet_guides?.length ? ChartAnalysis.jets({bounds:p.bounds,bands:p.wind_bands.map(b=>({min_kt:b.threshold,rings:b.rings})),levels:p.wind_trace?.levels},{axes:p.jet_guides}) : [];
   }
   function crosses(a,b) {
     for(let i=1;i<a.length;i++)for(let j=1;j<b.length;j++){

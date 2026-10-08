@@ -196,10 +196,18 @@ assert.deepEqual(analysis.strongestCenter(syntheticWind,[200,200],[0,1],90).poin
 for (const center of analysis.jets(syntheticWind,syntheticGuide)[0].centers) assert.equal(center.point[1],220,"reviewed convex-peak representatives define the curve");
 const shiftedWind = structuredClone(syntheticWind); shiftedWind.bands[2].rings = rectangle(180,200);
 assert.deepEqual(analysis.strongestCenter(shiftedWind,[200,200],[0,1],90).point,[200,190],"changed source peaks remain observable for review");
-assert.deepEqual(analysis.jets(shiftedWind,syntheticGuide)[0].segments.map(s=>[s.start,s.c1,s.c2,s.end]),analysis.jets(syntheticWind,syntheticGuide)[0].segments.map(s=>[s.start,s.c1,s.c2,s.end]),"changes in width or interval must not pull a reviewed broad curve into local wiggles");
+assert.ok(analysis.jets(shiftedWind,syntheticGuide)[0].centers.every(c=>c.point[1]===190),"the displayed axis must move with the actual observed peak, rather than copy the old guide");
 const wavyWind=structuredClone(syntheticWind);
 wavyWind.bands[2].rings=[[[0,210],[100,215],[200,205],[300,215],[400,210],[400,230],[300,235],[200,225],[100,235],[0,230]]];
-assert.deepEqual(analysis.jets(wavyWind,syntheticGuide)[0].segments,analysis.jets(syntheticWind,syntheticGuide)[0].segments,"small wind-band edge changes must not create new drawing bends");
+assert.ok(analysis.jets(wavyWind,syntheticGuide)[0].segments.length<=3,"minor edge changes must not produce a dense wavy drawing");
+const ellipse=Array.from({length:120},(_,i)=>[200+70*Math.cos(i*Math.PI/60),180+15*Math.sin(i*Math.PI/60)]);
+const closedWind={bounds:[0,0,400,400],bands:[{min_kt:40,rings:rectangle(100,280)},{min_kt:60,rings:rectangle(130,250)},{min_kt:80,rings:[ellipse]}]};
+const wrongGuide={axes:[{search_radius_px:90,points:[[60,220],[200,220],[340,220]]}]};
+const corrected=analysis.jets(closedWind,wrongGuide);
+for(const expected of [[130,180],[270,180]])assert.ok(corrected.flatMap(a=>a.centers).some(c=>Math.hypot(c.point[0]-expected[0],c.point[1]-expected[1])<1e-7),"both observed axial convex tips must be interpolated, even when the saved guide goes through weaker winds");
+const irregular=ellipse.map(([x,y])=>[x,y+3*Math.cos((x-130)/140*Math.PI)]);
+const irregularAxes=analysis.jets({...closedWind,bands:[...closedWind.bands.slice(0,2),{min_kt:80,rings:[irregular]}]},wrongGuide);
+assert.ok(irregularAxes.flatMap(a=>a.centers).some(c=>Math.hypot(c.point[0]-130,c.point[1]-183)<1e-7),"convex tips are read from the contour; an ellipse-only assumption is forbidden");
 assert.equal(analysis.jets({...syntheticWind,bands:[]},syntheticGuide).length,0,"missing wind must not produce an axis by copying the guide");
 const adjacentPeak=structuredClone(syntheticWind);
 adjacentPeak.bands.push({min_kt:120,rings:rectangle(155,170)});
@@ -224,7 +232,8 @@ for (const axis of strongAxes) {
   for (const [index, s] of axis.segments.entries()) {
     if (index) {
       const before = axis.segments[index-1];
-      for (const i of [0,1]) assert.ok(Math.abs((before.end[i]-before.c2[i])-(s.c1[i]-s.start[i]))<1e-8,"shared curve tangents must not form corners");
+      const u=before.end.map((v,k)=>v-before.c2[k]),v=s.c1.map((n,k)=>n-s.start[k]);
+      assert.ok(Math.abs(u[0]*v[1]-u[1]*v[0])<1e-7 && u[0]*v[0]+u[1]*v[1]>0,"shared tangent directions must not form corners or reverse at tip joins");
     }
     for (let step=0; step<=50; step++) {
       const p=bezier(s,step/50);
