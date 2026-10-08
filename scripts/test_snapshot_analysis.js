@@ -67,6 +67,16 @@ for(const [product,pressure]of [["fupa252",250],["fupa302",300],["fupa402",400],
   }
   for(const change of [x=>x.source_sha256="0".repeat(64),x=>x.panels[0].forecast_hour=48,x=>x.panels[0].pressure_hpa=850,x=>x.panels[0].tropopause_bands=[],x=>x.panels[0].levels[0].lines[0].points[0]=[0,0],...(pressure===500?[x=>x.panels[0].troughs[0].contour_crossings=[],x=>x.panels[0].ridges[0].control_points.pop()]:[x=>x.panels[0].wind_bands[0].threshold=20,x=>x.panels[0].jet_guides[0].points[0]=[0,0]])]){const bad=structuredClone(data);change(bad);assert.throws(()=>snapshot.validate(bad,selected,"bousai-wx-lab.github.io"));}
 }
+// Unlabelled native 20kt contours above the final printed wind label are
+// stronger cores, not same-value XOR holes. Independent original readback.
+for(const [id,value,q]of [["fupa252-12-20261005",140,[1630,620]],["fupa252-00",160,[1300,910]],["fupa402-00",140,[1330,895]]]){
+ const p=read("assets/analysis/"+id+".json").panels[0];
+ assert.equal(Math.max(...p.wind_trace.levels.map(l=>l.speed_kt)),value);
+ assert.ok(inBands(q,p.wind_bands.filter(b=>b.threshold>=Math.min(120,value))),"the original strongest interior must remain colored, rather than erased as a false weak hole");
+ assert.ok(p.wind_trace.reviewed_upper_isotachs.some(r=>r.speed_kt===value));
+ const axis=snapshot.jetAxes({panels:[p]}).find(a=>a.guide_index===0);
+ assert.ok(axis.convex_peaks.some(r=>r.speed_kt===value),"both ends of the stronger inner source lobe must be pinned");
+}
 // Teacher case: four distinct flows, sparse NW convex representatives and both central branches.
 {
  const d=read("assets/analysis/fupa252-12-20261005.json"),axes=snapshot.jetAxes(d),levels=d.panels[0].wind_trace.levels;
@@ -91,6 +101,8 @@ for(const [product,pressure]of [["fupa252",250],["fupa302",300],["fupa402",400],
  }
  assert.ok(j[2].segments.at(-1).end[1]>j[2].segments[0].start[1]);
  assert.ok(j[3].segments.at(-1).end[0]>j[3].segments[0].start[0]);
+ const east=j[3].segments.at(-1);assert.equal(east.end[1],east.c2[1],"central flow terminates eastward within its confirmed maximum, rather than dropping onto a lower boundary");
+ for(const ref of [[100,0,[291,1]],[120,0,[51,1]]])for(const i of ref[2]){const p=d.panels[0].wind_trace.levels.find(l=>l.speed_kt===ref[0]).lines[ref[1]].points[i];assert.ok(j[0].centers.some(c=>Math.hypot(...p.map((v,k)=>v-c.point[k]))<1e-7),"the FUPA302 main flow pins the independently read positive original tips");}
 }
 function checkJetSupport(panel,jets){
   assert.ok(jets.length>0,"confirmed wind structures remain visible; unconfirmed intervals may be absent or separate");
@@ -108,6 +120,16 @@ function checkJetSupport(panel,jets){
     for(const tip of axis.open_tips) {
       const line=panel.wind_trace?.levels.find(l=>l.speed_kt===tip.speed_kt)?.lines[tip.line_index];
       if(line)assert.ok(line.points.some(p=>p.every((v,k)=>v===tip.point[k])),"an open-lobe anchor must also be on the original isotach");
+    }
+  }
+  for(const axis of jets)for(const peak of axis.convex_peaks){
+    const ring=panel.wind_trace?.levels.find(l=>l.speed_kt===peak.speed_kt)?.lines[peak.line_index]?.points;
+    if(!ring)continue;
+    const ii=peak.tips.map(p=>axis.centers.findIndex(c=>Math.hypot(...p.map((v,k)=>v-c.point[k]))<1e-7)).sort((a,b)=>a-b);
+    const nearEdge=q=>ring.some((a,i)=>{const b=ring[(i+1)%ring.length],v=b.map((x,k)=>x-a[k]),n=v[0]**2+v[1]**2,t=n?Math.max(0,Math.min(1,((q[0]-a[0])*v[0]+(q[1]-a[1])*v[1])/n)):0;return Math.hypot(...q.map((x,k)=>x-a[k]-t*v[k]))<=3;});
+    for(const s of axis.segments.slice(ii[0],ii[1]))for(let j=0;j<=100;j++){
+      const t=j/100,u=1-t,q=[0,1].map(k=>u*u*u*s.start[k]+3*u*u*t*s.c1[k]+3*u*t*t*s.c2[k]+t*t*t*s.end[k]);
+      if(!nearEdge(q))assert.ok(inRing(ring,q)&&inBands(q,panel.wind_bands.filter(b=>b.threshold>=Math.min(120,peak.speed_kt))),"the whole interval between the two source convex tips must remain in that positive strong-wind lobe");
     }
   }
   for(const axis of jets)for(const s of axis.segments)for(let j=0;j<=100;j++){

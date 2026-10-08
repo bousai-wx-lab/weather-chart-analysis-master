@@ -120,6 +120,7 @@ const ChartAnalysis = (() => {
     if (data.schema_version !== 1 || data.source_sha256 !== chart.source_sha256 || data.image_sha256 !== chart.image_sha256 || data.observation_time !== chart.observation_time || data.width !== chart.width || data.height !== chart.height || ![250,300,400].includes(data.pressure_hpa) || data.pressure_hpa !== wind.pressure_hpa || !Array.isArray(data.axes) || !data.axes.length || data.axes.length > 6) throw new Error("強風軸の資料が原図と一致しません");
     const [left, top, right, bottom] = wind.bounds;
     for (const axis of data.axes) {
+      validateReviewedRuns(axis,wind);
       if (!Number.isFinite(axis.search_radius_px) || axis.search_radius_px < 10 || axis.search_radius_px > 150 || !Array.isArray(axis.points) || axis.points.length < 3 || axis.points.length > 30 || !axis.points.every((p, i) => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite) && p[0] >= left && p[0] <= right && p[1] >= top && p[1] <= bottom && (!i || Math.hypot(p[0] - axis.points[i - 1][0], p[1] - axis.points[i - 1][1]) >= 10))) throw new Error("強風軸の流れを確認できません");
       if(axis.max_offset_px!==undefined && (!Number.isFinite(axis.max_offset_px) || axis.max_offset_px<10 || axis.max_offset_px>axis.search_radius_px))throw new Error("強風軸の流れの範囲を確認できません");
     }
@@ -134,7 +135,7 @@ const ChartAnalysis = (() => {
     }
     return found;
   }
-  function strongestCenter(wind, point, normal, radius, maxOffset=radius) {
+  function strongestCenter(wind, point, normal, radius, maxOffset=radius, maskRing=null) {
     const cross = (a, b) => a[0] * b[1] - a[1] * b[0];
     const at = (t) => [point[0] + normal[0] * t, point[1] + normal[1] * t];
     const inBounds = ([x, y]) => x >= wind.bounds[0] && y >= wind.bounds[1] && x <= wind.bounds[2] && y <= wind.bounds[3];
@@ -143,7 +144,7 @@ const ChartAnalysis = (() => {
     const fields=[],breaks=[-radius,radius];
     for (const band of wind.bands) {
       const hits = [-radius, radius];
-      for (const ring of band.rings) for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      for (const ring of [...band.rings,...(maskRing?[maskRing]:[])]) for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
         const a = ring[j], b = ring[i], edge = [b[0] - a[0], b[1] - a[1]], delta = [a[0] - point[0], a[1] - point[1]];
         const den = cross(normal, edge);
         if (Math.abs(den) < 1e-8) continue;
@@ -154,7 +155,7 @@ const ChartAnalysis = (() => {
       const intervals = [];
       for (let i = 1; i < hits.length; i++) {
         const mid = (hits[i - 1] + hits[i]) / 2;
-        if (hits[i] - hits[i - 1] >= 4 && inBounds(at(mid)) && inside(at(mid), band.rings)) intervals.push({mid,left:hits[i-1],right:hits[i]});
+        if (hits[i] - hits[i - 1] >= 4 && inBounds(at(mid)) && inside(at(mid), band.rings) && (!maskRing || inside(at(mid),[maskRing]))) intervals.push({mid,left:hits[i-1],right:hits[i]});
       }
       for(const interval of intervals)breaks.push(interval.left,interval.right);
       fields.push({min_kt:band.min_kt,intervals});
@@ -184,63 +185,12 @@ const ChartAnalysis = (() => {
       return { start, c1: [start[0] + (end[0] - before[0]) / 6, start[1] + (end[1] - before[1]) / 6], c2: [end[0] - (after[0] - start[0]) / 6, end[1] - (after[1] - start[1]) / 6], end };
     });
   }
-  function convexWindPeaks(wind, guides) {
-    const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
-    const grade=q=>Math.max(0,...wind.bands.filter(b=>inside(q,b.rings)).map(b=>b.min_kt));
-    const sources=wind.levels ? wind.levels.flatMap(l=>l.lines.map((line,index)=>({speed:l.speed_kt,ring:line.points,closed:line.closed,index}))) : wind.bands.flatMap(b=>b.rings.map((ring,index)=>({speed:b.min_kt,ring,closed:true,index})));
-    const candidates=[];
-    for(const source of sources) {
-      const {ring,speed}=source;
-      if(!source.closed || speed<60 || ring.length<3 || ring.some(q=>q.some((v,k)=>Math.abs(v-wind.bounds[k])<2 || Math.abs(v-wind.bounds[k+2])<2)))continue;
-      let area=0,cx=0,cy=0;
-      for(let i=0,j=ring.length-1;i<ring.length;j=i++) {
-        const cross=ring[j][0]*ring[i][1]-ring[i][0]*ring[j][1];
-        area+=cross;cx+=(ring[j][0]+ring[i][0])*cross;cy+=(ring[j][1]+ring[i][1])*cross;
-      }
-      if(Math.abs(area)<8)continue;
-      const center=[cx/(3*area),cy/(3*area)];
-      // A closed weak-wind hole is not a positive wind maximum.
-      if(!inside(center,[ring]) || !ring.some(q=>grade(q.map((v,k)=>v*.9+center[k]*.1))>=speed))continue;
-      candidates.push({...source,center});
-    }
-    const peaks=[];
-    for(const source of candidates) {
-      // Use the innermost observed local lobe, rather than the outer enclosing
-      // contour of an entire curved strong-wind band.
-      if(candidates.some(other=>other.speed>source.speed && inside(other.center,[source.ring])))continue;
-      const nearest=guides.axes.map((g,owner)=>({...projectToGuide(source.center,g.points),owner,g})).sort((a,b)=>a.distance-b.distance)[0];
-      if(!nearest || nearest.distance>nearest.g.search_radius_px)continue;
-      const direction=nearest.tangent;
-      const projection=q=>q[0]*direction[0]+q[1]*direction[1];
-      const ordered=source.ring.map((point,index)=>({point,index,t:projection(point)})).sort((a,b)=>a.t-b.t);
-      const ends=[ordered[0],ordered.at(-1)];
-      // Tiny print-break fragments do not define a broad axial lobe.
-      if(distance(ends[0].point,ends[1].point)<nearest.g.search_radius_px/5)continue;
-      peaks.push({guide_index:nearest.owner,speed_kt:source.speed,line_index:source.index,center:source.center,tips:ends.map(x=>x.point),tip_indices:ends.map(x=>x.index)});
-    }
-    // A tiny extra loop inside the same broad streak must not introduce a
-    // staircase. Keep a small lobe when it is that flow's only local maximum.
-    return peaks.filter(p=>!peaks.some(q=>q!==p && q.guide_index===p.guide_index && q.speed_kt>=p.speed_kt && (
-      distance(...q.tips)>3*distance(...p.tips) && distance(p.center,q.center)<guides.axes[p.guide_index].search_radius_px*3 ||
-      distance(...q.tips)>1.5*distance(...p.tips) && distance(p.center,q.center)<guides.axes[p.guide_index].search_radius_px
-    )));
-  }
-  function projectToGuide(point, points) {
-    let best={distance:Infinity},offset=0;
-    for(let i=1;i<points.length;i++) {
-      const a=points[i-1],b=points[i],v=b.map((x,k)=>x-a[k]),length=Math.hypot(...v);
-      const t=Math.max(0,Math.min(1,((point[0]-a[0])*v[0]+(point[1]-a[1])*v[1])/(length*length)));
-      const distance=Math.hypot(...point.map((x,k)=>x-a[k]-t*v[k]));
-      if(distance<best.distance)best={distance,along:offset+t*length,tangent:v.map(x=>x/length),point:a.map((x,k)=>x+t*v[k])};
-      offset+=length;
-    }
-    return best;
-  }
-  function windCurve(points) {
+  function windCurve(points, directions=[]) {
     // Chord-length handles share a tangent direction while respecting short
     // observed tip pairs. Uniform parameter spacing overshoots short lobes.
     const unit=v=>{const n=Math.hypot(...v);return n?v.map(x=>x/n):[0,0];};
     const tangents=points.map((p,i)=>{
+      if(directions[i])return unit(directions[i]);
       const before=points[Math.max(0,i-1)],after=points[Math.min(points.length-1,i+1)];
       const a=unit(p.map((x,k)=>x-before[k])),b=unit(after.map((x,k)=>x-p[k]));
       return unit(a.map((x,k)=>x+b[k]));
@@ -250,109 +200,77 @@ const ChartAnalysis = (() => {
       return {start,c1:start.map((x,k)=>x+h*tangents[i][k]),c2:end.map((x,k)=>x-h*tangents[i+1][k]),end};
     });
   }
-  function openWindTips(wind,guide,seeds) {
-    const levels=wind.levels||wind.bands.map(b=>({speed_kt:b.min_kt,lines:b.rings.map(points=>({points}))}));
-    const tips=[];
-    for(const seed of seeds) {
-      const frame=projectToGuide(seed.point,guide.points),direction=frame.tangent,candidates=[];
-      for(const level of levels)if(level.speed_kt>=60)for(const [line_index,line]of level.lines.entries()) {
-        const points=line.points;
-        for(let i=6;i<points.length-6;i++) {
-          const q=points[i],before=points[i-6],after=points[i+6],d=Math.hypot(...q.map((v,k)=>v-seed.point[k]));
-          if(d>guide.search_radius_px/3 || q.some((v,k)=>Math.abs(v-wind.bounds[k])<2 || Math.abs(v-wind.bounds[k+2])<2))continue;
-          const dot=(a,b)=>(a[0]-b[0])*direction[0]+(a[1]-b[1])*direction[1];
-          const u=dot(q,before),v=dot(after,q);
-          if(u*v>=0 || Math.abs(u)+Math.abs(v)<3)continue;
-          if(line.closed) {
-            const dx=after[0]-before[0],dy=after[1]-before[1],n=Math.hypot(dx,dy);
-            const inward=[-1,1].map(sign=>[q[0]-sign*dy*2/n,q[1]+sign*dx*2/n]).find(p=>inside(p,[points]));
-            if(!inward || !wind.bands.some(b=>b.min_kt>=level.speed_kt && inside(inward,b.rings)))continue;
-          }
-          candidates.push({point:q,line_index,speed_kt:level.speed_kt,distance:d});
-        }
-      }
-      candidates.sort((a,b)=>a.distance-b.distance || b.speed_kt-a.speed_kt);
-      if(candidates.length)tips.push({...candidates[0],along:seed.along,mandatory:true,open:true,tolerance:guide.search_radius_px*.3});
-    }
-    return tips;
+  function jets(wind,guides) {
+    if(!guides.axes?.every(g=>Array.isArray(g.reviewed_runs)))throw Error("原図で確認した強風軸の根拠がありません");
+    for(const guide of guides.axes)validateReviewedRuns(guide,wind);
+    return reviewedJetAxes(wind,guides);
   }
-  function jets(wind, guides) {
-    const axes = [];
-    const at = (s,t) => [0,1].map(k => (1-t)**3*s.start[k]+3*(1-t)**2*t*s.c1[k]+3*(1-t)*t*t*s.c2[k]+t**3*s.end[k]);
-    const length = (a,b) => Math.hypot(a[0]-b[0],a[1]-b[1]);
-    const within = q => q[0]>=wind.bounds[0] && q[0]<=wind.bounds[2] && q[1]>=wind.bounds[1] && q[1]<=wind.bounds[3];
-    const grade = q => within(q)?Math.max(0,...wind.bands.filter(b=>inside(q,b.rings)).map(b=>b.min_kt)):0;
-    const peaks=convexWindPeaks(wind,guides);
-    const simplify=points=>{
-      if(points.length<=2)return points;
-      const a=points[0].point,b=points.at(-1).point,v=b.map((x,k)=>x-a[k]),size=v[0]**2+v[1]**2;
-      let maximum=0,index=0;
-      for(let i=1;i<points.length-1;i++) {
-        const q=points[i].point,t=size?Math.max(0,Math.min(1,((q[0]-a[0])*v[0]+(q[1]-a[1])*v[1])/size)):0;
-        const d=Math.hypot(...q.map((x,k)=>x-a[k]-t*v[k]));
-        if(d>maximum){maximum=d;index=i;}
+  function sourceWindLine(wind,ref) {
+    const line=ref.ring_index===undefined?wind.levels?.find(l=>l.speed_kt===ref.speed_kt)?.lines[ref.line_index]:{closed:true,points:wind.bands.find(b=>b.min_kt===ref.speed_kt)?.rings[ref.ring_index]};
+    if(!line?.points?.length)throw Error("強風軸の元の等風速線を確認できません");
+    return line;
+  }
+  function validateReviewedRuns(guide,wind) {
+    const point=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite);
+    const within=p=>point(p)&&p[0]>=wind.bounds[0]&&p[0]<=wind.bounds[2]&&p[1]>=wind.bounds[1]&&p[1]<=wind.bounds[3];
+    const ref=r=>r&&(wind.bands.some(b=>b.min_kt===r.speed_kt)||wind.levels?.some(l=>l.speed_kt===r.speed_kt))&&r.speed_kt>=60&&((Number.isInteger(r.line_index)&&r.line_index>=0&&r.ring_index===undefined)||(Number.isInteger(r.ring_index)&&r.ring_index>=0&&r.line_index===undefined));
+    if(!Array.isArray(guide.reviewed_runs)||guide.reviewed_runs.length>6)throw Error("強風軸の確認経路がありません");
+    for(const run of guide.reviewed_runs){
+      if(!Array.isArray(run.anchors)||run.anchors.length<2||run.anchors.length>24||!Array.isArray(run.lobes))throw Error("強風軸の確認点が足りません");
+      for(const a of run.anchors){
+        if(a.direction!==undefined&&(!point(a.direction)||Math.hypot(...a.direction)<1e-7))throw Error("強風軸の向きを確認できません");
+        if(a.tip){if(a.section||!ref(a.tip)||!Number.isInteger(a.tip.point_index)||!sourceWindLine(wind,a.tip).points[a.tip.point_index])throw Error("強風軸の凸部を確認できません");}
+        else{const r=a.section;if(!r||!within(r.point)||!point(r.normal)||Math.abs(Math.hypot(...r.normal)-1)>1e-6||!Number.isFinite(r.radius_px)||r.radius_px<10||r.radius_px>300||!Number.isFinite(r.max_offset_px)||r.max_offset_px<=0||r.max_offset_px>r.radius_px||!wind.bands.some(b=>b.min_kt===r.min_kt)||r.region&&(!ref(r.region)||!sourceWindLine(wind,r.region).closed))throw Error("強風軸の横断方向を確認できません");}
       }
-      return maximum>points[0].tolerance?[...simplify(points.slice(0,index+1)).slice(0,-1),...simplify(points.slice(index))]:[points[0],points.at(-1)];
-    };
-    for (const [guide_index,guide] of guides.axes.entries()) {
-      // Guides identify flow topology only. Geometry is re-read from that
-      // source's wind field, with the two axial convex tips pinned explicitly.
-      const lobes=peaks.filter(p=>p.guide_index===guide_index).map(peak=>({peak,frame:projectToGuide(peak.center,guide.points)})).sort((a,b)=>a.frame.along-b.frame.along);
-      let tips=lobes.flatMap(({peak:p,frame},i)=>{
-        // Keep each lobe's two ends together in flow order. Projection ranges
-        // can overlap at a curved guide and otherwise interleave neighbouring
-        // lobes into an artificial upstream/downstream reversal.
-        const adjacent=q=>q && length(...q.peak.tips)<guide.search_radius_px*2 && length(...p.tips)<guide.search_radius_px*2 && length(q.peak.center,p.center)<guide.search_radius_px*1.5;
-        const lower=adjacent(lobes[i-1])?(lobes[i-1].frame.along+frame.along)/2:-Infinity;
-        const upper=adjacent(lobes[i+1])?(lobes[i+1].frame.along+frame.along)/2:Infinity;
-        return p.tips.map(point=>({point,along:Math.max(lower,Math.min(upper,frame.along+(point[0]-p.center[0])*frame.tangent[0]+(point[1]-p.center[1])*frame.tangent[1])),peak:p,mandatory:true,tolerance:guide.search_radius_px*.3}));
+      for(const r of run.lobes)if(!ref(r)||!sourceWindLine(wind,r).closed||!Array.isArray(r.tip_indices)||r.tip_indices.length!==2||r.tip_indices[0]===r.tip_indices[1]||r.tip_indices.some(i=>!Number.isInteger(i)||!sourceWindLine(wind,r).points[i]))throw Error("強風域の両端を確認できません");
+    }
+  }
+  function windBoundaryDistance(q,ring) {
+    let minimum=Infinity;
+    for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+      const a=ring[j],b=ring[i],v=b.map((x,k)=>x-a[k]),n=v[0]**2+v[1]**2,t=n?Math.max(0,Math.min(1,((q[0]-a[0])*v[0]+(q[1]-a[1])*v[1])/n)):0;
+      minimum=Math.min(minimum,Math.hypot(...q.map((x,k)=>x-a[k]-t*v[k])));
+    }
+    return minimum;
+  }
+  function reviewedJetAxes(wind,guides) {
+    const axes=[],distance=(a,b)=>Math.hypot(...a.map((v,k)=>v-b[k]));
+    const grade=q=>Math.max(0,...wind.bands.filter(b=>inside(q,b.rings)).map(b=>b.min_kt));
+    const at=(s,t)=>[0,1].map(k=>(1-t)**3*s.start[k]+3*(1-t)**2*t*s.c1[k]+3*(1-t)*t*t*s.c2[k]+t**3*s.end[k]);
+    for(const [guide_index,guide]of guides.axes.entries())for(const [run_index,run]of guide.reviewed_runs.entries()) {
+      const anchors=run.anchors.map(anchor=>{
+        if(anchor.tip){const r=anchor.tip,l=r.ring_index===undefined?wind.levels?.find(l=>l.speed_kt===r.speed_kt)?.lines[r.line_index]:{points:wind.bands.find(b=>b.min_kt===r.speed_kt)?.rings[r.ring_index]},point=l?.points?.[r.point_index];
+          if(!point)throw Error("強風軸の元の等風速線を確認できません");return {point,tip:r,direction:anchor.direction};}
+        const r=anchor.section,ref=r?.region,ring=ref&&(ref.ring_index===undefined?wind.levels?.find(l=>l.speed_kt===ref.speed_kt)?.lines[ref.line_index]?.points:wind.bands.find(b=>b.min_kt===ref.speed_kt)?.rings[ref.ring_index]);
+        const field=ref?{...wind,bands:wind.bands.filter(b=>b.min_kt>=Math.min(120,ref.speed_kt))}:wind;
+        const center=r&&strongestCenter(field,r.point,r.normal,r.radius_px,r.max_offset_px,ring);
+        if(!center || center.min_kt<r.min_kt || grade(center.point)<r.min_kt)throw Error("強風軸の横断方向の極大を確認できません");
+        return {...center,direction:anchor.direction,section:r};
       });
-      tips.sort((a,b)=>a.along-b.along);
-      const offsets=tips.map(t=>({...t,offset:t.point.map((v,k)=>v-projectToGuide(t.point,guide.points).point[k])}));
-      const samples=guide.points.map(point=>{
-        const along=projectToGuide(point,guide.points).along;
-        if(!offsets.length) {
-          const {tangent}=projectToGuide(point,guide.points),center=strongestCenter(wind,point,[-tangent[1],tangent[0]],guide.search_radius_px,guide.search_radius_px/2);
-          return center?{...center,along,tolerance:guide.search_radius_px*.3}:{point,along,unconfirmed:true,tolerance:guide.search_radius_px*.3};
+      if(anchors.length<2)throw Error("強風軸の確認点が足りません");
+      const segments=windCurve(anchors.map(a=>a.point),anchors.map(a=>a.direction));
+      for(const s of segments){const steps=Math.max(40,Math.ceil((distance(s.start,s.c1)+distance(s.c1,s.c2)+distance(s.c2,s.end))/2));
+        s.min_kt=Math.min(...Array.from({length:steps+1},(_,j)=>grade(at(s,j/steps))));
+        if(s.min_kt<40)throw Error("強風軸が確認した強風帯から外れています");
+      }
+      const convex_peaks=(run.lobes||[]).map(r=>{
+        const l=wind.levels?.find(l=>l.speed_kt===r.speed_kt)?.lines[r.line_index]||{points:wind.bands.find(b=>b.min_kt===r.speed_kt)?.rings[r.ring_index]};
+        const tips=r.tip_indices.map(i=>l.points[i]);
+        if(tips.some(p=>!anchors.some(a=>distance(a.point,p)<1e-7)))throw Error("強風域の両端が実際の線に含まれていません");
+        const indices=tips.map(p=>anchors.findIndex(a=>distance(a.point,p)<1e-7)).sort((a,b)=>a-b);
+        for(const seg of segments.slice(indices[0],indices[1]))for(let i=0;i<=100;i++){
+          // Colors stop at 120kt+; a higher source lobe additionally constrains
+          // the complete path to its native contour, not just the capped color.
+          const q=at(seg,i/100),onEdge=windBoundaryDistance(q,l.points)<=3;
+          if(!onEdge&&(!inside(q,[l.points])||grade(q)<Math.min(120,r.speed_kt)))throw Error("強風軸が選んだ凸部の間で弱い側へ外れています");
         }
-        const a=offsets.filter(p=>p.along<=along).at(-1)||offsets[0],b=offsets.find(p=>p.along>=along)||offsets.at(-1),t=b.along===a.along?0:(along-a.along)/(b.along-a.along);
-        return {point:point.map((v,k)=>v+a.offset[k]*(1-t)+b.offset[k]*t),along,tolerance:guide.search_radius_px*.3};
-      }).filter(Boolean);
-      const open=openWindTips(wind,guide,samples.filter(q=>!tips.some(t=>Math.abs(q.along-t.along)<guide.search_radius_px/2))).filter(q=>!tips.some(t=>length(q.point,t.point)<guide.search_radius_px/2));
-      if(!tips.length && !open.length && samples.every(s=>s.unconfirmed))continue;
-      tips=[...tips,...open];
-      // Preserve broad flow topology between observed tips; never chase a
-      // neighbouring streak's transverse peak to create an extra bend.
-      const evidence=[...samples.filter((q,i)=>q.unconfirmed || grade(q.point)<40 || !tips.some(t=>Math.abs(q.along-t.along)<guide.search_radius_px*(i===0||i===samples.length-1?1/3:1.5))).map(q=>({...q,mandatory:q.unconfirmed || grade(q.point)<40})),...tips].sort((a,b)=>a.along-b.along);
-      for(let i=0;i<evidence.length;i++)if(evidence[i].unconfirmed || grade(evidence[i].point)<40) {
-        if(i)evidence[i-1].mandatory=true;
-        if(i+1<evidence.length)evidence[i+1].mandatory=true;
-      }
-      const anchors=[];
-      let start=0;
-      for(let i=1;i<evidence.length;i++)if(evidence[i].mandatory || i===evidence.length-1) {
-        anchors.push(...simplify(evidence.slice(start,i+1)).slice(start?1:0));start=i;
-      }
-      for(let i=anchors.length-1;i>0;i--)if(length(anchors[i].point,anchors[i-1].point)<1e-7)anchors.splice(i,1);
-      if(anchors.length<2)continue;
-      let segments=[],centers=[],run_index=0;
-      const finish = () => {
-        if(segments.length)axes.push({segments,centers,guide_index,run_index:run_index++,convex_peaks:peaks.filter(p=>p.guide_index===guide_index),open_tips:open});
-        segments=[];centers=[];
-      };
-      for(const s of windCurve(anchors.map(a=>a.point))) {
-        const steps=Math.max(16,Math.ceil((length(s.start,s.c1)+length(s.c1,s.c2)+length(s.c2,s.end))/3));
-        const min=Math.min(...Array.from({length:steps+1},(_,j)=>grade(at(s,j/steps))));
-        // Never pull handles independently to squeeze a curve into a band:
-        // that breaks its shared tangents. Unsupported intervals stay empty.
-        if(min<40){finish();continue;}
-        if(!segments.length)centers.push({point:s.start,min_kt:grade(s.start)});
-        segments.push({...s,min_kt:min});centers.push({point:s.end,min_kt:grade(s.end)});
-      }
-      finish();
+        return {...r,guide_index,tips};
+      });
+      axes.push({guide_index,run_index,segments,centers:anchors.map(a=>({point:a.point,min_kt:grade(a.point)})),convex_peaks,open_tips:anchors.filter(a=>a.tip&&!sourceWindLine(wind,a.tip).closed).map(a=>({...a.tip,point:a.point}))});
     }
     return axes;
   }
+
   function drawJetAxes(ctx, axes, bounds, opacity = 1) {
     ctx.save();
     ctx.globalAlpha = opacity;
@@ -590,6 +508,6 @@ const ChartAnalysis = (() => {
       if (tool.kind === "ridge") drawRidges(ctx,candidates.ridges,opacity);
     } finally { ctx.restore(); }
   }
-  return { coloringRules, mixColor, temperatureColor, temperatureScale, coldColor, drawRectangleFill, validate, validateHeightAxes, analyze, jets, convexWindPeaks, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges, overlayAnalyses, validatePanelRegistration, validatePanelOverlay, createPanelOverlay, drawPanelOverlay };
+  return { coloringRules, mixColor, temperatureColor, temperatureScale, coldColor, drawRectangleFill, validate, validateHeightAxes, analyze, jets, validateWindBands, drawWindBands, windPalette, validateJetGuides, strongestCenter, drawJetAxes, symbolPalette, validateSymbols, drawSymbols, isothermPalette, isothermScales, validateIsotherms, drawIsotherms, isothermSegments, drawTroughs, drawRidges, overlayAnalyses, validatePanelRegistration, validatePanelOverlay, createPanelOverlay, drawPanelOverlay };
 })();
 if (typeof module !== "undefined") module.exports = ChartAnalysis;

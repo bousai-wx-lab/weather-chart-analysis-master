@@ -134,6 +134,15 @@ const SnapshotAnalysis = (() => {
           if(!Number.isFinite(level.speed_kt)||level.speed_kt<20||level.speed_kt>180||level.speed_kt%20||!level.lines?.length)throw Error("Invalid upper-air source isotach");
           for(const ln of level.lines){if(!line(ln.points)||!ln.points.every(within)||typeof ln.closed!=="boolean"||!ln.source_paths?.length)throw Error("Invalid upper-air source contour");for(const id of ln.source_paths){if(!Number.isInteger(id)||id<0||ids.has(id))throw Error("Repeated upper-air source path");ids.add(id);}}
         }
+        if(trace.reviewed_upper_isotachs!==undefined){
+          if(!data.product.startsWith("FUPA")||!Array.isArray(trace.reviewed_upper_isotachs)||trace.reviewed_upper_isotachs.length>10)throw Error("Invalid reviewed upper wind contours");
+          const reviewed=new Set();
+          for(const r of trace.reviewed_upper_isotachs){
+            const original=trace.levels.find(l=>l.speed_kt===r.speed_kt)?.lines.find(l=>JSON.stringify(l.source_paths)===JSON.stringify(r.source_paths));
+            if(!original?.closed||r.native_interval_kt!==20||!Number.isFinite(r.labelled_parent_kt)||r.labelled_parent_kt!==Math.max(...trace.labels.map(l=>l.value))||r.speed_kt<=r.labelled_parent_kt||r.speed_kt%20||reviewed.has(original))throw Error("Unbound reviewed upper wind contour");
+            reviewed.add(original);
+          }
+        }
         if(p.wind_bands.some(b=>(!data.product.startsWith("FUPA")&&!b.rings.length)||b.rings.some(r=>!r.every(within)))||!p.levels.length||p.levels.some(l=>l.temperature_c%6||l.lines.some(ln=>ln.value_origin!=="printed_stamp_sequence"||!ln.points.every(within)||ln.points.slice(1).some((q,j)=>Math.hypot(q[0]-ln.points[j][0],q[1]-ln.points[j][1])>110.02))))throw Error("Upper-air field outside frame or stamp sequence");
         if(!p.excluded_boxes?.length||p.excluded_boxes.some(b=>b.length!==4||!b.every(Number.isFinite)||b[0]>=b[2]||b[1]>=b[3]))throw Error("Missing upper-air legend masks");
       }
@@ -153,7 +162,7 @@ const SnapshotAnalysis = (() => {
       } else if(p.tropopause_bands||p.tropopause_levels||p.native_jet_strokes)throw Error("Unsupported tropopause product");
       if(data.product==="AUPQ35" && i===0 || ["AUPA25","AUPN30","FUPA252","FUPA302","FUPA402"].includes(data.product)) {
         if(p.troughs.length || p.ridges.length)throw Error("300hPa uses wind and jet axes");
-        const wind={...data,pressure_hpa:p.pressure_hpa,unit:"kt",bounds:p.bounds,bands:(p.wind_bands||[]).map(b=>({min_kt:b.threshold,rings:b.rings}))};
+        const wind={...data,pressure_hpa:p.pressure_hpa,unit:"kt",bounds:p.bounds,levels:p.wind_trace?.levels,bands:(p.wind_bands||[]).map(b=>({min_kt:b.threshold,rings:b.rings}))};
         // The parent source/image binding also binds the wind and branch guides.
         if(data.product==="AUPQ35")ChartAnalysis.validateWindBands(wind,data);
         ChartAnalysis.validateJetGuides({...data,pressure_hpa:p.pressure_hpa,axes:p.jet_guides},data,wind);
