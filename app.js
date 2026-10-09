@@ -234,14 +234,52 @@ function updateOverlayPanel() {
   return active.length;
 }
 
+function readingGuideElement(guide) {
+  const content = document.createElement("div");
+  content.className = "reading-guide";
+  const heading = document.createElement("h4");
+  heading.textContent = guide.title;
+  const list = document.createElement("dl");
+  for (const [key, label] of [["look","見るポイント"],["mark","マークするなら"],["learn","分かること"],["check","併せて確認"]]) {
+    const term = document.createElement("dt"), description = document.createElement("dd");
+    term.textContent = label; description.textContent = guide[key];
+    list.append(term, description);
+  }
+  const source = document.createElement("a");
+  source.href = guide.source; source.textContent = guide.sourceLabel;
+  source.target = "_blank"; source.rel = "noopener noreferrer"; source.className = "guide-source";
+  content.append(heading, list, source);
+  return content;
+}
+function updateReadingTopics(layerGuides) {
+  const section = byId("chart-reading-guide");
+  const productId = currentSelection?.product.id;
+  const topics = ChartReadingGuide.topics(productId).filter(item => !ChartReadingGuide.covered(item, layerGuides));
+  section.hidden = !topics.length;
+  const signature = `${currentSelection?.key}/${topics.map(item => `${item.kind}:${item.plane}`).join(",")}`;
+  if (section.dataset.guideKey === signature) return;
+  section.dataset.guideKey = signature;
+  const items = byId("chart-reading-items");
+  items.replaceChildren();
+  for (const guide of topics) {
+    const details = document.createElement("details"), summary = document.createElement("summary");
+    const title = document.createElement("span"), action = document.createElement("span");
+    details.className = "reading-topic"; title.textContent = guide.title;
+    action.className = "reading-topic-action"; action.textContent = "解説を見る";
+    summary.append(title, action); details.append(summary, readingGuideElement(guide));
+    items.append(details);
+  }
+}
 function updateAnalysisPanel() {
   let count = 0;
+  const layerGuides = [];
   for (const tool of analysisTools) {
     const button = byId(tool.button);
     const enabled = button.getAttribute("aria-pressed") === "true";
     if (enabled) count++;
     const row = document.querySelector(`[data-layer="${tool.id}"]`);
-    row.hidden = button.disabled || (!trial && ((tool.dynamics && !dynamics) || (tool.lowLevel && !lowLevel && !(dynamics && (["cold850","warm850"].includes(tool.id) || (isFeas() && ["trough700","ridge700"].includes(tool.id))))) || (lowLevel && ["wind","jet"].includes(tool.id)))) || (activeOnly && !enabled);
+    const unavailable = button.disabled || (!trial && ((tool.dynamics && !dynamics) || (tool.lowLevel && !lowLevel && !(dynamics && (["cold850","warm850"].includes(tool.id) || (isFeas() && ["trough700","ridge700"].includes(tool.id))))) || (lowLevel && ["wind","jet"].includes(tool.id))));
+    row.hidden = unavailable || (activeOnly && !enabled);
     if (row.hidden && enabled) count--;
     const detailButton = document.querySelector(`[data-layer-detail="${tool.id}"]`);
     detailButton.disabled = button.disabled;
@@ -249,8 +287,21 @@ function updateAnalysisPanel() {
     detailButton.setAttribute("aria-expanded", String(open));
     byId(`detail-${tool.id}`).hidden = !open;
     const plane=trial && !["symbols","geography"].includes(tool.id) ? trialPlane(tool.id) : ["symbols","geography"].includes(tool.id)?"図の各地図面":isFeas() && ["trough700","ridge700"].includes(tool.id)?"地上気圧":dynamics && tool.id==="temperature500"?"850hPa":lowLevel && !tool.lowLevel?tool.plane.replace("300","700").replace("500","850"):tool.plane;
+    const guidePlane = trial && ["wind","jet"].includes(tool.id) ? `${trial.panels.find(panel => tool.id === "wind" ? panel.wind_bands?.length : panel.jet_guides?.length || panel.native_jet_strokes?.length)?.pressure_hpa || plane.match(/\d+/)?.[0]}hPa` : plane;
+    const guide = ChartReadingGuide.layer(tool.id, guidePlane, currentSelection?.product.id);
+    const detail = byId(`detail-${tool.id}`), guideKey = `${currentSelection?.key}/${guidePlane}`;
+    if (guide && detail.dataset.guideKey !== guideKey) {
+      detail.querySelector(".reading-guide")?.remove();
+      detail.prepend(readingGuideElement(guide));
+      detail.dataset.guideKey = guideKey;
+    }
+    if (!guide) { detail.querySelector(".reading-guide")?.remove(); delete detail.dataset.guideKey; }
+    if (!unavailable && guide) layerGuides.push(guide);
+    detailButton.firstChild.textContent = open ? "解説を閉じる " : "解説を見る ";
+    detailButton.setAttribute("aria-label", `${tool.label}（${guidePlane}）の解説・凡例・設定`);
     button.title = `${tool.label} · ${plane} · ${enabled ? "表示中。クリックで外す" : "クリックで表示"}`;
   }
+  updateReadingTopics(layerGuides);
   byId("layer-count").textContent = String(count);
   byId("active-only").setAttribute("aria-pressed", String(activeOnly));
   byId("no-active-layers").hidden = !activeOnly || count > 0;
@@ -271,7 +322,7 @@ byId("active-only").addEventListener("click", () => { activeOnly = !activeOnly; 
 for (const button of document.querySelectorAll("[data-layer-detail]")) button.addEventListener("click", () => {
   selectedDetail = selectedDetail === button.dataset.layerDetail ? null : button.dataset.layerDetail;
   updateAnalysisPanel();
-  if (selectedDetail) byId(`detail-${selectedDetail}`).scrollIntoView({ block: "nearest" });
+  if (selectedDetail) button.closest(".layer-row").scrollIntoView({ block: "start" });
 });
 function selectPanelMode(manual) {
   byId("manual").hidden = !manual;

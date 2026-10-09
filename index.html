@@ -8,7 +8,7 @@
   <meta name="description" content="天気図解析マスター（Weather Chart Analysis Master）。気象庁の専門天気図に風速帯の色塗りとトラフ・強風軸を重ねる解析補助ツール。">
   <meta name="application-name" content="Weather Chart Analysis Master">
   <title>天気図解析マスター | Weather Chart Analysis Master | Bousai Wx Lab</title>
-  <link rel="stylesheet" href="styles.css?v=b13778119695d6d3">
+  <link rel="stylesheet" href="styles.css?v=9728c85b74fdc7bf">
   <script src="analysis.js?v=e2aa029e1bdc5e10" defer></script>
   <script src="geography.js?v=8efbf1eb5570ec04" defer></script>
   <script src="catalog.js?v=004346970e0aea90" defer></script>
@@ -19,7 +19,8 @@
   <script src="manual-axis.js?v=97444597caa86879" defer></script>
   <script src="share-state.js?v=00dce0f35140a886" defer></script>
   <script src="chart-view.js?v=a90b4ff142d435b7" defer></script>
-  <script src="app.js?v=d05ae4cd7ac89e37" defer></script>
+  <script src="analysis-guide.js?v=a7158f93d90fab70" defer></script>
+  <script src="app.js?v=6e7c9dbc113746be" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -54,7 +55,7 @@
         <button type="button" id="overlay-manage" hidden>重ねた解析 0件</button>
       </div>
       <div class="analysis-list-heading"><h2>この図の解析</h2><button type="button" id="active-only" aria-pressed="false">表示中 <span id="layer-count">0</span></button></div>
-      <p class="list-help">項目で表示切替 · 詳細で凡例・設定</p>
+      <p class="list-help">項目で表示切替 · 解説で読み方・凡例・設定</p>
       <div class="layer-group" data-layer-group><h3 id="upper-plane">300 hPa <span>上段</span></h3><article class="layer-tool" data-layer="equivalent"><div class="layer-row"><button type="button" id="equivalent" class="layer-toggle" aria-pressed="false" disabled>相当温位の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="equivalent" aria-label="相当温位の色塗りの詳細" aria-expanded="false" aria-controls="detail-equivalent">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-equivalent" class="layer-details" hidden><div id="equivalent-legend" aria-label="相当温位260から370 Kの配色"><div id="equivalent-gradient" style="height:16px;border-radius:3px"></div><div style="display:flex;justify-content:space-between"><span>260 K</span><span>315 K</span><span>370 K</span></div></div><label>濃さ <output id="equivalent-opacity-value">45%</output><input id="equivalent-opacity" type="range" min="0" max="100" step="5" value="45" aria-label="相当温位の濃さ"></label><p class="gesture-note">850hPaの相当温位。原図の3 Kごとの線に沿って、低い値を青、高い値を黄〜赤で塗り分けます。260 K以下・370 K以上は端点色です。各枠の有効時刻を確認してください。</p></div></article><article class="layer-tool" data-layer="vorticity"><div class="layer-row"><button type="button" id="vorticity" class="layer-toggle" aria-pressed="false" disabled>正渦度の色塗り</button><button type="button" class="layer-detail-button" data-layer-detail="vorticity" aria-label="正渦度の色塗りの詳細" aria-expanded="false" aria-controls="detail-vorticity">詳細 <span aria-hidden="true">⌄</span></button></div><div id="detail-vorticity" class="layer-details" hidden><span class="legend">500hPa · ピンク · 濃さ30%</span></div></article>
       <article class="layer-tool" data-layer="temperature">
         <div class="layer-row"><button type="button" id="temperature" class="layer-toggle" aria-pressed="false" disabled>気温線</button><button type="button" class="layer-detail-button" data-layer-detail="temperature" aria-label="気温線の詳細" aria-expanded="false" aria-controls="detail-temperature">詳細 <span aria-hidden="true">⌄</span></button></div>
@@ -113,6 +114,12 @@
       </div><p id="no-active-layers" class="gesture-note" hidden>表示中の解析はありません。「表示中」を解除すると追加できます。</p>
       </div>
       <div id="manual-only" class="empty-analysis" hidden><h2>この図は手描きで解析</h2><p>自動の色塗り・解析はまだありません。原図を確認しながら、色や太さを選んで書き込めます。</p><button type="button" id="start-manual">手描きを開く</button></div>
+      <section id="chart-reading-guide" class="chart-reading-guide" aria-label="原図の項目ごとの解説" hidden>
+        <h3>原図で読む項目</h3>
+        <p class="list-help">項目ごとに、見る場所・マーク・読み取れることを確認できます。</p>
+        <div id="chart-reading-items"></div>
+        <p class="gesture-note">手描きの色は参考例です。ツールの表示色は各項目の凡例をご覧ください。</p>
+      </section>
     </section>
     <section id="manual" class="manual-panel" aria-label="手描きの道具" hidden>
     <div class="toolbar" aria-label="手描きの道具">

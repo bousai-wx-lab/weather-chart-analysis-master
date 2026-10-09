@@ -12,6 +12,7 @@
 !scripts/test_chart_view.js
 !scripts/test_share_state.js
 !analysis.js
+!analysis-guide.js
 !low-level.js
 !aupq78-analysis.json
 !geography.js

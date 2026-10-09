@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-08T11:46:00.416869+00:00",
+  "generated_at": "2026-10-09T01:06:13.327500+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -11,8 +11,8 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 10426,
-      "sha256": "64d320a50a812a9870a20fb50de337dcd021b4afcea52856af896b6fb270f3d9",
+      "bytes": 10445,
+      "sha256": "9e4a9a712db634c21ad1e4b2c1c06e1579bcde028468c17df09b41a5b39443c9",
       "mime_type": "application/octet-stream"
     },
     {
@@ -40,6 +40,12 @@
       "mime_type": "text/markdown"
     },
     {
+      "path": "analysis-guide.js",
+      "bytes": 32213,
+      "sha256": "a7158f93d90fab706019a5d3e0c13781b6c4ba777cd24fae9f3ecc45bb495172",
+      "mime_type": "text/javascript"
+    },
+    {
       "path": "analysis.js",
       "bytes": 39264,
       "sha256": "e2aa029e1bdc5e108d5ddd84243bf71db4ca782e07cd8cd931ec7fe85765f4ac",
@@ -47,8 +53,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 118878,
-      "sha256": "d05ae4cd7ac89e371a6b1a161d55e91aefc86f9eb92f4addc81a631103706eb4",
+      "bytes": 121953,
+      "sha256": "6e7c9dbc113746be2192f8fb01c7ce71967680591768f7675a65c507ba6bcedd",
       "mime_type": "text/javascript"
     },
     {
@@ -1475,8 +1481,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 36722,
-      "sha256": "00d04a379afff20301df8fa10811d56052654eee87f15f42cb3f57049fa59a2b",
+      "bytes": 37287,
+      "sha256": "24b153a6df21659f6b6f70b1e15d683f38012f25100039433f1b2b54589f4f16",
       "mime_type": "text/html"
     },
     {
@@ -1511,8 +1517,8 @@
     },
     {
       "path": "release-allowlist.json",
-      "bytes": 61430,
-      "sha256": "07b55196a72afd23ae50aee85e647ebf0dc82bdb6d417d4ec7c203d0f1fbea4f",
+      "bytes": 61495,
+      "sha256": "6cea762e057cf3ab1ce78a876825e474cf6785dbae9946ed8149327faff306de",
       "mime_type": "application/json"
     },
     {
@@ -1601,8 +1607,8 @@
     },
     {
       "path": "scripts/update_manifest.py",
-      "bytes": 1662,
-      "sha256": "29f667ce37f647690de44a31c3041160dd2beb65ba4fe82249f91fa1687ad611",
+      "bytes": 1683,
+      "sha256": "4dbb6b7cd8a04f850a70df45c559d6403defd2aa96adf3dd6d557c801b36eeb4",
       "mime_type": "text/x-python"
     },
     {
@@ -1619,8 +1625,8 @@
     },
     {
       "path": "styles.css",
-      "bytes": 25033,
-      "sha256": "b13778119695d6d37a4a145acc2515f1fddfbbfa69f8c106f248298911ca54b5",
+      "bytes": 26193,
+      "sha256": "9728c85b74fdc7bfbbe86d46d483995a670e66032490a71d663e52c9f8f9adaf",
       "mime_type": "text/css"
     },
     {
