@@ -281,10 +281,11 @@ function updateAnalysisPanel() {
     if (enabled) count++;
     const row = document.querySelector(`[data-layer="${tool.id}"]`);
     const unavailable = button.disabled || (!trial && !ensemble && ((tool.dynamics && !dynamics) || (tool.lowLevel && !lowLevel && !(dynamics && (["cold850","warm850"].includes(tool.id) || (isFeas() && ["trough700","ridge700"].includes(tool.id))))) || (lowLevel && ["wind","jet"].includes(tool.id))));
-    row.hidden = unavailable || (activeOnly && !enabled);
+    const rejected = Boolean(ensemble?.unavailable_layers?.[ensembleLayer(tool.id)]);
+    row.hidden = (unavailable && !rejected) || (activeOnly && !enabled);
     if (row.hidden && enabled) count--;
     const detailButton = document.querySelector(`[data-layer-detail="${tool.id}"]`);
-    detailButton.disabled = button.disabled;
+    detailButton.disabled = button.disabled && !rejected;
     const open = selectedDetail === tool.id && !row.hidden;
     detailButton.setAttribute("aria-expanded", String(open));
     byId(`detail-${tool.id}`).hidden = !open;
@@ -301,7 +302,7 @@ function updateAnalysisPanel() {
     if (!unavailable && guide) layerGuides.push(guide);
     detailButton.firstChild.textContent = open ? "解説を閉じる " : "解説を見る ";
     detailButton.setAttribute("aria-label", `${button.textContent}（${guidePlane}）の解説・凡例・設定`);
-    button.title = `${button.textContent} · ${plane} · ${enabled ? "表示中。クリックで外す" : "クリックで表示"}`;
+    button.title = rejected ? `${button.textContent} · 原図の線との一致を確認できないため着色を停止しています。解説をご覧ください。` : `${button.textContent} · ${plane} · ${enabled ? "表示中。クリックで外す" : "クリックで表示"}`;
   }
   updateReadingTopics(layerGuides);
   byId("layer-count").textContent = String(count);
