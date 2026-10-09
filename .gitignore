@@ -250,3 +250,8 @@
 !assets/analysis/aupa20-00-20261005.json
 !assets/analysis/aupa20-12.json
 !assets/analysis/aupa20-12-20261005.json
+
+!ensemble-coloring.js
+!ensemble-coloring.json
+!assets/ensemble/*.png
+!scripts/test_ensemble_coloring.js

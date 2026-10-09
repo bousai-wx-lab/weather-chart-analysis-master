@@ -50,7 +50,9 @@ let symbolError = "";
 const temperatureLayer = byId("temperature-layer");
 const temperatureContext = temperatureLayer.getContext("2d");
 let isotherms = null;
-let lowLevel = null, dynamics = null, trial = null, localCollection = null;
+let lowLevel = null, dynamics = null, trial = null, localCollection = null, ensemble = null;
+const ensembleLayer = id => ensemble?.product === "fxxn519" ? ({vorticity:"heightAnomaly",ascent:"height5880"}[id] || id) : id === "ascent" ? "anomaly" : id;
+const ensembleAvailable = id => Boolean(ensemble?.images[ensembleLayer(id)]);
 let showVorticity = true, showAscent = true;
 let showPrecipitation = true;
 let showEquivalent=true,equivalentOpacity=coloringRules.equivalentOpacity;
@@ -278,7 +280,7 @@ function updateAnalysisPanel() {
     const enabled = button.getAttribute("aria-pressed") === "true";
     if (enabled) count++;
     const row = document.querySelector(`[data-layer="${tool.id}"]`);
-    const unavailable = button.disabled || (!trial && ((tool.dynamics && !dynamics) || (tool.lowLevel && !lowLevel && !(dynamics && (["cold850","warm850"].includes(tool.id) || (isFeas() && ["trough700","ridge700"].includes(tool.id))))) || (lowLevel && ["wind","jet"].includes(tool.id))));
+    const unavailable = button.disabled || (!trial && !ensemble && ((tool.dynamics && !dynamics) || (tool.lowLevel && !lowLevel && !(dynamics && (["cold850","warm850"].includes(tool.id) || (isFeas() && ["trough700","ridge700"].includes(tool.id))))) || (lowLevel && ["wind","jet"].includes(tool.id))));
     row.hidden = unavailable || (activeOnly && !enabled);
     if (row.hidden && enabled) count--;
     const detailButton = document.querySelector(`[data-layer-detail="${tool.id}"]`);
@@ -286,7 +288,7 @@ function updateAnalysisPanel() {
     const open = selectedDetail === tool.id && !row.hidden;
     detailButton.setAttribute("aria-expanded", String(open));
     byId(`detail-${tool.id}`).hidden = !open;
-    const plane=trial && !["symbols","geography"].includes(tool.id) ? trialPlane(tool.id) : ["symbols","geography"].includes(tool.id)?"図の各地図面":isFeas() && ["trough700","ridge700"].includes(tool.id)?"地上気圧":dynamics && tool.id==="temperature500"?"850hPa":lowLevel && !tool.lowLevel?tool.plane.replace("300","700").replace("500","850"):tool.plane;
+    const plane=ensemble && tool.id==="ascent" ? ensemble.product==="fxxn519"?"500hPa":"850hPa" : trial && !["symbols","geography"].includes(tool.id) ? trialPlane(tool.id) : ["symbols","geography"].includes(tool.id)?"図の各地図面":isFeas() && ["trough700","ridge700"].includes(tool.id)?"地上気圧":dynamics && tool.id==="temperature500"?"850hPa":lowLevel && !tool.lowLevel?tool.plane.replace("300","700").replace("500","850"):tool.plane;
     const guidePlane = trial && ["wind","jet"].includes(tool.id) ? `${trial.panels.find(panel => tool.id === "wind" ? panel.wind_bands?.length : panel.jet_guides?.length || panel.native_jet_strokes?.length)?.pressure_hpa || plane.match(/\d+/)?.[0]}hPa` : plane;
     const guide = ChartReadingGuide.layer(tool.id, guidePlane, currentSelection?.product.id);
     const detail = byId(`detail-${tool.id}`), guideKey = `${currentSelection?.key}/${guidePlane}`;
@@ -298,8 +300,8 @@ function updateAnalysisPanel() {
     if (!guide) { detail.querySelector(".reading-guide")?.remove(); delete detail.dataset.guideKey; }
     if (!unavailable && guide) layerGuides.push(guide);
     detailButton.firstChild.textContent = open ? "解説を閉じる " : "解説を見る ";
-    detailButton.setAttribute("aria-label", `${tool.label}（${guidePlane}）の解説・凡例・設定`);
-    button.title = `${tool.label} · ${plane} · ${enabled ? "表示中。クリックで外す" : "クリックで表示"}`;
+    detailButton.setAttribute("aria-label", `${button.textContent}（${guidePlane}）の解説・凡例・設定`);
+    button.title = `${button.textContent} · ${plane} · ${enabled ? "表示中。クリックで外す" : "クリックで表示"}`;
   }
   updateReadingTopics(layerGuides);
   byId("layer-count").textContent = String(count);
@@ -359,7 +361,7 @@ function controls() {
   byId("wind").textContent = "風速の色塗り";
   byId("symbol-color").disabled = !ready || !symbols;
   byId("symbol-color").setAttribute("aria-pressed", String(Boolean(showSymbols && symbols)));
-  byId("symbol-color").textContent = "L・H・C・Wの文字";
+  byId("symbol-color").textContent = ensemble ? "L・Hの文字" : "L・H・C・Wの文字";
   byId("temperature").disabled = !ready || !isotherms || Boolean(dynamics);
   byId("temperature").setAttribute("aria-pressed", String(Boolean(showTemperature && isotherms)));
   byId("temperature").textContent = "気温線";
@@ -422,6 +424,10 @@ function controls() {
     byId("temperature").setAttribute("aria-pressed","false");
     paper.dataset.temperature="false";
   }
+  if(ensemble){
+    for(const [id,on] of [["precipitation",showPrecipitation],["vorticity",showVorticity],["ascent",showAscent],["cold850",showCold850],["warm850",showWarm850]]){const available=ensembleAvailable(id);byId(id).disabled=!ready||!available;byId(id).setAttribute("aria-pressed",String(available&&on));paper.dataset[id]=String(available&&on);}
+    windLayer.setAttribute("aria-label",ensemble.product==="fxxn519"?"500hPa偏差の正負、5880m以上、850hPa寒暖気の参考着色":ensemble.product==="fefe19"?"アンサンブル平均降水域を水色から青で強調":"正渦度のピンク、降水予想頻度の寒色、気温偏差の正を赤・負を青で透過着色");
+  } else if(!trial) paper.dataset.precipitation="false";
   const layerCount = updateAnalysisPanel();
   const overlayCount = updateOverlayPanel();
   const layers = [layerCount ? `解析${layerCount}項目` : "原図", overlayCount ? `重ね合わせ${overlayCount}項目` : "", paintCount ? `手描き${paintCount}筆` : "",axisCount ? `線・図形${axisCount}個` : ""].filter(Boolean);
@@ -492,7 +498,8 @@ function drawWind() {
   tropopauseContext.clearRect(0,0,tropopauseLayer.width,tropopauseLayer.height);
   if(trial?.product==="AUPA20"&&showTropopause)SnapshotAnalysis.drawTropopause(tropopauseContext,trial);
   windContext.clearRect(0, 0, windLayer.width, windLayer.height);
-  if(trial) SnapshotAnalysis.drawFills(windContext,trial,{equivalent:showEquivalent,equivalentOpacity,precipitation:showPrecipitation,wet:showWet,cold700:showCold700,cold850:showCold850,warm850:showWarm850,warmOpacity,opacity:coldOpacity,wind:showWind,vorticity:showVorticity,ascent:showAscent});
+  if(ensemble){EnsembleColoring.draw(windContext,ensemble,"precipitation",showPrecipitation);EnsembleColoring.draw(windContext,ensemble,ensembleLayer("vorticity"),showVorticity);EnsembleColoring.draw(windContext,ensemble,ensembleLayer("ascent"),showAscent);EnsembleColoring.draw(windContext,ensemble,"cold850",showCold850,coldOpacity/.35);EnsembleColoring.draw(windContext,ensemble,"warm850",showWarm850,warmOpacity/.35);}
+  else if(trial) SnapshotAnalysis.drawFills(windContext,trial,{equivalent:showEquivalent,equivalentOpacity,precipitation:showPrecipitation,wet:showWet,cold700:showCold700,cold850:showCold850,warm850:showWarm850,warmOpacity,opacity:coldOpacity,wind:showWind,vorticity:showVorticity,ascent:showAscent});
   else if (dynamics) ChartDynamics.drawFills(windContext,dynamics,{vorticity:showVorticity,ascent:showAscent,cold:showCold850,warm:showWarm850,warmOpacity,opacity:coldOpacity});
   else if (lowLevel) LowLevelAnalysis.drawFills(windContext,lowLevel,{wet:showWet,cold700:showCold700,cold850:showCold850,warm850:showWarm850,warmOpacity,opacity:coldOpacity});
   else if (showWind && windBands) ChartAnalysis.drawWindBands(windContext, windBands);
@@ -505,6 +512,7 @@ byId("wind").addEventListener("click", () => {
 function drawSymbols() {
   symbolContext.clearRect(0, 0, symbolLayer.width, symbolLayer.height);
   if (!ready || !showSymbols || !symbols) return;
+  if(ensemble){EnsembleColoring.draw(symbolContext,ensemble,"symbols",true);return;}
   if(trial){SnapshotAnalysis.drawSymbols(symbolContext,trial);return;}
   ChartAnalysis.drawSymbols(symbolContext, symbols);
 }
@@ -512,7 +520,16 @@ byId("symbol-color").addEventListener("click", () => {
   if (!ready || !symbols) return;
   showSymbols = !showSymbols; drawSymbols(); controls();
 });
+const ensembleRowParents = new Map(["precipitation","ascent","vorticity","cold850","warm850"].map(id=>[id,document.querySelector(`[data-layer="${id}"]`).parentElement]));
 function temperatureLegends() {
+  byId("detail-symbols").querySelector(".symbol-c").hidden=false;byId("detail-symbols").querySelector(".symbol-w").hidden=false;
+  byId("detail-vorticity").querySelector(".legend").textContent="500hPa · ピンク · 濃さ30%";
+  for(const [id,parent] of ensembleRowParents)parent.append(document.querySelector(`[data-layer="${id}"]`));
+  byId("precipitation").textContent="降水量の色塗り";byId("ascent").textContent="上昇流の色塗り";byId("vorticity").textContent="正渦度の色塗り";
+  byId("detail-ascent").querySelector(".legend").textContent="700hPa · 黄緑 · 濃さ30%";
+  byId("detail-cold850").querySelector("p").textContent="原図の等温線を境界に、低温ほど濃い色で塗ります。";
+  byId("detail-warm850").querySelector("p").textContent="850hPaの9・12・15・18・21・24℃以上を、薄い黄色から赤を経てえんじ色で塗ります。";
+  if(ensemble){ensembleLegends();return;}
   if(trial){trialLegends();return;}
   byId("jet").textContent="強風軸";document.querySelector('[data-layer="symbols"]').parentElement.querySelector("h3 span").textContent="上段・下段";
   byId("trough").textContent="トラフ";byId("ridge").textContent="リッジ";
@@ -544,7 +561,7 @@ function temperatureLegends() {
 }
 temperatureLegends();
 for (const id of ["wet","cold700","cold850","warm850","trough700","ridge700"]) byId(id).addEventListener("click",()=>{
-  if (!ready || (trial ? !trialAvailable(id) : (!lowLevel && !(dynamics && (["cold850","warm850"].includes(id) || (isFeas() && ["trough700","ridge700"].includes(id))))))) return;
+  if (!ready || (trial ? !trialAvailable(id) : ensemble ? !ensembleAvailable(id) : (!lowLevel && !(dynamics && (["cold850","warm850"].includes(id) || (isFeas() && ["trough700","ridge700"].includes(id))))))) return;
   if(id==="wet")showWet=!showWet;if(id==="cold700")showCold700=!showCold700;if(id==="cold850")showCold850=!showCold850;if(id==="warm850")showWarm850=!showWarm850;if(id==="trough700")showTrough700=!showTrough700;if(id==="ridge700")showRidge700=!showRidge700;drawWind();drawAnalysis();controls();
 });
 for(const [i,v] of LowLevelAnalysis.warmThresholds.entries()){const entry=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=LowLevelAnalysis.warmColors[i];entry.append(swatch,`${v}℃以上`);byId("warm850-legend").append(entry);}
@@ -994,7 +1011,7 @@ byId("save").addEventListener("click", () => {
   const temperatureFooterHeight = exportTemperatures.length ? exportTemperatures.length*40+56 : 0;
   const overlayFooterHeight = exportOverlays.length ? (exportOverlays.length+1)*44 : 0;
   const exportWarm=showWarm850 && Boolean((trial || lowLevel || dynamics)?.panels.some(p=>p.pressure_hpa===850));
-  const footerHeight = ((trial?.product==="AUPA20" || lowLevel || dynamics || trial?.color_only || trial?.surface_forecast || trial?.feas_forecast || trial?.equivalent_temperature) ? 440 : exportTerrain ? 340 : 260) + (exportWarm ? 56 : 0) + ((trial?.surface_forecast || trial?.feas_forecast) && exportTerrain ? 170 : 0);
+  const footerHeight = (ensemble ? 530 : ((trial?.product==="AUPA20" || lowLevel || dynamics || trial?.color_only || trial?.surface_forecast || trial?.feas_forecast || trial?.equivalent_temperature) ? 440 : exportTerrain ? 340 : 260) + (exportWarm ? 56 : 0) + ((trial?.surface_forecast || trial?.feas_forecast) && exportTerrain ? 170 : 0));
   output.width = ink.width; output.height = ink.height + footerHeight + temperatureFooterHeight + overlayFooterHeight;
   const ctx = output.getContext("2d");
   ctx.fillStyle = "white"; ctx.fillRect(0, 0, output.width, output.height);
@@ -1007,7 +1024,7 @@ byId("save").addEventListener("click", () => {
   ctx.fillStyle = "#243247"; ctx.font = "24px sans-serif";
   ctx.fillText(`出典：気象庁 ${selected.product.code}（画像化） / ${chartLabel}`, 26, ink.height + 38, output.width - 52);
   ctx.fillText(trial?.product==="AUPA20"?`200hPaジェット軸：${showJet?"原図の矢印を白縁付きの赤で着色":"表示なし"} / 手描き：利用者`:`解析案：${showTrough700 && (lowLevel || isFeas()) ? (isFeas()?"地上トラフ ":"700hPaトラフ ") : ""}${showTrough ? (lowLevel?"850hPaトラフ ":"500hPaトラフ ") : ""}${showRidge700 && (lowLevel || isFeas()) ? (isFeas()?"地上リッジ ":"700hPaリッジ ") : ""}${showRidge ? (lowLevel?"850hPaリッジ ":"500hPaリッジ ") : ""}${showJet ? `${trial?.panels[0].pressure_hpa||300}hPa強風軸（白縁付きの赤）` : ""}${!showTrough700 && !showRidge700 && !showTrough && !showRidge && !showJet ? "表示なし" : ""} / 手描き：利用者`, 26, ink.height + 76);
-  if (showSymbols && symbols) for (const [index, letter] of ["L", "H", "C", "W"].entries()) {
+  if (showSymbols && symbols && !ensemble) for (const [index, letter] of ["L", "H", "C", "W"].entries()) {
     ctx.fillStyle = ChartAnalysis.symbolPalette[letter]; ctx.fillText(letter, 1610 + index * 90, ink.height + 76);
   }
   ctx.fillStyle = "#243247";
@@ -1063,7 +1080,7 @@ byId("save").addEventListener("click", () => {
     ctx.fillText("寒気の目安：低温ほど濃い青、最大は濃紺。",26,ink.height+399,output.width-52);
   }
   if (exportTerrain) {
-    const terrainOffset = trial?.surface_forecast || trial?.feas_forecast ? 170 : 0;
+    const terrainOffset = ensemble ? 110 : trial?.surface_forecast || trial?.feas_forecast ? 170 : 0;
     ctx.fillText("地表標高：NOAA ETOPO 2022 / EGM2008基準 / 1分格子（南北約1.9km）/ 投影変換した広域表示", 26, ink.height + 268 + terrainOffset);
     if (geographyStyle === "relief") ctx.fillText("陰影の明暗は斜面の向き・傾き。北西からの照明で山の凹凸を強調しています。", 26, ink.height + 307 + terrainOffset);
     else for (const [index, label] of elevationData.legend.labels.entries()) {
@@ -1103,6 +1120,17 @@ byId("save").addEventListener("click", () => {
     ctx.fillText("重ね合わせ（解析元の気圧面・時刻）",26,y);
     for (const [index,tool] of exportOverlays.entries()) ctx.fillText(`${overlayDescription(tool)} / ${tool.source_product} · ${overlayTime(tool)} / 濃さ${Math.round(tool.opacity*100)}%`,26,y+(index+1)*44,output.width-52);
   }
+  if(ensemble){
+    ctx.fillStyle="white";ctx.fillRect(0,ink.height+49,output.width,143);
+    ctx.fillStyle="#243247";ctx.font="22px sans-serif";
+    ctx.fillText(`参考着色：Lは赤・Hは青（${showSymbols?"表示中":"OFF"}） / 手描き：利用者`,26,ink.height+76);
+    const info=EnsembleColoring.legends(ensemble.product);
+    ctx.fillText(ensemble.product==="fxxn519"?`${info.anomaly}（${showVorticity?"表示中":"OFF"}）`:`${info.rain}：${showPrecipitation?"水色〜青":"OFF"}`,26,ink.height+116,output.width-52);
+    ctx.fillText(info.note,26,ink.height+155,output.width-52);
+    ctx.fillText("利用者の着色・解析は気象庁の公式の解析ではありません。天気図解析マスター · Weather Chart Analysis Master · Bousai Wx Lab",26,ink.height+193,output.width-52);
+    ctx.fillText(ensemble.product==="fxxn519"?`${info.height}（${showAscent?"表示中":"OFF"}）`:ensemble.product==="fzcx50"?`正渦度の斜線域：${showVorticity?"ピンク":"OFF"} / 気温偏差の曲線と0線の間：${showAscent?"正は赤・負は青の透過":"OFF"}`:"濃淡は領域の強調で、雨量・降水確率を表しません。",26,ink.height+275,output.width-52);
+    ctx.fillText(ensemble.product==="fxxn519"?`850hPa：寒気${showCold850?Math.round(coldOpacity*100)+"％":"OFF"} / 暖気${showWarm850?Math.round(warmOpacity*100)+"％":"OFF"}。原図の等温線を確認してください。`:"濃淡から新しい数値を読み取らず、各枠の等値線・数値・有効時刻を確認してください。",26,ink.height+319,output.width-52);
+  }
   output.toBlob((blob) => {
     if (loadRevision !== exportRevision || currentSelection?.key !== selected.key || !ready) return;
     if (!blob) { byId("status").textContent = "保存できませんでした"; return; }
@@ -1132,10 +1160,11 @@ function initialize(selected) {
     canvas.width = chart.naturalWidth; canvas.height = chart.naturalHeight;
   }
   const reviewed = isReviewed(selected) || isTrialSelection(selected);
+  const colored = reviewed || EnsembleColoring.products.includes(selected.product.id);
   for (const canvas of [analysisLayer, jetLayer, tropopauseLayer, windLayer, geographyLayer, symbolLayer, temperatureLayer, overlayLayer]) {
-    canvas.width = reviewed || canvas === geographyLayer ? chart.naturalWidth : 1;
-    canvas.height = reviewed || canvas === geographyLayer ? chart.naturalHeight : 1;
-    canvas.hidden = !reviewed && canvas !== geographyLayer;
+    canvas.width = colored || canvas === geographyLayer ? chart.naturalWidth : 1;
+    canvas.height = colored || canvas === geographyLayer ? chart.naturalHeight : 1;
+    canvas.hidden = !colored && canvas !== geographyLayer;
   }
   const low=selected.variant.features==="reviewed-aupq78",dyn=["reviewed-axfe578","reviewed-feas50"].includes(selected.variant.features),feas=isFeasSelection(selected);
   for (const canvas of [jetLayer,overlayLayer]) canvas.hidden = !reviewed || low || dyn;
@@ -1254,7 +1283,7 @@ async function loadSelection(retry = false, shared = null) {
   active = pointer = pan = null;
   activeVector=null;
   axisDraft=axisPreview=axisSelected=axisNode=axisDrag=null;axisAdding=false;
-  geographyMask = geographyBase = geography = satelliteImage = elevationData = terrainImage = symbols = windBands = candidates = isotherms = lowLevel = dynamics = trial = null;
+  geographyMask = geographyBase = geography = satelliteImage = elevationData = terrainImage = symbols = windBands = candidates = isotherms = lowLevel = dynamics = trial = ensemble = null;
   temperatureLegends();
   panelRegistration = null;
   loadingError = geographyError = terrainError = symbolError = analysisError = temperatureError = overlayError = "";
@@ -1298,7 +1327,8 @@ async function loadSelection(retry = false, shared = null) {
     if (revision !== loadRevision) return;
     chart.alt = `気象庁 ${selected.product.code} · ${selected.product.name} · ${chartLabel}`;
     initialize(selected);
-    if(isTrialSelection(selected)) await loadTrial(selected,revision,signal);
+    if(EnsembleColoring.products.includes(selected.product.id)) await loadEnsemble(selected,revision,signal);
+    else if(isTrialSelection(selected)) await loadTrial(selected,revision,signal);
     else if (selected.variant.features === "reviewed-aupq78") await loadLowLevel(selected,revision,signal);
     else if (["reviewed-axfe578","reviewed-feas50"].includes(selected.variant.features)) await loadDynamics(selected,revision,signal);
     else if (reviewed) await loadFeatures(selected, revision, signal);
@@ -1322,6 +1352,59 @@ async function loadSelection(retry = false, shared = null) {
     loadingError = "図を読み込めませんでした。「図を再読み込み」か別の天気図を選んでください。";
     byId("chart-retry").hidden = false; controls();
   }
+}
+function ensembleLegends() {
+  const fefe=ensemble.product==="fefe19", info=EnsembleColoring.legends(ensemble.product);
+  const common=document.querySelector('[data-layer="symbols"]').parentElement;
+  common.querySelector("h3 span").textContent="各予想図";
+  if(ensemble.product==="fxxn519"){
+    common.append(document.querySelector('[data-layer="vorticity"]'),document.querySelector('[data-layer="ascent"]'));
+    byId("symbol-color").textContent="L・Hの文字";
+    byId("detail-symbols").querySelector(".symbol-c").hidden=true;byId("detail-symbols").querySelector(".symbol-w").hidden=true;
+    byId("vorticity").textContent="500hPa高度の平年偏差";byId("ascent").textContent="5880m以上をピンク";
+    byId("detail-vorticity").querySelector(".legend").textContent=info.anomaly+"。"+info.note;
+    byId("detail-ascent").querySelector(".legend").textContent=info.height+"。地上の気温や太平洋高気圧の確定線とは区別します。";
+    byId("upper-plane").textContent="500 hPa · 上段の平均図";byId("lower-plane").textContent="850 hPa · 下段の各予想図";
+    byId("lower-plane").parentElement.append(document.querySelector('[data-layer="cold850"]'),document.querySelector('[data-layer="warm850"]'));
+    for(const id of ["cold850","warm850"])byId(`detail-${id}`).querySelector("p").textContent=info.temperature;
+    for(const [id,values,colors] of [["cold850",coloringRules.coldThresholds[850],LowLevelAnalysis.coldColors],["warm850",LowLevelAnalysis.warmThresholds,LowLevelAnalysis.warmColors]]){
+      byId(`${id}-legend`).replaceChildren();
+      for(const [i,v] of values.entries()){const item=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=colors[i];item.append(swatch,`${v}℃${id==="cold850"?"以下":"以上"}`);byId(`${id}-legend`).append(item);}
+    }
+    return;
+  }
+  common.append(document.querySelector('[data-layer="precipitation"]'));
+  byId("precipitation").textContent=fefe?"降水域の色塗り":"降水予想頻度の色塗り";
+  byId("symbol-color").textContent="L・Hの文字";
+  byId("detail-symbols").querySelector(".symbol-c").hidden=true;
+  byId("detail-symbols").querySelector(".symbol-w").hidden=true;
+  byId("precipitation-legend").replaceChildren();
+  byId("precipitation-legend").setAttribute("aria-label",info.rain);
+  for(const [i,label] of info.bands.entries()){
+    const item=document.createElement("span"),swatch=document.createElement("i");
+    swatch.style.background=fefe?"linear-gradient(90deg,#97e5ff,#1e65d2)":EnsembleColoring.rainColors[i];
+    item.append(swatch,label);byId("precipitation-legend").append(item);
+  }
+  byId("precipitation-note").textContent=info.note;
+  if(!fefe){
+    common.append(document.querySelector('[data-layer="ascent"]'));
+    byId("ascent").textContent="気温偏差の＋・−を色塗り";
+    byId("upper-plane").textContent="500 hPa · 各予想図";
+    byId("detail-vorticity").querySelector(".legend").textContent="正渦度の斜線域：淡いピンク〜濃いピンク。濃淡は領域の強調で、渦度の数値の違いを表しません。原図の等渦度線を確認してください。";
+    byId("detail-ascent").querySelector(".legend").textContent="850hPa気温偏差：0線より上を赤、下を青の透過色。クラスター曲線と0線の間を強調し、縦線の予測幅は塗りつぶしません。地上気温とは区別します。";
+  }
+}
+async function loadEnsemble(selected,revision,signal) {
+  try {
+    const data=EnsembleColoring.validate(await fetchJSON("ensemble-coloring.json",signal),selected);
+    const images={};
+    await Promise.all(Object.entries(data.layers).map(async([id,a])=>{
+      images[id]=await checkedImage(a.path,a.sha256,a.width,a.height,signal);
+    }));
+    if(revision!==loadRevision)return;
+    ensemble={...data,images};symbols=ensemble;
+    temperatureLegends();drawSymbols();drawWind();controls();
+  }catch(error){if(revision===loadRevision&&error.name!=="AbortError")analysisError="この原図の着色資料を確認できません。原図の閲覧・手描きは使えます。";}
 }
 async function loadGeographyAtlas(selected,revision,signal) {
   try {
@@ -1462,7 +1545,7 @@ async function loadDynamics(selected,revision,signal) {
 }
 byId("equivalent").addEventListener("click",()=>{if(!ready||!trial?.equivalent_temperature)return;showEquivalent=!showEquivalent;drawWind();controls();});
 byId("equivalent-opacity").addEventListener("input",event=>{equivalentOpacity=Number(event.target.value)/100;drawWind();controls();});
-for(const id of ["vorticity","ascent","precipitation"])byId(id).addEventListener("click",()=>{if(!ready||!(trial?trialAvailable(id):dynamics))return;if(id==="vorticity")showVorticity=!showVorticity;else if(id==="ascent")showAscent=!showAscent;else showPrecipitation=!showPrecipitation;drawWind();controls();});
+for(const id of ["vorticity","ascent","precipitation"])byId(id).addEventListener("click",()=>{if(!ready||!(trial?trialAvailable(id):ensemble?ensembleAvailable(id):dynamics))return;if(id==="vorticity")showVorticity=!showVorticity;else if(id==="ascent")showAscent=!showAscent;else showPrecipitation=!showPrecipitation;drawWind();controls();});
 async function loadLowLevel(selected,revision,signal) {
   try {
     const checked=LowLevelAnalysis.validate(await fetchJSON("aupq78-analysis.json",signal),selected);

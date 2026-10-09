@@ -129,12 +129,12 @@ const ChartReadingGuide = (() => {
   }
   function topics(productId) { return (profiles[productId] || []).map(item => guide(item, productId)); }
   function layer(id, plane, productId) {
-    const kind = layerKinds[id];
+    const kind = productId === "fxxn519" && id === "vorticity" ? "heightAnomaly" : productId === "fxxn519" && id === "ascent" ? "latitudeTime" : productId === "fefe19" && id === "precipitation" ? "meanRain" : productId === "fzcx50" && id === "precipitation" ? "rainFrequency" : productId === "fzcx50" && id === "ascent" ? "temperatureSeries" : layerKinds[id];
     if (!kind || !profiles[productId]) return null;
     const pressure = planeNumber(plane);
     const matchKind = ["trough","ridge"].includes(kind) ? pressure ? "height" : "surface" : kind;
     const match = profiles[productId].find(item => item.kind === matchKind && (typeof item.plane !== "number" || item.plane === pressure));
-    return guide({kind,plane:kind === "tropopause" ? "圏界面" : ["geography","symbols"].includes(kind) ? plane : pressure,page:match?.page || profiles[productId][0].page}, productId);
+    return guide({kind,plane:kind === "rainFrequency" ? "" : kind === "tropopause" ? "圏界面" : ["geography","symbols"].includes(kind) ? plane : pressure,page:match?.page || profiles[productId][0].page}, productId);
   }
   function covered(item, layers) {
     return layers.some(layer => layer && layer.plane === item.plane && (layer.kind === item.kind || item.kind === "height" && ["trough","ridge"].includes(layer.kind) || item.kind === "surface" && ["trough","ridge"].includes(layer.kind)));
