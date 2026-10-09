@@ -129,7 +129,7 @@
       "layers": {
         "heightAnomaly": {
           "path": "assets/ensemble/fxxn519-20261005-heightAnomaly.png",
-          "sha256": "2cd95f0f58d2cde4e875809047754a19065cccd2e1f67441ac3e63f1c5cbea20",
+          "sha256": "fac9ffc962755f2857ce4f6d30711bb5983828323a08cf052427430ae300be82",
           "width": 2048,
           "height": 2803
         },
@@ -153,7 +153,7 @@
         },
         "symbols": {
           "path": "assets/ensemble/fxxn519-20261005-symbols.png",
-          "sha256": "aa7b68b6fc8fb3c4815a2447ee1b42ec2a55c4279bee90e367a59e73335b113a",
+          "sha256": "8efdae6cfb0c59e6f551327edf3f54e7a7ae1f40f36871c83f3681a6e064ad40",
           "width": 2048,
           "height": 2803
         }
@@ -170,7 +170,7 @@
       "layers": {
         "heightAnomaly": {
           "path": "assets/ensemble/fxxn519-heightAnomaly.png",
-          "sha256": "d0b0e51031cfbabf7d676859243e4d396f9dd84ca06976cd493e7e34d80b5f39",
+          "sha256": "bf29aa2ef96d52946df3d382bc737725e99d9d3bd53d94492b08a224351c2de0",
           "width": 2048,
           "height": 2803
         },
@@ -194,7 +194,7 @@
         },
         "symbols": {
           "path": "assets/ensemble/fxxn519-symbols.png",
-          "sha256": "5450df38de8fcdefa6cf49bd94a6a639d14822f454c24048ce499eb051c81a29",
+          "sha256": "e5b6fe14d89e63657fe84cfaa4d5ea9dfe759f181e6dd2502af4b0bb53e35b7f",
           "width": 2048,
           "height": 2803
         }

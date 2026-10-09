@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-09T02:30:07.068828+00:00",
+  "generated_at": "2026-10-09T11:47:23.248129+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -53,8 +53,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 130794,
-      "sha256": "0117684b5e2575d4828bceb08340913960b9627b644485e31d7fc01533730000",
+      "bytes": 130816,
+      "sha256": "2fd45b64cc1a8c0e8362712fe39514f537667039692c1283dc227d5b20925144",
       "mime_type": "text/javascript"
     },
     {
@@ -1331,14 +1331,14 @@
     },
     {
       "path": "assets/ensemble/fxxn519-20261005-heightAnomaly.png",
-      "bytes": 523863,
-      "sha256": "2cd95f0f58d2cde4e875809047754a19065cccd2e1f67441ac3e63f1c5cbea20",
+      "bytes": 378097,
+      "sha256": "fac9ffc962755f2857ce4f6d30711bb5983828323a08cf052427430ae300be82",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-20261005-symbols.png",
-      "bytes": 25813,
-      "sha256": "aa7b68b6fc8fb3c4815a2447ee1b42ec2a55c4279bee90e367a59e73335b113a",
+      "bytes": 27320,
+      "sha256": "8efdae6cfb0c59e6f551327edf3f54e7a7ae1f40f36871c83f3681a6e064ad40",
       "mime_type": "image/png"
     },
     {
@@ -1361,14 +1361,14 @@
     },
     {
       "path": "assets/ensemble/fxxn519-heightAnomaly.png",
-      "bytes": 502364,
-      "sha256": "d0b0e51031cfbabf7d676859243e4d396f9dd84ca06976cd493e7e34d80b5f39",
+      "bytes": 414053,
+      "sha256": "bf29aa2ef96d52946df3d382bc737725e99d9d3bd53d94492b08a224351c2de0",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-symbols.png",
-      "bytes": 25979,
-      "sha256": "5450df38de8fcdefa6cf49bd94a6a639d14822f454c24048ce499eb051c81a29",
+      "bytes": 26709,
+      "sha256": "e5b6fe14d89e63657fe84cfaa4d5ea9dfe759f181e6dd2502af4b0bb53e35b7f",
       "mime_type": "image/png"
     },
     {
@@ -1589,14 +1589,14 @@
     },
     {
       "path": "ensemble-coloring.js",
-      "bytes": 3414,
-      "sha256": "c3b3f134c8718672c519c8ee0342fb1e7c0771734cfc0a5de3aca2a0aaf98b34",
+      "bytes": 3656,
+      "sha256": "854ca2faaa0466870c87ed0ceafeb32a94f18e609eee2bf6c0b2bdfbc6eb872f",
       "mime_type": "text/javascript"
     },
     {
       "path": "ensemble-coloring.json",
       "bytes": 7311,
-      "sha256": "f5b529ea12b2b587ec18b4c7cbfad3e18ee866698331a9c50cfe69b847ce91e3",
+      "sha256": "aeb0ef790645d9bd36f02e45bc97406287a7c792fe7d74101075f3a77f23911a",
       "mime_type": "application/json"
     },
     {
@@ -1626,7 +1626,7 @@
     {
       "path": "index.html",
       "bytes": 37359,
-      "sha256": "30ce83d9a63b2cc470bb6afb76df652ae1f730e371a5ff131de8fbc163c985ec",
+      "sha256": "09fa3b31130f9d558b7e3bb18b5bf7d183a8b7108afc4eb803bc35322b703099",
       "mime_type": "text/html"
     },
     {
@@ -1661,8 +1661,8 @@
     },
     {
       "path": "release-allowlist.json",
-      "bytes": 69218,
-      "sha256": "564d2c8a74b67bd839a05400e73e319e786ff492f8e835546b4e9578282396cb",
+      "bytes": 70416,
+      "sha256": "46083348cef8948237c17e40c100ac277b4aa94a598446d2c6e822ef6b77bf0b",
       "mime_type": "application/json"
     },
     {
@@ -1709,8 +1709,8 @@
     },
     {
       "path": "scripts/test_ensemble_coloring.js",
-      "bytes": 2068,
-      "sha256": "716c04d168737a000caaa284f18ae29fd0b0e94ca6a148a7a120dd3a43d91e37",
+      "bytes": 4890,
+      "sha256": "6a40cd7717bb5c6e3a3b2d4c44d69e6695108aea4f349d8f3fddfacc99341a1f",
       "mime_type": "text/javascript"
     },
     {

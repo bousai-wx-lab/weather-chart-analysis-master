@@ -2,6 +2,10 @@
 const EnsembleColoring = (() => {
   const products = ["fefe19", "fzcx50", "fxxn519"];
   const rainColors = ["#99ebfd", "#309be7", "#234ca9"];
+  function assetURL(asset) {
+    if (!/^assets\/ensemble\/[a-zA-Z0-9-]+\.png$/.test(asset?.path) || !/^[a-f0-9]{64}$/.test(asset?.sha256)) throw Error("Invalid ensemble asset URL");
+    return `${asset.path}?v=${asset.sha256}`;
+  }
   function validate(data, selected) {
     if (data?.schema_version !== 1 || data.gradient_semantics !== "source-contours-and-area-emphasis" || !products.includes(selected.product.id) || !Array.isArray(data.selections) || data.selections.length !== 6) throw Error("Invalid ensemble coloring");
     const records = data.selections.filter(r => r.product === selected.product.id && r.variant === selected.variant.id && r.page === selected.page.number);
@@ -33,6 +37,6 @@ const EnsembleColoring = (() => {
       bands: ["10〜50％", "50〜90％", "90％以上"]
     };
   }
-  return {products, rainColors, validate, draw, legends};
+  return {products, rainColors, validate, draw, legends, assetURL};
 })();
 if (typeof module !== "undefined") module.exports = EnsembleColoring;

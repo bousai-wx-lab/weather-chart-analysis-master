@@ -1399,7 +1399,7 @@ async function loadEnsemble(selected,revision,signal) {
     const data=EnsembleColoring.validate(await fetchJSON("ensemble-coloring.json",signal),selected);
     const images={};
     await Promise.all(Object.entries(data.layers).map(async([id,a])=>{
-      images[id]=await checkedImage(a.path,a.sha256,a.width,a.height,signal);
+      images[id]=await checkedImage(EnsembleColoring.assetURL(a),a.sha256,a.width,a.height,signal);
     }));
     if(revision!==loadRevision)return;
     ensemble={...data,images};symbols=ensemble;
