@@ -427,7 +427,7 @@ function controls() {
   }
   if(ensemble){
     for(const [id,on] of [["precipitation",showPrecipitation],["vorticity",showVorticity],["ascent",showAscent],["cold850",showCold850],["warm850",showWarm850]]){const available=ensembleAvailable(id);byId(id).disabled=!ready||!available;byId(id).setAttribute("aria-pressed",String(available&&on));paper.dataset[id]=String(available&&on);}
-    windLayer.setAttribute("aria-label",ensemble.product==="fxxn519"?"500hPa偏差の正負、5880m以上、850hPa寒暖気の参考着色":ensemble.product==="fefe19"?"アンサンブル平均降水域を水色から青で強調":"正渦度のピンク、降水予想頻度の寒色、気温偏差の正を赤・負を青で透過着色");
+    windLayer.setAttribute("aria-label",ensemble.product==="fxxn519"?"500hPa偏差の正負、5880m以上、850hPa寒暖気の参考着色":ensemble.product==="fefe19"?"アンサンブル平均降水域を青で着色":"正渦度のピンク、降水予想頻度の寒色、気温偏差の正を赤・負を青で透過着色");
   } else if(!trial) paper.dataset.precipitation="false";
   const layerCount = updateAnalysisPanel();
   const overlayCount = updateOverlayPanel();
@@ -1387,7 +1387,7 @@ function ensembleLegends() {
   byId("precipitation-legend").setAttribute("aria-label",info.rain);
   for(const [i,label] of info.bands.entries()){
     const item=document.createElement("span"),swatch=document.createElement("i");
-    swatch.style.background=fefe?"linear-gradient(90deg,#97e5ff,#1e65d2)":EnsembleColoring.rainColors[i];
+    swatch.style.background=info.colors[i];
     item.append(swatch,label);byId("precipitation-legend").append(item);
   }
   byId("precipitation-note").textContent=info.note;

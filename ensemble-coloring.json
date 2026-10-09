@@ -13,13 +13,13 @@
       "layers": {
         "precipitation": {
           "path": "assets/ensemble/fefe19-20261005-precipitation.png",
-          "sha256": "9acbdbc5c1a1b604df6132f300536d5cf36f5471834f29cac8f741771f85b661",
+          "sha256": "de50b1bc1c5d7dd44894078695040bd16530e03353f896b0b6c95e43a15a9a48",
           "width": 2068,
           "height": 2048
         },
         "symbols": {
           "path": "assets/ensemble/fefe19-20261005-symbols.png",
-          "sha256": "146dbd830a7e3eed35bd16e1eaadae806fe1f2205c73cf46e7037558ec1e23ed",
+          "sha256": "cc35c82f7347609ac821454ea9768ef0d98bf1d392600a7277eae145a071b518",
           "width": 2068,
           "height": 2048
         }
@@ -36,13 +36,13 @@
       "layers": {
         "precipitation": {
           "path": "assets/ensemble/fefe19-precipitation.png",
-          "sha256": "db91d16bb7042b7423e241ed78c35ff36f75cc68f6324468c20bd098a32acca8",
+          "sha256": "0eb301347e332cd5cab88a125dc8e55ade6126dc7d405392ebc7d7f4a70bee4e",
           "width": 2068,
           "height": 2048
         },
         "symbols": {
           "path": "assets/ensemble/fefe19-symbols.png",
-          "sha256": "f177b668047e08c4dffe302422a6005517f18ec4e61051fece5f29fe861af9e5",
+          "sha256": "9430193d2dda88bc93958c79a3f484a08014134e0d388bce70176f11df42459a",
           "width": 2068,
           "height": 2048
         }
@@ -59,13 +59,13 @@
       "layers": {
         "precipitation": {
           "path": "assets/ensemble/fzcx50-20261005-precipitation.png",
-          "sha256": "d9736eaa1ac02cfeffe102e678e768dcf012a5c59ee6788859c6247452e49819",
+          "sha256": "824f12744f797c1a58cb91b87b7f14ee89e554b337bd1b4f4e84c1f5f614e70f",
           "width": 2048,
           "height": 2803
         },
         "vorticity": {
           "path": "assets/ensemble/fzcx50-20261005-vorticity.png",
-          "sha256": "8ef8e997a2deff19428d70cf7d2be63ae962e09dab7d49447ccfcbe299096a86",
+          "sha256": "71cea0c8c9d687f7531a7f7e2299ba29f4995bd0833cd7697bab714715f9e909",
           "width": 2048,
           "height": 2803
         },
@@ -77,7 +77,7 @@
         },
         "symbols": {
           "path": "assets/ensemble/fzcx50-20261005-symbols.png",
-          "sha256": "2c351074ebc7b86701ddbe24fffd09f8d31ee50aa0675fcc2f563605d1d69e3b",
+          "sha256": "0f3dabb189b8c4c3242dafdd54de9bcc825165346d37b1ca4393f78ede778092",
           "width": 2048,
           "height": 2803
         }
@@ -94,13 +94,13 @@
       "layers": {
         "precipitation": {
           "path": "assets/ensemble/fzcx50-precipitation.png",
-          "sha256": "977ffe5b14b0fdca00fac79549a731d289bf751eb425e15d02a21e7310ad4dc0",
+          "sha256": "88bae0800d21a4153b0cc34056a18d3d765313805568e0c541c367911006b41c",
           "width": 2048,
           "height": 2803
         },
         "vorticity": {
           "path": "assets/ensemble/fzcx50-vorticity.png",
-          "sha256": "47d61ff1418aaf0606c453281b532fb7732b56f14390c983d9f9c5a4c7079a65",
+          "sha256": "66ee2276e31958195d621e5e1b30ede3b959389891a7a6e2cb6939d98d60d08b",
           "width": 2048,
           "height": 2803
         },
@@ -112,7 +112,7 @@
         },
         "symbols": {
           "path": "assets/ensemble/fzcx50-symbols.png",
-          "sha256": "36215a9c17764ceb42214a2c3f9472c4b031210b351d1ec70589677f9854554f",
+          "sha256": "1403cef283d05ec78e2ce7063885d526ad39e164de51aa245c2fe9fbb93b0cfe",
           "width": 2048,
           "height": 2803
         }
@@ -135,19 +135,19 @@
         },
         "height5880": {
           "path": "assets/ensemble/fxxn519-20261005-height5880.png",
-          "sha256": "d7a143e3bdd1ba9cbe257784cb260a8648bb997b5e958ac14cda8dfe95159a0a",
+          "sha256": "2077cedbd9bfd2cf2a0673bffd3490e8390b0b02e9318170e183d193b577f277",
           "width": 2048,
           "height": 2803
         },
         "cold850": {
           "path": "assets/ensemble/fxxn519-20261005-cold850.png",
-          "sha256": "6bc053e0251b38d55bfb61a47a0113f5c4c0b0a7a140546e4284f07bb1140c84",
+          "sha256": "ef18bc6f515164c8eee68144652ed885da9aa7163a69e24689fde9e3cf9c8ab8",
           "width": 2048,
           "height": 2803
         },
         "warm850": {
           "path": "assets/ensemble/fxxn519-20261005-warm850.png",
-          "sha256": "a38cfacf29c5fd136ba6cd240fd3f580077d8195513528218c26b0c74b3740f9",
+          "sha256": "5687a70deea409870452fd176983aaafa8da034d70927db65b5d8309eb262cc6",
           "width": 2048,
           "height": 2803
         },
@@ -158,10 +158,66 @@
           "height": 2803
         }
       },
-      "unavailable_layers": {
-        "height5880": "contour-boundary-unverified",
-        "cold850": "contour-boundary-unverified",
-        "warm850": "contour-boundary-unverified"
+      "numeric_source": {
+        "model": "GSM",
+        "reference_time": "2026-10-04T12:00:00+00:00",
+        "grid_degrees": 0.5,
+        "forecasts": [
+          {
+            "forecast_hours": 72,
+            "grib_sha256": "87645f3bdbf83196dfb1e87af8a231dc12a8f5104c6cc02fc22ed1609b9e0afb",
+            "input_sha256": "34979202d091f9789996352218ddcad3208784d8826f36ad0e402b766c8f8fa1",
+            "field_sha256": {
+              "temperature": "9330d3ba23eff90bf8d4cdd6d6cb3000b11060592d6a8512787da2a1c13ff98c",
+              "height": "b75827fe77654369945a4c9256f525604d652ea99ec727ddbd248fd4993b72bd"
+            }
+          },
+          {
+            "forecast_hours": 96,
+            "grib_sha256": "a9e517bef72621aaad6c8902ba3e0e682b9b2ba851b918324d3483d9469b58db",
+            "input_sha256": "621fa0f26123e3782fc8b2dd8beb4ead7fa11b43d3fcd4f63acc210885c48719",
+            "field_sha256": {
+              "temperature": "c0dc52025bdfd89e3cf2dad61cde88196b95876048f3ee1855c30bcac0c137f2",
+              "height": "47a8c81d375d0423f06dedf9f9dddaf3158a5dd5cbb5de583b01208747850c16"
+            }
+          },
+          {
+            "forecast_hours": 120,
+            "grib_sha256": "d785fcc346e66686be61ed06a4fb0e5be9754091df027ccf78730aa7e6721941",
+            "input_sha256": "5b903c619a90858ae32237370aa59fb76e92f097c628bf64a1eafb3d8e0b9b3f",
+            "field_sha256": {
+              "temperature": "d30405da634a00651ec011c6eb4cc6209453016f028f73422275e758b78d532e",
+              "height": "00a83bc4e5463c8e21de1de1b74c28d09d5c350825fe176b33803c0cb9ed0e4a"
+            }
+          },
+          {
+            "forecast_hours": 144,
+            "grib_sha256": "3bf741dc1be669416d2dcf071a93d51255968a37a32615523111dd6a3c621e2f",
+            "input_sha256": "300845d52be8e520a5ff4ea8632b5b9b4d6c35a1cea301458082bb28a5ecc789",
+            "field_sha256": {
+              "temperature": "fafe87234ed35a2005945535f11a9e7ea7da3d65f94bbe23838c2d2195d5317d",
+              "height": "361bd0415c5cc65e920a22d310e192823dff0fa54f6209ce7e251d700422fac0"
+            }
+          },
+          {
+            "forecast_hours": 168,
+            "grib_sha256": "ddf6a90df929eae010c0a33b3ab9853c201e871f0c5be6cb407186d6421a5c89",
+            "input_sha256": "59aaac6188a881a94eccea887d73c536c37b2005dd4f33e1ae52524e499b0432",
+            "field_sha256": {
+              "temperature": "70cb76aad2e941523908275cf16c1d21731e979519828f6df40c9fc5a84c9059",
+              "height": "d55c6552b9ee771d12aa3bbf1b26e75382374e525cfe644c75e8e6a1b8f8d6a6"
+            }
+          },
+          {
+            "forecast_hours": 192,
+            "grib_sha256": "5da00bbb834386958745044b5c7f3ece28d6fc45cca0ac4279d6b608929b6569",
+            "input_sha256": "9753ad05e1eb9f292ad524d6a345d2d9d405373ffd64f23a3a068599fd5d53df",
+            "field_sha256": {
+              "temperature": "a98964696e38daf9228afd98ff42ad33b882fe4e6d09143947aba2662188bb7b",
+              "height": "4dcd8718bce9c36151f3e957945e1d8957c4d915bb6408b2a064a9aeee96a527"
+            }
+          }
+        ]
       }
     },
     {
@@ -181,19 +237,19 @@
         },
         "height5880": {
           "path": "assets/ensemble/fxxn519-height5880.png",
-          "sha256": "784b4ff008b64d919c4ebe2f4346bafe83f4d094cbace1048f29dc85ee162068",
+          "sha256": "5ab43121240839a78747809a8b6213b878f30ac69fb97285d6cee34210ecf6bf",
           "width": 2048,
           "height": 2803
         },
         "cold850": {
           "path": "assets/ensemble/fxxn519-cold850.png",
-          "sha256": "bfaac2f93c5e90c4df3525df3af830676445293d4a5f44aa6f6339ba5bc2e0e5",
+          "sha256": "45c6f32ce86252868df19359a06c074d06ab2466066509d25524d3b0ffafea3b",
           "width": 2048,
           "height": 2803
         },
         "warm850": {
           "path": "assets/ensemble/fxxn519-warm850.png",
-          "sha256": "22812b7ef9d0433530b3e3a1c8170c0409885d9df7c3a8d2367c9285287a888e",
+          "sha256": "02b2c7d0cb084eff5a6026c96ac17cf3f96e95500eb3d65005572c60fc13c246",
           "width": 2048,
           "height": 2803
         },
@@ -204,10 +260,66 @@
           "height": 2803
         }
       },
-      "unavailable_layers": {
-        "height5880": "contour-boundary-unverified",
-        "cold850": "contour-boundary-unverified",
-        "warm850": "contour-boundary-unverified"
+      "numeric_source": {
+        "model": "GSM",
+        "reference_time": "2026-10-02T12:00:00+00:00",
+        "grid_degrees": 0.5,
+        "forecasts": [
+          {
+            "forecast_hours": 72,
+            "grib_sha256": "1b3da156813ba089c509f5cb2b1f5ccbb4616713fec0047625fbc6a0dae4dc10",
+            "input_sha256": "4d3760a51a0319000cf7eff5ad48df1e446119a14018cf86f17b685929510aad",
+            "field_sha256": {
+              "temperature": "47b903a4f3c4d21660dd02b973ccd3f45a08825a85035e7d4e83806f9bfafc71",
+              "height": "3871de268b85ec52429d3d46117c6bb4ce654858ed7a25b4b4386236f60c6feb"
+            }
+          },
+          {
+            "forecast_hours": 96,
+            "grib_sha256": "9642587e4a5e17dac90b97b69448ff5b536ea530b1d3a0bacaa6be84be134105",
+            "input_sha256": "a29a7be33a99500bc9d054d540f4f06ad6d8b9073deb3ef8877f81c729eb371e",
+            "field_sha256": {
+              "temperature": "96883f624b7e8768dd02bb0b9da66b9f374940d3862b37007be435936b545b27",
+              "height": "f861164f3da13aa2f3b9b06c433d944d0e1c4d15fe6a478ee8ae7e252dc38329"
+            }
+          },
+          {
+            "forecast_hours": 120,
+            "grib_sha256": "96f9f0be499d547b69e65b9a1967efb51eb9ef9d6d7c52a5ac21ed934233ce89",
+            "input_sha256": "7c7ce1e29207c0e498cdaec7d65543abc1650f367aef81b1b9a849b901e27d3a",
+            "field_sha256": {
+              "temperature": "e8b83a4bdd30d092088a52302af8f471afb8d6698730ac8b21e632b1476deee0",
+              "height": "65d230ec8aaf91d580ee05ef0f68e14a71fbdc136fb963f7053f1582b485621f"
+            }
+          },
+          {
+            "forecast_hours": 144,
+            "grib_sha256": "690c74d92299f2e8cea3c0850b80b02e02c98ee0ebd92eeb21f93ec49c8f2784",
+            "input_sha256": "a708420eccacb54a981676d50f399d4a503aa899b1c5ed5bcc339364714c8607",
+            "field_sha256": {
+              "temperature": "2f3fabdcb87a2ba72f8eb307ac04f3186886147e056be8b4191f12290b9c5f4b",
+              "height": "e0a8ddf4a004286f14590a7a8e8bde4798c31c9b70f4f1bb9de9126075d74386"
+            }
+          },
+          {
+            "forecast_hours": 168,
+            "grib_sha256": "e0bbe0c3d44a7e8a599b6e25876cd5fdbb073517a9f647e8c3400590bf9543ae",
+            "input_sha256": "7e6ec54337c1cf6b46fd9762a5374dd3ecfb155903808c314bdbb689946896f3",
+            "field_sha256": {
+              "temperature": "4d70112f502ec4d039675fde3aac000c122648219e73089f25909f7bccf14d00",
+              "height": "e86378c45071fc7e37f4da48b5beec416201d645bc5a065443dacd70aacd1000"
+            }
+          },
+          {
+            "forecast_hours": 192,
+            "grib_sha256": "18b552a8d74fec5e580773083f6297859a31a08a6496135943d3fd0856d8acbb",
+            "input_sha256": "2974f4c8c7d7888d8d271bb1d67685c608e5352aad3e4aff417976d68de3f64b",
+            "field_sha256": {
+              "temperature": "b982ea8e645ff2550edc90293a71a75ba809336d79300f93b20b9d7bfe551cb2",
+              "height": "29f00f37ae61a90ebb00af59be481ab6166d8d10c41b9c62d5a408585e5578b8"
+            }
+          }
+        ]
       }
     }
   ]

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-09T12:07:13.064310+00:00",
+  "generated_at": "2026-10-09T17:25:37.638086+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -53,8 +53,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 131774,
-      "sha256": "6ecfaea00f574c950edb511a12e020a5e9200d594b793530080e80b0b3325cde",
+      "bytes": 131700,
+      "sha256": "2963ebadcd16ff5049ea883cb0d2169acd47eda778d44e87eaa3bbdce7265f31",
       "mime_type": "text/javascript"
     },
     {
@@ -1295,38 +1295,38 @@
     },
     {
       "path": "assets/ensemble/fefe19-20261005-precipitation.png",
-      "bytes": 130623,
-      "sha256": "9acbdbc5c1a1b604df6132f300536d5cf36f5471834f29cac8f741771f85b661",
+      "bytes": 50101,
+      "sha256": "de50b1bc1c5d7dd44894078695040bd16530e03353f896b0b6c95e43a15a9a48",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fefe19-20261005-symbols.png",
-      "bytes": 20968,
-      "sha256": "146dbd830a7e3eed35bd16e1eaadae806fe1f2205c73cf46e7037558ec1e23ed",
+      "bytes": 21945,
+      "sha256": "cc35c82f7347609ac821454ea9768ef0d98bf1d392600a7277eae145a071b518",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fefe19-precipitation.png",
-      "bytes": 145649,
-      "sha256": "db91d16bb7042b7423e241ed78c35ff36f75cc68f6324468c20bd098a32acca8",
+      "bytes": 56089,
+      "sha256": "0eb301347e332cd5cab88a125dc8e55ade6126dc7d405392ebc7d7f4a70bee4e",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fefe19-symbols.png",
-      "bytes": 22009,
-      "sha256": "f177b668047e08c4dffe302422a6005517f18ec4e61051fece5f29fe861af9e5",
+      "bytes": 23640,
+      "sha256": "9430193d2dda88bc93958c79a3f484a08014134e0d388bce70176f11df42459a",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-20261005-cold850.png",
-      "bytes": 38327,
-      "sha256": "6bc053e0251b38d55bfb61a47a0113f5c4c0b0a7a140546e4284f07bb1140c84",
+      "bytes": 33681,
+      "sha256": "ef18bc6f515164c8eee68144652ed885da9aa7163a69e24689fde9e3cf9c8ab8",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-20261005-height5880.png",
-      "bytes": 126326,
-      "sha256": "d7a143e3bdd1ba9cbe257784cb260a8648bb997b5e958ac14cda8dfe95159a0a",
+      "bytes": 33605,
+      "sha256": "2077cedbd9bfd2cf2a0673bffd3490e8390b0b02e9318170e183d193b577f277",
       "mime_type": "image/png"
     },
     {
@@ -1343,20 +1343,20 @@
     },
     {
       "path": "assets/ensemble/fxxn519-20261005-warm850.png",
-      "bytes": 39668,
-      "sha256": "a38cfacf29c5fd136ba6cd240fd3f580077d8195513528218c26b0c74b3740f9",
+      "bytes": 40683,
+      "sha256": "5687a70deea409870452fd176983aaafa8da034d70927db65b5d8309eb262cc6",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-cold850.png",
-      "bytes": 37865,
-      "sha256": "bfaac2f93c5e90c4df3525df3af830676445293d4a5f44aa6f6339ba5bc2e0e5",
+      "bytes": 33841,
+      "sha256": "45c6f32ce86252868df19359a06c074d06ab2466066509d25524d3b0ffafea3b",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-height5880.png",
-      "bytes": 127170,
-      "sha256": "784b4ff008b64d919c4ebe2f4346bafe83f4d094cbace1048f29dc85ee162068",
+      "bytes": 33360,
+      "sha256": "5ab43121240839a78747809a8b6213b878f30ac69fb97285d6cee34210ecf6bf",
       "mime_type": "image/png"
     },
     {
@@ -1373,8 +1373,8 @@
     },
     {
       "path": "assets/ensemble/fxxn519-warm850.png",
-      "bytes": 38550,
-      "sha256": "22812b7ef9d0433530b3e3a1c8170c0409885d9df7c3a8d2367c9285287a888e",
+      "bytes": 41950,
+      "sha256": "02b2c7d0cb084eff5a6026c96ac17cf3f96e95500eb3d65005572c60fc13c246",
       "mime_type": "image/png"
     },
     {
@@ -1385,20 +1385,20 @@
     },
     {
       "path": "assets/ensemble/fzcx50-20261005-precipitation.png",
-      "bytes": 161814,
-      "sha256": "d9736eaa1ac02cfeffe102e678e768dcf012a5c59ee6788859c6247452e49819",
+      "bytes": 44697,
+      "sha256": "824f12744f797c1a58cb91b87b7f14ee89e554b337bd1b4f4e84c1f5f614e70f",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fzcx50-20261005-symbols.png",
-      "bytes": 23948,
-      "sha256": "2c351074ebc7b86701ddbe24fffd09f8d31ee50aa0675fcc2f563605d1d69e3b",
+      "bytes": 23982,
+      "sha256": "0f3dabb189b8c4c3242dafdd54de9bcc825165346d37b1ca4393f78ede778092",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fzcx50-20261005-vorticity.png",
-      "bytes": 222549,
-      "sha256": "8ef8e997a2deff19428d70cf7d2be63ae962e09dab7d49447ccfcbe299096a86",
+      "bytes": 315829,
+      "sha256": "71cea0c8c9d687f7531a7f7e2299ba29f4995bd0833cd7697bab714715f9e909",
       "mime_type": "image/png"
     },
     {
@@ -1409,20 +1409,20 @@
     },
     {
       "path": "assets/ensemble/fzcx50-precipitation.png",
-      "bytes": 174043,
-      "sha256": "977ffe5b14b0fdca00fac79549a731d289bf751eb425e15d02a21e7310ad4dc0",
+      "bytes": 43148,
+      "sha256": "88bae0800d21a4153b0cc34056a18d3d765313805568e0c541c367911006b41c",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fzcx50-symbols.png",
-      "bytes": 24369,
-      "sha256": "36215a9c17764ceb42214a2c3f9472c4b031210b351d1ec70589677f9854554f",
+      "bytes": 24367,
+      "sha256": "1403cef283d05ec78e2ce7063885d526ad39e164de51aa245c2fe9fbb93b0cfe",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fzcx50-vorticity.png",
-      "bytes": 217735,
-      "sha256": "47d61ff1418aaf0606c453281b532fb7732b56f14390c983d9f9c5a4c7079a65",
+      "bytes": 298465,
+      "sha256": "66ee2276e31958195d621e5e1b30ede3b959389891a7a6e2cb6939d98d60d08b",
       "mime_type": "image/png"
     },
     {
@@ -1589,14 +1589,14 @@
     },
     {
       "path": "ensemble-coloring.js",
-      "bytes": 4005,
-      "sha256": "d785862e4917643e384893bc49dc021441601bb73ae71e7d5e773e64f25953f4",
+      "bytes": 4721,
+      "sha256": "7749a415b3661453d820dd8d43aee2cf1bc91426f5226dd482344e17fe3d21b3",
       "mime_type": "text/javascript"
     },
     {
       "path": "ensemble-coloring.json",
-      "bytes": 7693,
-      "sha256": "dc45f29aaec0fde61930cdd3502b332b072d74508b1eb73325ef0f9d01e6fe22",
+      "bytes": 13453,
+      "sha256": "3fc4cab3c8d61f7a16968adb750e6f55b2f9fae681ee9406fbba38659afe7859",
       "mime_type": "application/json"
     },
     {
@@ -1626,7 +1626,7 @@
     {
       "path": "index.html",
       "bytes": 37359,
-      "sha256": "4450d4805184be0bae68841ea729be6c79a94ca268dbaca10619d0d7648dcd0e",
+      "sha256": "7e8790d964f438999b681e86ca9d10f57912cb34b8584d98d6d58af9ad239c09",
       "mime_type": "text/html"
     },
     {
@@ -1661,8 +1661,8 @@
     },
     {
       "path": "release-allowlist.json",
-      "bytes": 70416,
-      "sha256": "46083348cef8948237c17e40c100ac277b4aa94a598446d2c6e822ef6b77bf0b",
+      "bytes": 75170,
+      "sha256": "534bcb91af0388aa3e056ed0e0dce133b89a40157d5fb034d1a3923aadfd92a0",
       "mime_type": "application/json"
     },
     {
@@ -1709,8 +1709,8 @@
     },
     {
       "path": "scripts/test_ensemble_coloring.js",
-      "bytes": 5498,
-      "sha256": "0546220b374d1ac8b1990a1c028ff69e4690254ab7aaeeeef26996ab61d4e1d4",
+      "bytes": 7540,
+      "sha256": "b63acd714f505a2fed03f8666ee1ea2be63210ebe263c1cc69849396602be426",
       "mime_type": "text/javascript"
     },
     {

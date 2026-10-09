@@ -1729,6 +1729,268 @@
     },
     {
       "path": "assets/ensemble/fefe19-20261005-precipitation.png",
+      "bytes": 50101,
+      "sha256": "de50b1bc1c5d7dd44894078695040bd16530e03353f896b0b6c95e43a15a9a48",
+      "mime_type": "image/png",
+      "width": 2068,
+      "height": 2048,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fefe19-20261005-symbols.png",
+      "bytes": 21945,
+      "sha256": "cc35c82f7347609ac821454ea9768ef0d98bf1d392600a7277eae145a071b518",
+      "mime_type": "image/png",
+      "width": 2068,
+      "height": 2048,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fefe19-precipitation.png",
+      "bytes": 56089,
+      "sha256": "0eb301347e332cd5cab88a125dc8e55ade6126dc7d405392ebc7d7f4a70bee4e",
+      "mime_type": "image/png",
+      "width": 2068,
+      "height": 2048,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fefe19-symbols.png",
+      "bytes": 23640,
+      "sha256": "9430193d2dda88bc93958c79a3f484a08014134e0d388bce70176f11df42459a",
+      "mime_type": "image/png",
+      "width": 2068,
+      "height": 2048,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fzcx50-20261005-precipitation.png",
+      "bytes": 44697,
+      "sha256": "824f12744f797c1a58cb91b87b7f14ee89e554b337bd1b4f4e84c1f5f614e70f",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fzcx50-20261005-vorticity.png",
+      "bytes": 315829,
+      "sha256": "71cea0c8c9d687f7531a7f7e2299ba29f4995bd0833cd7697bab714715f9e909",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fzcx50-20261005-anomaly.png",
+      "bytes": 26454,
+      "sha256": "d6200ba5ea4144a4d19e4b8baa3e404376c697182dfcbb6bab2a2cec90a0ae41",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fzcx50-20261005-symbols.png",
+      "bytes": 23982,
+      "sha256": "0f3dabb189b8c4c3242dafdd54de9bcc825165346d37b1ca4393f78ede778092",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fzcx50-precipitation.png",
+      "bytes": 43148,
+      "sha256": "88bae0800d21a4153b0cc34056a18d3d765313805568e0c541c367911006b41c",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fzcx50-vorticity.png",
+      "bytes": 298465,
+      "sha256": "66ee2276e31958195d621e5e1b30ede3b959389891a7a6e2cb6939d98d60d08b",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fzcx50-anomaly.png",
+      "bytes": 26774,
+      "sha256": "4b69e26f9a8711443f9966acbd74ec03c2a84bfd53d77e2e2a3db7df651c4309",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fzcx50-symbols.png",
+      "bytes": 24367,
+      "sha256": "1403cef283d05ec78e2ce7063885d526ad39e164de51aa245c2fe9fbb93b0cfe",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-20261005-heightAnomaly.png",
+      "bytes": 378097,
+      "sha256": "fac9ffc962755f2857ce4f6d30711bb5983828323a08cf052427430ae300be82",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-20261005-height5880.png",
+      "bytes": 33605,
+      "sha256": "2077cedbd9bfd2cf2a0673bffd3490e8390b0b02e9318170e183d193b577f277",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-20261005-cold850.png",
+      "bytes": 33681,
+      "sha256": "ef18bc6f515164c8eee68144652ed885da9aa7163a69e24689fde9e3cf9c8ab8",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-20261005-warm850.png",
+      "bytes": 40683,
+      "sha256": "5687a70deea409870452fd176983aaafa8da034d70927db65b5d8309eb262cc6",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-20261005-symbols.png",
+      "bytes": 27320,
+      "sha256": "8efdae6cfb0c59e6f551327edf3f54e7a7ae1f40f36871c83f3681a6e064ad40",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-heightAnomaly.png",
+      "bytes": 414053,
+      "sha256": "bf29aa2ef96d52946df3d382bc737725e99d9d3bd53d94492b08a224351c2de0",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-height5880.png",
+      "bytes": 33360,
+      "sha256": "5ab43121240839a78747809a8b6213b878f30ac69fb97285d6cee34210ecf6bf",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-cold850.png",
+      "bytes": 33841,
+      "sha256": "45c6f32ce86252868df19359a06c074d06ab2466066509d25524d3b0ffafea3b",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-warm850.png",
+      "bytes": 41950,
+      "sha256": "02b2c7d0cb084eff5a6026c96ac17cf3f96e95500eb3d65005572c60fc13c246",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-symbols.png",
+      "bytes": 26709,
+      "sha256": "e5b6fe14d89e63657fe84cfaa4d5ea9dfe759f181e6dd2502af4b0bb53e35b7f",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    }
+  ],
+  "allowed_historical_binary_assets": [
+    {
+      "path": "assets/ensemble/fxxn519-20261005-heightAnomaly.png",
+      "bytes": 523863,
+      "sha256": "2cd95f0f58d2cde4e875809047754a19065cccd2e1f67441ac3e63f1c5cbea20",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-20261005-symbols.png",
+      "bytes": 25813,
+      "sha256": "aa7b68b6fc8fb3c4815a2447ee1b42ec2a55c4279bee90e367a59e73335b113a",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-heightAnomaly.png",
+      "bytes": 502364,
+      "sha256": "d0b0e51031cfbabf7d676859243e4d396f9dd84ca06976cd493e7e34d80b5f39",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fxxn519-symbols.png",
+      "bytes": 25979,
+      "sha256": "5450df38de8fcdefa6cf49bd94a6a639d14822f454c24048ce499eb051c81a29",
+      "mime_type": "image/png",
+      "width": 2048,
+      "height": 2803,
+      "bit_depth": 8,
+      "color_type": 6
+    },
+    {
+      "path": "assets/ensemble/fefe19-20261005-precipitation.png",
       "bytes": 130623,
       "sha256": "9acbdbc5c1a1b604df6132f300536d5cf36f5471834f29cac8f741771f85b661",
       "mime_type": "image/png",
@@ -1788,16 +2050,6 @@
       "color_type": 6
     },
     {
-      "path": "assets/ensemble/fzcx50-20261005-anomaly.png",
-      "bytes": 26454,
-      "sha256": "d6200ba5ea4144a4d19e4b8baa3e404376c697182dfcbb6bab2a2cec90a0ae41",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
       "path": "assets/ensemble/fzcx50-20261005-symbols.png",
       "bytes": 23948,
       "sha256": "2c351074ebc7b86701ddbe24fffd09f8d31ee50aa0675fcc2f563605d1d69e3b",
@@ -1828,29 +2080,9 @@
       "color_type": 6
     },
     {
-      "path": "assets/ensemble/fzcx50-anomaly.png",
-      "bytes": 26774,
-      "sha256": "4b69e26f9a8711443f9966acbd74ec03c2a84bfd53d77e2e2a3db7df651c4309",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
       "path": "assets/ensemble/fzcx50-symbols.png",
       "bytes": 24369,
       "sha256": "36215a9c17764ceb42214a2c3f9472c4b031210b351d1ec70589677f9854554f",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
-      "path": "assets/ensemble/fxxn519-20261005-heightAnomaly.png",
-      "bytes": 378097,
-      "sha256": "fac9ffc962755f2857ce4f6d30711bb5983828323a08cf052427430ae300be82",
       "mime_type": "image/png",
       "width": 2048,
       "height": 2803,
@@ -1888,26 +2120,6 @@
       "color_type": 6
     },
     {
-      "path": "assets/ensemble/fxxn519-20261005-symbols.png",
-      "bytes": 27320,
-      "sha256": "8efdae6cfb0c59e6f551327edf3f54e7a7ae1f40f36871c83f3681a6e064ad40",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
-      "path": "assets/ensemble/fxxn519-heightAnomaly.png",
-      "bytes": 414053,
-      "sha256": "bf29aa2ef96d52946df3d382bc737725e99d9d3bd53d94492b08a224351c2de0",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
       "path": "assets/ensemble/fxxn519-height5880.png",
       "bytes": 127170,
       "sha256": "784b4ff008b64d919c4ebe2f4346bafe83f4d094cbace1048f29dc85ee162068",
@@ -1931,58 +2143,6 @@
       "path": "assets/ensemble/fxxn519-warm850.png",
       "bytes": 38550,
       "sha256": "22812b7ef9d0433530b3e3a1c8170c0409885d9df7c3a8d2367c9285287a888e",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
-      "path": "assets/ensemble/fxxn519-symbols.png",
-      "bytes": 26709,
-      "sha256": "e5b6fe14d89e63657fe84cfaa4d5ea9dfe759f181e6dd2502af4b0bb53e35b7f",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    }
-  ],
-  "allowed_historical_binary_assets": [
-    {
-      "path": "assets/ensemble/fxxn519-20261005-heightAnomaly.png",
-      "bytes": 523863,
-      "sha256": "2cd95f0f58d2cde4e875809047754a19065cccd2e1f67441ac3e63f1c5cbea20",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
-      "path": "assets/ensemble/fxxn519-20261005-symbols.png",
-      "bytes": 25813,
-      "sha256": "aa7b68b6fc8fb3c4815a2447ee1b42ec2a55c4279bee90e367a59e73335b113a",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
-      "path": "assets/ensemble/fxxn519-heightAnomaly.png",
-      "bytes": 502364,
-      "sha256": "d0b0e51031cfbabf7d676859243e4d396f9dd84ca06976cd493e7e34d80b5f39",
-      "mime_type": "image/png",
-      "width": 2048,
-      "height": 2803,
-      "bit_depth": 8,
-      "color_type": 6
-    },
-    {
-      "path": "assets/ensemble/fxxn519-symbols.png",
-      "bytes": 25979,
-      "sha256": "5450df38de8fcdefa6cf49bd94a6a639d14822f454c24048ce499eb051c81a29",
       "mime_type": "image/png",
       "width": 2048,
       "height": 2803,

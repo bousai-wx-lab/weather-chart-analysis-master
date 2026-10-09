@@ -27,12 +27,17 @@ assert.match(Coloring.legends("fefe19").note,/雨量・降水確率の違いを�
 assert.deepEqual(Coloring.legends("fzcx50").bands,["10〜50％","50〜90％","90％以上"]);
 assert.equal(data.selections.length,6);
 for(const r of data.selections.filter(r=>r.product==="fxxn519")){
- assert.deepEqual(Object.keys(r.unavailable_layers).sort(),["cold850","height5880","warm850"]);
+ assert.equal(r.unavailable_layers,undefined,"Verified numeric contours must be selectable");
  const bad=structuredClone(data),record=bad.selections.find(x=>x.variant===r.variant);
- record.unavailable_layers.symbols="contour-boundary-unverified";
+ record.unavailable_layers={symbols:"contour-boundary-unverified"};
  assert.throws(()=>Coloring.validate(bad,Catalog.selection(catalog,r.product,r.variant,r.page)));
  delete record.unavailable_layers.symbols;record.unavailable_layers.height5880="assume-valid";
  assert.throws(()=>Coloring.validate(bad,Catalog.selection(catalog,r.product,r.variant,r.page)));
+ for(const corrupt of [s=>{s.reference_time="2026-10-01T12:00:00+00:00";},s=>{s.forecasts[0].forecast_hours=96;},s=>{s.forecasts[0].field_sha256.temperature="missing";}]){
+   const bad=structuredClone(data),record=bad.selections.find(x=>x.variant===r.variant);
+   corrupt(record.numeric_source);
+   assert.throws(()=>Coloring.validate(bad,Catalog.selection(catalog,r.product,r.variant,r.page)));
+ }
 }
 assert.throws(()=>Coloring.assetURL({path:"https://www.jma.go.jp/mask.png",sha256:"0".repeat(64)}));
 assert.match(Coloring.legends("fxxn519").temperature,/3℃ごと/);
@@ -82,4 +87,23 @@ for(let y=904;y<930;y++)for(let x=1931;x<1936;x++)if(source.at(x,y)[0]<128)asser
 for(const [x,y] of [[1640,875],[1660,875],[1650,890]]){
   const p=anomaly.at(x,y);assert.equal(p[3],100);assert.ok(p[0]>p[2],"Unhatched positive anomaly painted blue");
 }
+// The source's outlined L stem/foot and solid H stems were only partly
+// colored before. Every printed black pixel in these glyph-only strips
+// must now carry the requested opaque letter color.
+for(const [variant,rectangles,color] of [
+ ["fefe19-20261005",[[519,761,527,790],[529,781,548,789]],[220,38,38,255]],
+ ["fzcx50-20261005",[[172,458,176,477],[182,458,186,477],[176,464,182,468]],[37,99,235,255]]
+]){
+ const r=data.selections.find(r=>r.variant===variant),page=Catalog.selection(catalog,r.product,r.variant,1).page;
+ const raw=pixels(page.image_path),mask=pixels(r.layers.symbols.path);
+ for(const [x,y,b,z]of rectangles){let ink=0;for(let yy=y;yy<z;yy++)for(let xx=x;xx<b;xx++)if(raw.at(xx,yy)[0]<128){assert.deepEqual([...mask.at(xx,yy)],color);ink++;}assert.ok(ink>20);}
+}
+const narrow=pixels(data.selections.find(r=>r.variant==="fefe19-20261005").layers.symbols.path);
+assert.deepEqual([...narrow.at(1268,540)],[220,38,38,255],"Crowded narrow L missed");
+const height=pixels(fxxn.layers.height5880.path),cold=pixels(fxxn.layers.cold850.path),warm=pixels(fxxn.layers.warm850.path);
+assert.deepEqual([...height.at(150,1500)],[239,80,163,95]);assert.equal(height.at(250,1300)[3],0);
+assert.deepEqual([...cold.at(850,1230)],[44,100,183,89]);assert.deepEqual([...warm.at(900,1460)],[239,68,68,89]);
+assert.equal(cold.at(850,1370)[3],0);assert.equal(warm.at(850,1370)[3],0,"4-degree transition incorrectly colored warm/cold");
+assert.equal(height.at(1090,2375)[3],0,"5400-and-below section hatch incorrectly colored pink");
+assert.equal(height.at(500,2610)[3],0,"Unhatched pocket filled pink");assert.equal(height.at(350,2650)[3],95);
 console.log("ENSEMBLE_SOURCE_BINDING_OK selections=6");
