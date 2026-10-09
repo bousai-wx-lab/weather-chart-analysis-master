@@ -1127,10 +1127,10 @@ byId("save").addEventListener("click", () => {
     ctx.fillStyle="#243247";ctx.font="22px sans-serif";
     ctx.fillText(`参考着色：Lは赤・Hは青（${showSymbols?"表示中":"OFF"}） / 手描き：利用者`,26,ink.height+76);
     const info=EnsembleColoring.legends(ensemble.product);
-    ctx.fillText(ensemble.product==="fxxn519"?`${info.anomaly}（${showVorticity?"表示中":"OFF"}）`:`${info.rain}：${showPrecipitation?"水色〜青":"OFF"}`,26,ink.height+116,output.width-52);
+    ctx.fillText(ensemble.product==="fxxn519"?`${info.anomaly}（${showVorticity?"表示中":"OFF"}）`:`${info.rain}：${showPrecipitation?(ensemble.product==="fefe19"?"青":"頻度が高いほど濃い青"):"OFF"}`,26,ink.height+116,output.width-52);
     ctx.fillText(info.note,26,ink.height+155,output.width-52);
     ctx.fillText("利用者の着色・解析は気象庁の公式の解析ではありません。天気図解析マスター · Weather Chart Analysis Master · Bousai Wx Lab",26,ink.height+193,output.width-52);
-    ctx.fillText(ensemble.product==="fxxn519"?`${info.height}（${showAscent?"表示中":"OFF"}）`:ensemble.product==="fzcx50"?`正渦度の斜線域：${showVorticity?"ピンク":"OFF"} / 気温偏差の曲線と0線の間：${showAscent?"正は赤・負は青の透過":"OFF"}`:"濃淡は領域の強調で、雨量・降水確率を表しません。",26,ink.height+275,output.width-52);
+    ctx.fillText(ensemble.product==="fxxn519"?`${info.height}（${showAscent?"表示中":"OFF"}）`:ensemble.product==="fzcx50"?`正渦度の斜線域：${showVorticity?"ピンク":"OFF"} / 気温偏差の曲線と0線の間：${showAscent?"正は赤・負は青の透過":"OFF"}`:"原図は24時間5mm以上の範囲だけを示し、雨量の強弱は載っていません。",26,ink.height+275,output.width-52);
     ctx.fillText(ensemble.product==="fxxn519"?`850hPa：寒気${showCold850?Math.round(coldOpacity*100)+"％":"OFF"} / 暖気${showWarm850?Math.round(warmOpacity*100)+"％":"OFF"}。原図の等温線を確認してください。`:"濃淡から新しい数値を読み取らず、各枠の等値線・数値・有効時刻を確認してください。",26,ink.height+319,output.width-52);
   }
   output.toBlob((blob) => {
