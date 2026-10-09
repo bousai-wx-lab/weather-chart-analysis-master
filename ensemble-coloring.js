@@ -12,6 +12,7 @@ const EnsembleColoring = (() => {
     if (records.length !== 1) throw Error("Ensemble selection mismatch");
     const r = records[0], expected = r.product === "fefe19" ? ["precipitation", "symbols"] : r.product === "fxxn519" ? ["heightAnomaly", "height5880", "cold850", "warm850", "symbols"] : ["precipitation", "symbols", "vorticity", "anomaly"];
     if (r.source_sha256 !== selected.variant.source_sha256 || r.image_sha256 !== selected.page.image_sha256 || r.width !== selected.page.width || r.height !== selected.page.height || !r.layers || Object.keys(r.layers).sort().join() !== expected.sort().join()) throw Error("Ensemble source mismatch");
+    if (r.unavailable_layers && (r.product !== "fxxn519" || typeof r.unavailable_layers !== "object" || Array.isArray(r.unavailable_layers) || Object.entries(r.unavailable_layers).some(([id, reason]) => !["height5880", "cold850", "warm850"].includes(id) || reason !== "contour-boundary-unverified"))) throw Error("Invalid coloring quality status");
     for (const [id, asset] of Object.entries(r.layers)) {
       if (asset.path !== `assets/ensemble/${r.variant}-${id}.png` || !/^[a-f0-9]{64}$/.test(asset.sha256) || asset.width !== r.width || asset.height !== r.height) throw Error("Ensemble mask mismatch");
     }

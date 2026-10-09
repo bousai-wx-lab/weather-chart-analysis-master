@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-09T11:47:23.248129+00:00",
+  "generated_at": "2026-10-09T11:56:56.934722+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -53,8 +53,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 130816,
-      "sha256": "2fd45b64cc1a8c0e8362712fe39514f537667039692c1283dc227d5b20925144",
+      "bytes": 131505,
+      "sha256": "40e451c7e010895341266c542df3b340b3978233b976b36a99e20000e1e3c385",
       "mime_type": "text/javascript"
     },
     {
@@ -1589,14 +1589,14 @@
     },
     {
       "path": "ensemble-coloring.js",
-      "bytes": 3656,
-      "sha256": "854ca2faaa0466870c87ed0ceafeb32a94f18e609eee2bf6c0b2bdfbc6eb872f",
+      "bytes": 4005,
+      "sha256": "d785862e4917643e384893bc49dc021441601bb73ae71e7d5e773e64f25953f4",
       "mime_type": "text/javascript"
     },
     {
       "path": "ensemble-coloring.json",
-      "bytes": 7311,
-      "sha256": "aeb0ef790645d9bd36f02e45bc97406287a7c792fe7d74101075f3a77f23911a",
+      "bytes": 7693,
+      "sha256": "dc45f29aaec0fde61930cdd3502b332b072d74508b1eb73325ef0f9d01e6fe22",
       "mime_type": "application/json"
     },
     {
@@ -1626,7 +1626,7 @@
     {
       "path": "index.html",
       "bytes": 37359,
-      "sha256": "09fa3b31130f9d558b7e3bb18b5bf7d183a8b7108afc4eb803bc35322b703099",
+      "sha256": "fa5ace77db09d57a09333b3aea0c623fcff69e4a9cb0c11cebdcc7b44de0c8c5",
       "mime_type": "text/html"
     },
     {
@@ -1709,8 +1709,8 @@
     },
     {
       "path": "scripts/test_ensemble_coloring.js",
-      "bytes": 4890,
-      "sha256": "6a40cd7717bb5c6e3a3b2d4c44d69e6695108aea4f349d8f3fddfacc99341a1f",
+      "bytes": 5498,
+      "sha256": "0546220b374d1ac8b1990a1c028ff69e4690254ab7aaeeeef26996ab61d4e1d4",
       "mime_type": "text/javascript"
     },
     {

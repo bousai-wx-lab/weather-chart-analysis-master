@@ -26,6 +26,14 @@ assert.throws(()=>Coloring.validate(data,Catalog.selection(catalog,"aupq35","aup
 assert.match(Coloring.legends("fefe19").note,/雨量・降水確率の違いを表しません/);
 assert.deepEqual(Coloring.legends("fzcx50").bands,["10〜50％","50〜90％","90％以上"]);
 assert.equal(data.selections.length,6);
+for(const r of data.selections.filter(r=>r.product==="fxxn519")){
+ assert.deepEqual(Object.keys(r.unavailable_layers).sort(),["cold850","height5880","warm850"]);
+ const bad=structuredClone(data),record=bad.selections.find(x=>x.variant===r.variant);
+ record.unavailable_layers.symbols="contour-boundary-unverified";
+ assert.throws(()=>Coloring.validate(bad,Catalog.selection(catalog,r.product,r.variant,r.page)));
+ delete record.unavailable_layers.symbols;record.unavailable_layers.height5880="assume-valid";
+ assert.throws(()=>Coloring.validate(bad,Catalog.selection(catalog,r.product,r.variant,r.page)));
+}
 assert.throws(()=>Coloring.assetURL({path:"https://www.jma.go.jp/mask.png",sha256:"0".repeat(64)}));
 assert.match(Coloring.legends("fxxn519").temperature,/3℃ごと/);
 assert.match(Coloring.legends("fxxn519").height,/地図・緯度時間断面/);

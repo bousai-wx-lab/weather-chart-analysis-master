@@ -526,6 +526,7 @@ function temperatureLegends() {
   byId("detail-vorticity").querySelector(".legend").textContent="500hPa · ピンク · 濃さ30%";
   for(const [id,parent] of ensembleRowParents)parent.append(document.querySelector(`[data-layer="${id}"]`));
   byId("precipitation").textContent="降水量の色塗り";byId("ascent").textContent="上昇流の色塗り";byId("vorticity").textContent="正渦度の色塗り";
+  byId("cold850").textContent="寒気の色塗り";byId("warm850").textContent="暖気の色塗り";
   byId("detail-ascent").querySelector(".legend").textContent="700hPa · 黄緑 · 濃さ30%";
   byId("detail-cold850").querySelector("p").textContent="原図の等温線を境界に、低温ほど濃い色で塗ります。";
   byId("detail-warm850").querySelector("p").textContent="850hPaの9・12・15・18・21・24℃以上を、薄い黄色から赤を経てえんじ色で塗ります。";
@@ -1361,12 +1362,15 @@ function ensembleLegends() {
     common.append(document.querySelector('[data-layer="vorticity"]'),document.querySelector('[data-layer="ascent"]'));
     byId("symbol-color").textContent="L・Hの文字";
     byId("detail-symbols").querySelector(".symbol-c").hidden=true;byId("detail-symbols").querySelector(".symbol-w").hidden=true;
-    byId("vorticity").textContent="500hPa高度の平年偏差";byId("ascent").textContent="5880m以上をピンク";
+    byId("vorticity").textContent="500hPa高度の平年偏差";byId("ascent").textContent=ensemble.unavailable_layers?.height5880?"5880m以上（境界再解析中）":"5880m以上をピンク";
     byId("detail-vorticity").querySelector(".legend").textContent=info.anomaly+"。"+info.note;
-    byId("detail-ascent").querySelector(".legend").textContent=info.height+"。地上の気温や太平洋高気圧の確定線とは区別します。";
+    byId("detail-ascent").querySelector(".legend").textContent=(ensemble.unavailable_layers?.height5880?"原図の5880mの線との一致を確認できないため、自動着色を停止しています。":"")+info.height+"。地上の気温や太平洋高気圧の確定線とは区別します。";
     byId("upper-plane").textContent="500 hPa · 上段の平均図";byId("lower-plane").textContent="850 hPa · 下段の各予想図";
     byId("lower-plane").parentElement.append(document.querySelector('[data-layer="cold850"]'),document.querySelector('[data-layer="warm850"]'));
-    for(const id of ["cold850","warm850"])byId(`detail-${id}`).querySelector("p").textContent=info.temperature;
+    for(const id of ["cold850","warm850"]){
+      byId(`detail-${id}`).querySelector("p").textContent=info.temperature;
+      if(ensemble.unavailable_layers?.[id]){byId(id).textContent=(id==="cold850"?"寒気":"暖気")+"（境界再解析中）";byId(`detail-${id}`).querySelector("p").textContent="原図の等温線との一致を確認できないため、自動着色を停止しています。"+info.temperature;}
+    }
     for(const [id,values,colors] of [["cold850",coloringRules.coldThresholds[850],LowLevelAnalysis.coldColors],["warm850",LowLevelAnalysis.warmThresholds,LowLevelAnalysis.warmColors]]){
       byId(`${id}-legend`).replaceChildren();
       for(const [i,v] of values.entries()){const item=document.createElement("span"),swatch=document.createElement("i");swatch.style.backgroundColor=colors[i];item.append(swatch,`${v}℃${id==="cold850"?"以下":"以上"}`);byId(`${id}-legend`).append(item);}
@@ -1399,6 +1403,7 @@ async function loadEnsemble(selected,revision,signal) {
     const data=EnsembleColoring.validate(await fetchJSON("ensemble-coloring.json",signal),selected);
     const images={};
     await Promise.all(Object.entries(data.layers).map(async([id,a])=>{
+      if(data.unavailable_layers?.[id])return;
       images[id]=await checkedImage(EnsembleColoring.assetURL(a),a.sha256,a.width,a.height,signal);
     }));
     if(revision!==loadRevision)return;

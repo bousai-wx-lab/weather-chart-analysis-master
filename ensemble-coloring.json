@@ -157,6 +157,11 @@
           "width": 2048,
           "height": 2803
         }
+      },
+      "unavailable_layers": {
+        "height5880": "contour-boundary-unverified",
+        "cold850": "contour-boundary-unverified",
+        "warm850": "contour-boundary-unverified"
       }
     },
     {
@@ -198,6 +203,11 @@
           "width": 2048,
           "height": 2803
         }
+      },
+      "unavailable_layers": {
+        "height5880": "contour-boundary-unverified",
+        "cold850": "contour-boundary-unverified",
+        "warm850": "contour-boundary-unverified"
       }
     }
   ]
