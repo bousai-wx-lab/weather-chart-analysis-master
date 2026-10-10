@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "tool_slug": "weather-chart-analysis-master",
-  "generated_at": "2026-10-09T17:37:49.112141+00:00",
+  "generated_at": "2026-10-10T12:02:32.345017+00:00",
   "files": [
     {
       "path": ".github/workflows/privacy-gate.yml",
@@ -1319,14 +1319,14 @@
     },
     {
       "path": "assets/ensemble/fxxn519-20261005-cold850.png",
-      "bytes": 33681,
-      "sha256": "ef18bc6f515164c8eee68144652ed885da9aa7163a69e24689fde9e3cf9c8ab8",
+      "bytes": 36981,
+      "sha256": "4efca36b3fb332e4eb01fffdc12b75c1a0c100da921636b78461d4090f02f272",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-20261005-height5880.png",
-      "bytes": 33605,
-      "sha256": "2077cedbd9bfd2cf2a0673bffd3490e8390b0b02e9318170e183d193b577f277",
+      "bytes": 34077,
+      "sha256": "91574ed6fbfa3f72f46f118fdb0116ad982876b26d198b1c7b425a2fae72b44b",
       "mime_type": "image/png"
     },
     {
@@ -1343,20 +1343,20 @@
     },
     {
       "path": "assets/ensemble/fxxn519-20261005-warm850.png",
-      "bytes": 40683,
-      "sha256": "5687a70deea409870452fd176983aaafa8da034d70927db65b5d8309eb262cc6",
+      "bytes": 45280,
+      "sha256": "cb5f422b9db01deaf674ae28f5089065dc82e81f6c04611f2a5d016953885449",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-cold850.png",
-      "bytes": 33841,
-      "sha256": "45c6f32ce86252868df19359a06c074d06ab2466066509d25524d3b0ffafea3b",
+      "bytes": 36082,
+      "sha256": "af22004f824f688cfa918c3d278ffcd630fc02cf84439e8538233fa4d4eaddc2",
       "mime_type": "image/png"
     },
     {
       "path": "assets/ensemble/fxxn519-height5880.png",
-      "bytes": 33360,
-      "sha256": "5ab43121240839a78747809a8b6213b878f30ac69fb97285d6cee34210ecf6bf",
+      "bytes": 33776,
+      "sha256": "025a9a58423d9f2ca94c47a6a1b1e2d31998b5b70c2528647ceb27abd3f6996e",
       "mime_type": "image/png"
     },
     {
@@ -1373,8 +1373,8 @@
     },
     {
       "path": "assets/ensemble/fxxn519-warm850.png",
-      "bytes": 41950,
-      "sha256": "02b2c7d0cb084eff5a6026c96ac17cf3f96e95500eb3d65005572c60fc13c246",
+      "bytes": 46574,
+      "sha256": "df7abdc3dc7376764e5b7565312c622be5d68b813733e87bc490952e4516f19e",
       "mime_type": "image/png"
     },
     {
@@ -1596,7 +1596,7 @@
     {
       "path": "ensemble-coloring.json",
       "bytes": 13453,
-      "sha256": "3fc4cab3c8d61f7a16968adb750e6f55b2f9fae681ee9406fbba38659afe7859",
+      "sha256": "def86dd5e4108b2fc18ec15aec44da105a7921583cc74c7a1e3e1f0b3a0e0aaf",
       "mime_type": "application/json"
     },
     {
@@ -1661,8 +1661,8 @@
     },
     {
       "path": "release-allowlist.json",
-      "bytes": 75170,
-      "sha256": "534bcb91af0388aa3e056ed0e0dce133b89a40157d5fb034d1a3923aadfd92a0",
+      "bytes": 76949,
+      "sha256": "c9b10f8895993f98c3ff27eae0bdf431eeacee883ae715ab7b9a85180330129e",
       "mime_type": "application/json"
     },
     {
